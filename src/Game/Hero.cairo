@@ -1,16 +1,18 @@
-mod Statistics;
 use debug::PrintTrait;
 
 
 #[derive(Copy, Drop)]
 struct Hero {
     name: felt252,
-    // statistics: Statistics,
+    level: u16,
+    rank: u16,
 }
 
-fn new(name: felt252) -> Hero {
+fn new(name: felt252, level: u16, rank: u16) -> Hero {
     Hero {
         name: name,
+        level: level,
+        rank: rank,
     }
 }
 
