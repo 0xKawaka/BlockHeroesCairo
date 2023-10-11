@@ -1,10 +1,10 @@
 mod Account;
 mod Hero;
 mod BaseStatistics;
+mod Battle;
 use Account::AccountImpl;
 use Hero::HeroImpl;
 use BaseStatistics::BaseStatisticsImpl;
-use nullable::{match_nullable, FromNullableResult};
 use debug::PrintTrait;
 
 fn initGame() {
@@ -15,16 +15,4 @@ fn initGame() {
     account.addHero(knight);
     account.addHero(priest);
     // account.print();
-
-    let mut baseStatisticsDict = BaseStatistics::createBaseStatisticsDict();
-    let baseStatsKnightBox = baseStatisticsDict.get(knight.name);
-    let baseStatsKnight = match match_nullable(baseStatsKnightBox) {
-        FromNullableResult::Null(()) => panic_with_felt252('No value found knight'),
-        FromNullableResult::NotNull(val) => val.unbox(),
-    };
-    let health = baseStatsKnight.getHealth(knight.level, knight.rank);
-    health.print();
-
-
-
 }

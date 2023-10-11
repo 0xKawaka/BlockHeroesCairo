@@ -1,6 +1,5 @@
 use debug::PrintTrait;
 
-
 #[derive(Copy, Drop)]
 struct Hero {
     name: felt252,
