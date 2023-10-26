@@ -12,22 +12,22 @@ fn new(value: u64, duration: u8) -> StatModifier {
 }
 
 trait StatModifierTrait {
-    fn reduceDuration(self: StatModifier) -> ();
-    fn reset(self: StatModifier) -> ();
-    fn set(self: StatModifier, value: u64, duration: u8) -> ();
+    fn reduceDuration(ref self: StatModifier) -> ();
+    fn reset(ref self: StatModifier) -> ();
+    fn set(ref self: StatModifier, value: u64, duration: u8) -> ();
 }
 
 impl StatModifierImpl of StatModifierTrait {
-    fn reduceDuration(mut self: StatModifier) {
+    fn reduceDuration(ref self: StatModifier) {
         if self.duration > 0 {
             self.duration -= 1;
         }
     }
-    fn reset(mut self: StatModifier) {
+    fn reset(ref self: StatModifier) {
         self.duration = 0;
         self.value = 0;
     }
-    fn set(mut self: StatModifier, value: u64, duration: u8) {
+    fn set(ref self: StatModifier, value: u64, duration: u8) {
         self.value = value;
         self.duration = duration;
     }

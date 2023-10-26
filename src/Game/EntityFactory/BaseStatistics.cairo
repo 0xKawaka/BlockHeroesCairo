@@ -6,6 +6,7 @@ use nullable::{nullable_from_box, match_nullable, FromNullableResult};
 const decimals: u64 = 1000;
 const LEVEL_MULTIPLIER_BY_RANK: u64 = 10;
 
+use debug::PrintTrait;
 
 #[derive(Copy, Drop)]
 struct BaseStatistics {
@@ -17,12 +18,7 @@ struct BaseStatistics {
     criticalDamage: u64,
 }
 
-fn createBaseStatisticsDict() -> Felt252Dict<Nullable<BaseStatistics>> {
-    let mut dict: Felt252Dict<Nullable<BaseStatistics>> = Default::default();
-    dict.insert('knight', nullable_from_box(BoxTrait::new(new(100, 10, 10, 10, 10, 10))));
-    dict.insert('priest', nullable_from_box(BoxTrait::new(new(100, 10, 10, 10, 10, 10))));
-    return dict;
-}
+
 
 fn new(health: u64, attack: u64, defense: u64, speed: u64, criticalChance: u64, criticalDamage: u64) -> BaseStatistics {
     return BaseStatistics {

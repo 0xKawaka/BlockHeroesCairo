@@ -16,11 +16,11 @@ fn new(name: felt252, level: u16, rank: u16) -> Hero {
 }
 
 trait HeroTrait {
-    fn print(self: Hero) -> ();
+    fn print(self: @Hero) -> ();
 }
 
 impl HeroImpl of HeroTrait {
-    fn print(self: Hero) {
-        self.name.print();
+    fn print(self: @Hero) {
+        (*self.name).print();
     }
 }

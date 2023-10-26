@@ -1,4 +1,0 @@
-mod Statistics;
-
-struct BattleHero {
-}
