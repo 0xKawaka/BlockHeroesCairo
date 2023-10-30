@@ -25,7 +25,7 @@ fn new() -> Account {
         heroes: ArrayTrait::new(),
         isBattling: false,
         battle: Option::None,
-        // battle: Battle::new(),
+    // battle: Battle::new(),
     }
 }
 
@@ -39,33 +39,42 @@ impl OptionBattleDestruct of Destruct<Option<Battle::Battle>> {
 }
 
 trait AccountTrait {
-    fn startBattle(ref self: Account, heroesIndexes: Array<u32>, ref battleHeroFactory: EntityFactory::EntityFactory) -> ();
-    fn addHero(ref self: Account, hero: Hero::Hero) -> ();
-    fn print(self: Account) -> ();
-    fn printHeroes(self: Account) -> ();
+    fn startBattle(
+        ref self: Account,
+        heroesIndexes: @Array<u32>,
+        enemies: @Array<Hero::Hero>,
+        ref battleHeroFactory: EntityFactory::EntityFactory
+    );
+    fn addHero(ref self: Account, hero: Hero::Hero);
+    fn print(self: Account);
+    fn printHeroes(self: Account);
 }
 
 impl AccountImpl of AccountTrait {
-    fn startBattle(ref self: Account, heroesIndexes: Array<u32>, ref battleHeroFactory: EntityFactory::EntityFactory) -> () {
+    fn startBattle(
+        ref self: Account,
+        heroesIndexes: @Array<u32>,
+        enemies: @Array<Hero::Hero>,
+        ref battleHeroFactory: EntityFactory::EntityFactory
+    ) {
         let mut heroArray: Array<Hero::Hero> = ArrayTrait::new();
         let heroesSpan = self.heroes.span();
         let mut i: u32 = 0;
         let mut heroesIndexesSpan = heroesIndexes.span();
         let heroesIndexesSpanLen = heroesIndexesSpan.len();
         loop {
-            if(i > heroesIndexesSpanLen -1) {
+            if (i > heroesIndexesSpanLen - 1) {
                 break;
             }
             let indexOption = heroesIndexesSpan.pop_front();
             let index = *indexOption.unwrap();
-            let heroOption = heroesSpan.get(index);
-            let heroBox = heroOption.unwrap();
-            let hero = *heroBox.unbox();
-            heroArray.append(hero);
+            let hero = heroesSpan[index];
+            heroArray.append(*hero);
             i = i + 1;
         };
-        let mut battle = Battle::new(heroArray, ref battleHeroFactory);
-        battle.print();
+        let mut battle = Battle::new(@heroArray, enemies, ref battleHeroFactory);
+        battle.battleLoop();
+        // battle.print();
         self.battle = Option::Some(battle);
     }
     fn addHero(ref self: Account, hero: Hero::Hero) {
@@ -81,7 +90,7 @@ impl AccountImpl of AccountTrait {
         let mut heroesSpan = self.heroes.span();
         let heroesSpanLen = heroesSpan.len();
         loop {
-            if(i > heroesSpanLen - 1) {
+            if (i > heroesSpanLen - 1) {
                 break;
             }
             let heroOption = heroesSpan.pop_front();

@@ -1,15 +1,17 @@
+use game::Game::Battle::Entity::Statistics::Statistic::StatisticTrait;
 mod Statistic;
 mod StatModifier;
 
 use StatModifier::StatModifierImpl;
 use Statistic::StatisticImpl;
+use super::super::super::libraries::SignedIntegers::{i64::i64, i64::i64Impl};
 
 use debug::PrintTrait;
 
 #[derive(Copy, Drop)]
 struct Statistics {
     maxHealth: u64,
-    health: u64,
+    health: i64,
     attack: Statistic::Statistic,
     defense: Statistic::Statistic,
     speed: Statistic::Statistic,
@@ -17,10 +19,12 @@ struct Statistics {
     criticalDamage: Statistic::Statistic,
 }
 
-fn new(health: u64, attack: u64, defense: u64, speed: u64, criticalChance: u64, criticalDamage:u64) -> Statistics {
+fn new(
+    health: u64, attack: u64, defense: u64, speed: u64, criticalChance: u64, criticalDamage: u64
+) -> Statistics {
     Statistics {
         maxHealth: health,
-        health: health,
+        health: i64Impl::new(health, false),
         attack: Statistic::new(attack),
         defense: Statistic::new(defense),
         speed: Statistic::new(speed),
@@ -31,13 +35,25 @@ fn new(health: u64, attack: u64, defense: u64, speed: u64, criticalChance: u64, 
 
 trait StatisticsTrait {
     fn reduceBuffsStatusDuration(ref self: Statistics);
-    fn getStatsBuffs(self: @Statistics) -> Array<StatModifier::StatModifier>;
-    fn getStatsDebuffs(self: @Statistics) -> Array<StatModifier::StatModifier>;
-    fn applyBonusStatModifier(ref self: Statistics, stat: felt252, statModifierValue: u64, statModifierDuration: u8);
-    fn applyMalusStatModifier(ref self: Statistics, stat: felt252, statModifierValue: u64, statModifierDuration: u8);
+
+    fn applyBonusStatModifier(
+        ref self: Statistics, stat: felt252, statModifierValue: u64, statModifierDuration: u8
+    );
+    fn applyMalusStatModifier(
+        ref self: Statistics, stat: felt252, statModifierValue: u64, statModifierDuration: u8
+    );
     fn resetBonusMalus(ref self: Statistics);
     fn getSpeedNextTurn(self: @Statistics) -> u64;
-    fn print(self: @Statistics) -> ();
+    // fn getStatsBuffs(self: @Statistics) -> Array<StatModifier::StatModifier>;
+    // fn getStatsDebuffs(self: @Statistics) -> Array<StatModifier::StatModifier>;
+    fn getAttack(self: @Statistics) -> u64;
+    fn getDefense(self: @Statistics) -> u64;
+    fn getSpeed(self: @Statistics) -> u64;
+    fn getCriticalChance(self: @Statistics) -> u64;
+    fn getCriticalDamage(self: @Statistics) -> u64;
+    fn getHealth(self: @Statistics) -> i64;
+    fn getMaxHealth(self: @Statistics) -> u64;
+    fn print(self: @Statistics);
 }
 
 impl StatisticsImpl of StatisticsTrait {
@@ -48,75 +64,71 @@ impl StatisticsImpl of StatisticsTrait {
         self.criticalChance.bonus.reduceDuration();
         self.criticalDamage.bonus.reduceDuration();
     }
-    fn getStatsBuffs(self: @Statistics) -> Array<StatModifier::StatModifier> {
-        let mut buffs: Array<StatModifier::StatModifier> = ArrayTrait::new();
-        if(*self.attack.bonus.value != 0 && *self.attack.bonus.duration > 0){
-            buffs.append(*self.attack.bonus);
-        }
-        if(*self.defense.bonus.value != 0 && *self.defense.bonus.duration > 0){
-            buffs.append(*self.defense.bonus);
-        }
-        if(*self.speed.bonus.value != 0 && *self.speed.bonus.duration > 0){
-            buffs.append(*self.speed.bonus);
-        }
-        if(*self.criticalChance.bonus.value != 0 && *self.criticalChance.bonus.duration > 0){
-            buffs.append(*self.criticalChance.bonus);
-        }
-        if(*self.criticalDamage.bonus.value != 0 && *self.criticalDamage.bonus.duration > 0){
-            buffs.append(*self.criticalDamage.bonus);
-        }
-        return buffs;
-    }
-    fn getStatsDebuffs(self: @Statistics) -> Array<StatModifier::StatModifier> {
-        let mut debuffs: Array<StatModifier::StatModifier> = ArrayTrait::new();
-        if(*self.attack.malus.value != 0 && *self.attack.malus.duration > 0){
-            debuffs.append(*self.attack.malus);
-        }
-        if(*self.defense.malus.value != 0 && *self.defense.malus.duration > 0){
-            debuffs.append(*self.defense.malus);
-        }
-        if(*self.speed.malus.value != 0 && *self.speed.malus.duration > 0){
-            debuffs.append(*self.speed.malus);
-        }
-        if(*self.criticalChance.malus.value != 0 && *self.criticalChance.malus.duration > 0){
-            debuffs.append(*self.criticalChance.malus);
-        }
-        if(*self.criticalDamage.malus.value != 0 && *self.criticalDamage.malus.duration > 0){
-            debuffs.append(*self.criticalDamage.malus);
-        }
-        return debuffs;
-    }
-    fn applyBonusStatModifier(ref self: Statistics, stat: felt252, statModifierValue: u64, statModifierDuration: u8) {
-        if(stat == 'speed'){
+    // fn getStatsBuffs(self: @Statistics) -> Array<StatModifier::StatModifier> {
+    //     let mut buffs: Array<StatModifier::StatModifier> = ArrayTrait::new();
+    //     if(*self.attack.bonus.value != 0 && *self.attack.bonus.duration > 0){
+    //         buffs.append(*self.attack.bonus);
+    //     }
+    //     if(*self.defense.bonus.value != 0 && *self.defense.bonus.duration > 0){
+    //         buffs.append(*self.defense.bonus);
+    //     }
+    //     if(*self.speed.bonus.value != 0 && *self.speed.bonus.duration > 0){
+    //         buffs.append(*self.speed.bonus);
+    //     }
+    //     if(*self.criticalChance.bonus.value != 0 && *self.criticalChance.bonus.duration > 0){
+    //         buffs.append(*self.criticalChance.bonus);
+    //     }
+    //     if(*self.criticalDamage.bonus.value != 0 && *self.criticalDamage.bonus.duration > 0){
+    //         buffs.append(*self.criticalDamage.bonus);
+    //     }
+    //     return buffs;
+    // }
+    // fn getStatsDebuffs(self: @Statistics) -> Array<StatModifier::StatModifier> {
+    //     let mut debuffs: Array<StatModifier::StatModifier> = ArrayTrait::new();
+    //     if(*self.attack.malus.value != 0 && *self.attack.malus.duration > 0){
+    //         debuffs.append(*self.attack.malus);
+    //     }
+    //     if(*self.defense.malus.value != 0 && *self.defense.malus.duration > 0){
+    //         debuffs.append(*self.defense.malus);
+    //     }
+    //     if(*self.speed.malus.value != 0 && *self.speed.malus.duration > 0){
+    //         debuffs.append(*self.speed.malus);
+    //     }
+    //     if(*self.criticalChance.malus.value != 0 && *self.criticalChance.malus.duration > 0){
+    //         debuffs.append(*self.criticalChance.malus);
+    //     }
+    //     if(*self.criticalDamage.malus.value != 0 && *self.criticalDamage.malus.duration > 0){
+    //         debuffs.append(*self.criticalDamage.malus);
+    //     }
+    //     return debuffs;
+    // }
+    fn applyBonusStatModifier(
+        ref self: Statistics, stat: felt252, statModifierValue: u64, statModifierDuration: u8
+    ) {
+        if (stat == 'speed') {
             self.speed.setBonus(statModifierValue, statModifierDuration);
-        }
-        else if(stat == 'defense'){
+        } else if (stat == 'defense') {
             self.defense.setBonus(statModifierValue, statModifierDuration);
-        }
-        else if(stat == 'attack'){
+        } else if (stat == 'attack') {
             self.attack.setBonus(statModifierValue, statModifierDuration);
-        }
-        else if(stat == 'criticalChance'){
+        } else if (stat == 'criticalChance') {
             self.criticalChance.setBonus(statModifierValue, statModifierDuration);
-        }
-        else if(stat == 'criticalDamage'){
+        } else if (stat == 'criticalDamage') {
             self.criticalDamage.setBonus(statModifierValue, statModifierDuration);
         }
     }
-    fn applyMalusStatModifier(ref self: Statistics, stat: felt252, statModifierValue: u64, statModifierDuration: u8) {
-        if(stat == 'speed'){
+    fn applyMalusStatModifier(
+        ref self: Statistics, stat: felt252, statModifierValue: u64, statModifierDuration: u8
+    ) {
+        if (stat == 'speed') {
             self.speed.setMalus(statModifierValue, statModifierDuration);
-        }
-        else if(stat == 'defense'){
+        } else if (stat == 'defense') {
             self.defense.setMalus(statModifierValue, statModifierDuration);
-        }
-        else if(stat == 'attack'){
+        } else if (stat == 'attack') {
             self.attack.setMalus(statModifierValue, statModifierDuration);
-        }
-        else if(stat == 'criticalChance'){
+        } else if (stat == 'criticalChance') {
             self.criticalChance.setMalus(statModifierValue, statModifierDuration);
-        }
-        else if(stat == 'criticalDamage'){
+        } else if (stat == 'criticalDamage') {
             self.criticalDamage.setMalus(statModifierValue, statModifierDuration);
         }
     }
@@ -129,6 +141,27 @@ impl StatisticsImpl of StatisticsTrait {
     }
     fn getSpeedNextTurn(self: @Statistics) -> u64 {
         return *self.speed.value;
+    }
+    fn getAttack(self: @Statistics) -> u64 {
+        return self.attack.getModifiedValue();
+    }
+    fn getDefense(self: @Statistics) -> u64 {
+        return self.defense.getModifiedValue();
+    }
+    fn getSpeed(self: @Statistics) -> u64 {
+        return self.speed.getModifiedValue();
+    }
+    fn getCriticalChance(self: @Statistics) -> u64 {
+        return self.criticalChance.getModifiedValue();
+    }
+    fn getCriticalDamage(self: @Statistics) -> u64 {
+        return self.criticalDamage.getModifiedValue();
+    }
+    fn getHealth(self: @Statistics) -> i64 {
+        return *self.health;
+    }
+    fn getMaxHealth(self: @Statistics) -> u64 {
+        return *self.maxHealth;
     }
     fn print(self: @Statistics) {
         (*self.health).print();

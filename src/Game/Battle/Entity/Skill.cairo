@@ -17,7 +17,13 @@ struct Skill {
 }
 
 fn new(
-    name: felt252, description: felt252, cooldown: u16, damage: Damage::Damage, heal: Heal::Heal, targetType: felt252, accuracy: u16,
+    name: felt252,
+    description: felt252,
+    cooldown: u16,
+    damage: Damage::Damage,
+    heal: Heal::Heal,
+    targetType: felt252,
+    accuracy: u16,
 ) -> Skill {
     Skill {
         name: name,
@@ -37,78 +43,78 @@ trait SkillTrait {
 impl SkillImpl of SkillTrait {
     fn print(self: @Skill) {
         (*self.name).print();
-        // (*self.description).print();
-        // (*self.cooldown).print();
-        // (*self.damage).print();
-        // (*self.heal).print();
-        // (*self.targetType).print();
-        // (*self.accuracy).print();
+    // (*self.description).print();
+    // (*self.cooldown).print();
+    // (*self.damage).print();
+    // (*self.heal).print();
+    // (*self.targetType).print();
+    // (*self.accuracy).print();
     }
 }
-    
-    // name: string
-    // description: string
-    // cooldown: number
-    // damage: IDamage
-    // heal: IHeal
-    // targetType: string
-    // accuracy: number
-    // // aoe: boolean
-    // skillStatusArray: Array<ISkillBuffStatus>
-    // skillBuffArray: Array<ISkillBuffStatus>
-  
-    // constructor(name: string, description: string, cooldown: number, damage: IDamage, heal: IHeal, targetType: string, accuracy: number, aoe: boolean, skillStatusArray: Array<ISkillBuffStatus>, skillBuffArray: Array<ISkillBuffStatus>) {
-    //   this.name = name
-    //   this.description = description
-    //   this.cooldown = cooldown
-    //   this.damage = damage
-    //   this.heal = heal
-    //   this.targetType = targetType
-    //   this.accuracy = accuracy
-    //   // this.aoe = aoe
-    //   this.skillStatusArray = skillStatusArray
-    //   this.skillBuffArray = skillBuffArray
-    // }
+// name: string
+// description: string
+// cooldown: number
+// damage: IDamage
+// heal: IHeal
+// targetType: string
+// accuracy: number
+// // aoe: boolean
+// skillStatusArray: Array<ISkillBuffStatus>
+// skillBuffArray: Array<ISkillBuffStatus>
 
-    // applyBuffs(caster: IEntity, target: IEntity, battle:Battle) {
-    //   for (let i = 0; i < this.skillBuffArray.length; i++) {
-    //     this.skillBuffArray[i].apply(caster, target, battle)
-    //   }
-    // }
+// constructor(name: string, description: string, cooldown: number, damage: IDamage, heal: IHeal, targetType: string, accuracy: number, aoe: boolean, skillStatusArray: Array<ISkillBuffStatus>, skillBuffArray: Array<ISkillBuffStatus>) {
+//   this.name = name
+//   this.description = description
+//   this.cooldown = cooldown
+//   this.damage = damage
+//   this.heal = heal
+//   this.targetType = targetType
+//   this.accuracy = accuracy
+//   // this.aoe = aoe
+//   this.skillStatusArray = skillStatusArray
+//   this.skillBuffArray = skillBuffArray
+// }
 
-    // applyStatus(caster: IEntity, target: IEntity, battle:Battle) {
-    //   for (let i = 0; i < this.skillStatusArray.length; i++) {
-    //     this.skillStatusArray[i].apply(caster, target, battle)
-    //   }
-    // }
+// applyBuffs(caster: IEntity, target: IEntity, battle:Battle) {
+//   for (let i = 0; i < this.skillBuffArray.length; i++) {
+//     this.skillBuffArray[i].apply(caster, target, battle)
+//   }
+// }
 
-    // computeHeal(caster: IEntity, target: IEntity, battle:Battle): {[key: number]: {value: number}} {
-    //   let healDict = this.heal.computeHeal(caster, target, battle)
-    //   return healDict
-    // }
+// applyStatus(caster: IEntity, target: IEntity, battle:Battle) {
+//   for (let i = 0; i < this.skillStatusArray.length; i++) {
+//     this.skillStatusArray[i].apply(caster, target, battle)
+//   }
+// }
 
-    // computeDamage(caster: IEntity, target: IEntity, battle:Battle): {[key: number]: {isCrit: boolean, value: number}} {
-    //   let damageDict = this.damage.computeDamage(caster, target, battle)
-    //   this.applyCrit(caster, damageDict)
-    //   return damageDict
-    // }
+// computeHeal(caster: IEntity, target: IEntity, battle:Battle): {[key: number]: {value: number}} {
+//   let healDict = this.heal.computeHeal(caster, target, battle)
+//   return healDict
+// }
 
-    // applyCrit(caster: IEntity, damageDict: {[key: number]: {isCrit: boolean, value: number}}) {
-    //   for (let key in damageDict) {
-    //     let isCrit = Math.random() < caster.getCriticalChance()
-    //     damageDict[key].isCrit = isCrit
-    //     if (isCrit) {
-    //       damageDict[key].value *= caster.getCriticalDamage()
-    //     }
-    //   }
-    // }
+// computeDamage(caster: IEntity, target: IEntity, battle:Battle): {[key: number]: {isCrit: boolean, value: number}} {
+//   let damageDict = this.damage.computeDamage(caster, target, battle)
+//   this.applyCrit(caster, damageDict)
+//   return damageDict
+// }
 
-    // pickTargetCastedByEnemy(caster: IEntity, battle:Battle): IEntity | false {
-    //   if (this.targetType === "enemy") {
-    //     return battle.pickRandomAlly()
-    //   } else if (this.targetType === "self") {
-    //     return caster
-    //   } else {
-    //     return battle.pickRandomEnemy()
-    //   }
-    // }
+// applyCrit(caster: IEntity, damageDict: {[key: number]: {isCrit: boolean, value: number}}) {
+//   for (let key in damageDict) {
+//     let isCrit = Math.random() < caster.getCriticalChance()
+//     damageDict[key].isCrit = isCrit
+//     if (isCrit) {
+//       damageDict[key].value *= caster.getCriticalDamage()
+//     }
+//   }
+// }
+
+// pickTargetCastedByEnemy(caster: IEntity, battle:Battle): IEntity | false {
+//   if (this.targetType === "enemy") {
+//     return battle.pickRandomAlly()
+//   } else if (this.targetType === "self") {
+//     return caster
+//   } else {
+//     return battle.pickRandomEnemy()
+//   }
+// }
+

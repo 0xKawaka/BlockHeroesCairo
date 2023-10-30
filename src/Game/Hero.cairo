@@ -8,15 +8,11 @@ struct Hero {
 }
 
 fn new(name: felt252, level: u16, rank: u16) -> Hero {
-    Hero {
-        name: name,
-        level: level,
-        rank: rank,
-    }
+    Hero { name: name, level: level, rank: rank, }
 }
 
 trait HeroTrait {
-    fn print(self: @Hero) -> ();
+    fn print(self: @Hero);
 }
 
 impl HeroImpl of HeroTrait {

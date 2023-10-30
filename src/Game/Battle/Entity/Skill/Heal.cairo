@@ -1,5 +1,9 @@
 #[derive(Copy, Drop)]
 struct Heal {
+    value: u64,
+    target: bool,
+    aoe: bool,
+    self: bool,
     healType: HealType,
 }
 
@@ -9,18 +13,14 @@ enum HealType {
     Percent,
 }
 
-fn new(healType: HealType) -> Heal {
-    return Heal {
-        healType: healType,
-    };
+fn new(value: u64, target: bool, aoe: bool, self: bool, healType: HealType) -> Heal {
+    return Heal { value: value, target: target, aoe: aoe, self: self, healType: healType, };
 }
 
 trait HealTrait {
-    fn computeHeal() -> u64;
+    fn processHeal();
 }
 
 impl HealImpl of HealTrait {
-    fn computeHeal() -> u64 {
-        return 0;
-    }
+    fn processHeal() {}
 }

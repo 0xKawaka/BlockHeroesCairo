@@ -5,16 +5,13 @@ struct StatModifier {
 }
 
 fn new(value: u64, duration: u8) -> StatModifier {
-    StatModifier {
-        value,
-        duration,
-    }
+    StatModifier { value, duration, }
 }
 
 trait StatModifierTrait {
-    fn reduceDuration(ref self: StatModifier) -> ();
-    fn reset(ref self: StatModifier) -> ();
-    fn set(ref self: StatModifier, value: u64, duration: u8) -> ();
+    fn reduceDuration(ref self: StatModifier);
+    fn reset(ref self: StatModifier);
+    fn set(ref self: StatModifier, value: u64, duration: u8);
 }
 
 impl StatModifierImpl of StatModifierTrait {
