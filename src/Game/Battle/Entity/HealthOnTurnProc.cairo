@@ -12,12 +12,12 @@ enum DamageOrHealEnum {
 #[derive(Copy, Drop)]
 struct HealthOnTurnProc {
     entityIndex: u32,
-    value: u32,
-    duration: u32,
+    value: u64,
+    duration: u8,
     damageOrHeal: DamageOrHealEnum,
 }
 
-fn new(entityIndex: u32, value: u32, duration: u32, damageOrHeal: DamageOrHealEnum) -> HealthOnTurnProc {
+fn new(entityIndex: u32, value: u64, duration: u8, damageOrHeal: DamageOrHealEnum) -> HealthOnTurnProc {
     HealthOnTurnProc {
         entityIndex: entityIndex,
         value: value,

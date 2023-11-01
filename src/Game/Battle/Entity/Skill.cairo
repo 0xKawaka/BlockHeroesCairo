@@ -1,9 +1,24 @@
+use core::box::BoxTrait;
+use core::option::OptionTrait;
 mod Damage;
 mod Heal;
+mod Buff;
 // use Damage::Damage;
 // use Heal::Heal;
+use Buff::{BuffImpl};
+use super::{Entity, EntityTrait};
+use super::super::{Battle, BattleImpl};
+use super::super::super::libraries::Random::rand32;
+use Damage::{DamageImpl};
+use Heal::{HealImpl};
 
 use debug::PrintTrait;
+
+#[derive(Copy, Drop, PartialEq)]
+enum TargetType {
+    Ally,
+    Enemy,
+}
 
 #[derive(Copy, Drop)]
 struct Skill {
@@ -12,8 +27,9 @@ struct Skill {
     cooldown: u16,
     damage: Damage::Damage,
     heal: Heal::Heal,
-    targetType: felt252,
+    targetType: TargetType,
     accuracy: u16,
+    buffs: Span<Buff::Buff>
 }
 
 fn new(
@@ -22,8 +38,9 @@ fn new(
     cooldown: u16,
     damage: Damage::Damage,
     heal: Heal::Heal,
-    targetType: felt252,
+    targetType: TargetType,
     accuracy: u16,
+    buffs: Span<Buff::Buff>
 ) -> Skill {
     Skill {
         name: name,
@@ -33,14 +50,62 @@ fn new(
         heal: heal,
         targetType: targetType,
         accuracy: accuracy,
+        buffs: buffs
     }
 }
 
 trait SkillTrait {
+    fn cast(self: Skill, ref caster: Entity, ref battle: Battle);
+    fn castOnTarget(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity;
     fn print(self: @Skill);
 }
 
 impl SkillImpl of SkillTrait {
+    fn cast(self: Skill, ref caster: Entity, ref battle: Battle) {
+        let mut target = self.pickTarget(caster, ref battle);
+        self.castOnTarget(ref caster, ref target, ref battle);
+    }
+    fn castOnTarget(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+        self.applyDamage(ref caster, ref target, ref battle);
+        self.applyHeal(ref caster, ref target, ref battle);
+        self.applyBuffs(ref caster, ref target, ref battle);
+    }
+    fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+        let  mut i: u32 = 0;
+        loop {
+            if (i > self.buffs.len() - 1) {
+                break;
+            }
+            let buff = *self.buffs[i];
+            buff.apply(ref caster, ref target, ref battle);
+            i += 1;
+        }
+    }
+    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+        self.damage.apply(ref caster, ref target, ref battle);
+        // ADD CRIT LATER
+    }
+    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+        self.heal.apply(ref caster, ref target, ref battle);
+    }
+    fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity {
+        let seed: u32 = 3;
+        if self.targetType == TargetType::Ally {
+            let allies = battle.getAlliesOf(caster.getIndex());
+            let entity = *allies.get(rand32(seed, allies.len())).unwrap().unbox();
+            return entity;
+        } else if self.targetType == TargetType::Enemy {
+            let enemies = battle.getEnemiesOf(caster.getIndex());
+            let entity = *enemies.get(rand32(seed, enemies.len())).unwrap().unbox();
+            return entity;
+        } else {
+            return caster;
+        }
+    }
     fn print(self: @Skill) {
         (*self.name).print();
     // (*self.description).print();
@@ -51,29 +116,6 @@ impl SkillImpl of SkillTrait {
     // (*self.accuracy).print();
     }
 }
-// name: string
-// description: string
-// cooldown: number
-// damage: IDamage
-// heal: IHeal
-// targetType: string
-// accuracy: number
-// // aoe: boolean
-// skillStatusArray: Array<ISkillBuffStatus>
-// skillBuffArray: Array<ISkillBuffStatus>
-
-// constructor(name: string, description: string, cooldown: number, damage: IDamage, heal: IHeal, targetType: string, accuracy: number, aoe: boolean, skillStatusArray: Array<ISkillBuffStatus>, skillBuffArray: Array<ISkillBuffStatus>) {
-//   this.name = name
-//   this.description = description
-//   this.cooldown = cooldown
-//   this.damage = damage
-//   this.heal = heal
-//   this.targetType = targetType
-//   this.accuracy = accuracy
-//   // this.aoe = aoe
-//   this.skillStatusArray = skillStatusArray
-//   this.skillBuffArray = skillBuffArray
-// }
 
 // applyBuffs(caster: IEntity, target: IEntity, battle:Battle) {
 //   for (let i = 0; i < this.skillBuffArray.length; i++) {
@@ -87,17 +129,6 @@ impl SkillImpl of SkillTrait {
 //   }
 // }
 
-// computeHeal(caster: IEntity, target: IEntity, battle:Battle): {[key: number]: {value: number}} {
-//   let healDict = this.heal.computeHeal(caster, target, battle)
-//   return healDict
-// }
-
-// computeDamage(caster: IEntity, target: IEntity, battle:Battle): {[key: number]: {isCrit: boolean, value: number}} {
-//   let damageDict = this.damage.computeDamage(caster, target, battle)
-//   this.applyCrit(caster, damageDict)
-//   return damageDict
-// }
-
 // applyCrit(caster: IEntity, damageDict: {[key: number]: {isCrit: boolean, value: number}}) {
 //   for (let key in damageDict) {
 //     let isCrit = Math.random() < caster.getCriticalChance()
@@ -107,14 +138,3 @@ impl SkillImpl of SkillTrait {
 //     }
 //   }
 // }
-
-// pickTargetCastedByEnemy(caster: IEntity, battle:Battle): IEntity | false {
-//   if (this.targetType === "enemy") {
-//     return battle.pickRandomAlly()
-//   } else if (this.targetType === "self") {
-//     return caster
-//   } else {
-//     return battle.pickRandomEnemy()
-//   }
-// }
-

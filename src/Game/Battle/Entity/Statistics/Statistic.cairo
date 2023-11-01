@@ -28,28 +28,35 @@ impl StatisticImpl of StatisticTrait {
         self.bonus.reduceDuration();
     }
     fn getModifiedValue(self: @Statistic) -> u64 {
-        *self.value + self.getBonusValue() - self.getMalusValue()
+        (*self.value + self.getBonusValue()) - self.getMalusValue()
     }
     fn getBonusValue(self: @Statistic) -> u64 {
         if *self.bonus.duration == 0 {
             return 0;
         }
-        return *self.value * *self.bonus.value;
+        return (*self.value * *self.bonus.value) / 100;
     }
     fn getMalusValue(self: @Statistic) -> u64 {
         if *self.malus.duration == 0 {
             return 0;
         }
-        return *self.value * *self.malus.value;
+        return (*self.value * *self.malus.value) / 100;
     }
     fn resetBonusMalus(ref self: Statistic) {
         self.malus.reset();
         self.bonus.reset();
     }
     fn setBonus(ref self: Statistic, value: u64, duration: u8) {
+        if(duration < self.bonus.duration && value < self.bonus.value) {
+            return;
+        }
         self.bonus.set(value, duration);
     }
     fn setMalus(ref self: Statistic, value: u64, duration: u8) {
+        assert(value < 100, 'Malus value greater than 100');
+        if(duration < self.malus.duration && value < self.malus.value) {
+            return;
+        }
         self.malus.set(value, duration);
     }
 }

@@ -6,7 +6,7 @@ use BaseStatistics::BaseStatisticsImpl;
 
 use super::Battle::Entity;
 use super::Hero::Hero;
-use super::Battle::Entity::Skill;
+use super::Battle::Entity::{Skill, AllyOrEnemy};
 
 use nullable::{match_nullable, FromNullableResult};
 use debug::PrintTrait;
@@ -29,11 +29,11 @@ fn new(
 }
 
 trait EntityFactoryTrait {
-    fn newHero(ref self: EntityFactory, index: u32, hero: Hero) -> Entity::Entity;
+    fn newHero(ref self: EntityFactory, index: u32, hero: Hero, allyOrEnemy: AllyOrEnemy) -> Entity::Entity;
 }
 
 impl EntityFactoryImpl of EntityFactoryTrait {
-    fn newHero(ref self: EntityFactory, index: u32, hero: Hero) -> Entity::Entity {
+    fn newHero(ref self: EntityFactory, index: u32, hero: Hero, allyOrEnemy: AllyOrEnemy) -> Entity::Entity {
         let baseStatsNull = self.baseStatisticsDict[hero.name];
         let baseStats = match match_nullable(baseStatsNull) {
             FromNullableResult::Null(()) => panic_with_felt252('No baseStats found newHero'),
@@ -77,7 +77,8 @@ impl EntityFactoryImpl of EntityFactoryTrait {
             speed,
             criticalRate,
             criticalDamage,
-            skills.span()
+            skills.span(),
+            allyOrEnemy,
         );
     }
 }
