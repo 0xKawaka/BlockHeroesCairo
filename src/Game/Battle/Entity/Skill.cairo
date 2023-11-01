@@ -24,7 +24,7 @@ enum TargetType {
 struct Skill {
     name: felt252,
     description: felt252,
-    cooldown: u16,
+    cooldown: u8,
     damage: Damage::Damage,
     heal: Heal::Heal,
     targetType: TargetType,
@@ -35,7 +35,7 @@ struct Skill {
 fn new(
     name: felt252,
     description: felt252,
-    cooldown: u16,
+    cooldown: u8,
     damage: Damage::Damage,
     heal: Heal::Heal,
     targetType: TargetType,
@@ -55,8 +55,8 @@ fn new(
 }
 
 trait SkillTrait {
-    fn cast(self: Skill, ref caster: Entity, ref battle: Battle);
-    fn castOnTarget(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle);
+    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle);
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
     fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
     fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
@@ -65,14 +65,15 @@ trait SkillTrait {
 }
 
 impl SkillImpl of SkillTrait {
-    fn cast(self: Skill, ref caster: Entity, ref battle: Battle) {
+    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle) {
         let mut target = self.pickTarget(caster, ref battle);
-        self.castOnTarget(ref caster, ref target, ref battle);
+        self.castOnTarget(skillIndex, ref caster, ref target, ref battle);
     }
-    fn castOnTarget(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         self.applyDamage(ref caster, ref target, ref battle);
         self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
+        caster.setOnCooldown(self.cooldown, skillIndex);
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         let  mut i: u32 = 0;

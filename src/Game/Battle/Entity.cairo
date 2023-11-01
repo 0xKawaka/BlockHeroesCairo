@@ -1,3 +1,5 @@
+use core::traits::Into;
+use game::Game::Battle::Entity::Cooldowns::CooldownsTrait;
 use game::Game::Battle::BattleTrait;
 use game::Game::Battle::Entity::StunOnTurnProc::StunOnTurnProcTrait;
 use game::Game::Battle::Entity::Statistics::StatisticsTrait;
@@ -6,22 +8,24 @@ mod TurnBar;
 mod Skill;
 mod HealthOnTurnProc;
 mod StunOnTurnProc;
+mod Cooldowns;
 
 use Statistics::{StatisticsImpl, Statistic::StatModifier::StatModifier};
 use HealthOnTurnProc::{DamageOrHealEnum};
 use Skill::{SkillImpl, Buff::BuffType};
 use StunOnTurnProc::{StunOnTurnProcImpl};
 use super::{Battle, BattleImpl};
+use Cooldowns::{CooldownsImpl};
 use super::super::libraries::NullableVector::{VecTrait, NullableVector};
 use game::Game::Battle::Entity::TurnBar::TurnBarTrait;
 use core::box::BoxTrait;
 
-use super::super::libraries::SignedIntegers::{i64::i64, i64::i64Impl};
-use super::super::libraries::Random::rand32;
+use game::Game::libraries::SignedIntegers::{i64::i64, i64::i64Impl};
+use game::Game::libraries::Random::{rand8};
 
 use debug::PrintTrait;
 
-#[derive(Copy, Drop)]
+    #[derive(Copy, Drop)]
 enum AllyOrEnemy {
     Ally,
     Enemy,
@@ -34,6 +38,7 @@ struct Entity {
     turnBar: TurnBar::TurnBar,
     statistics: Statistics::Statistics,
     skillSpan: Span<Skill::Skill>,
+    cooldowns: Cooldowns::Cooldowns,
     stunOnTurnProc: StunOnTurnProc::StunOnTurnProc,
     allyOrEnemy: AllyOrEnemy,
 }
@@ -46,6 +51,7 @@ skillSpan: Span<Skill::Skill>, allyOrEnemy: AllyOrEnemy) -> Entity {
         statistics: Statistics::new(health, attack, defense, speed, criticalChance, criticalDamage),
         turnBar: TurnBar::new(index, speed),
         skillSpan: skillSpan,
+        cooldowns: Cooldowns::new(),
         stunOnTurnProc: StunOnTurnProc::new(0),
         allyOrEnemy: allyOrEnemy,
     }
@@ -53,9 +59,10 @@ skillSpan: Span<Skill::Skill>, allyOrEnemy: AllyOrEnemy) -> Entity {
 
 trait EntityTrait {
     fn playTurn(ref self: Entity, ref battle: Battle);
-    fn playTurnPlayer(ref self: Entity, spellIndex: u32, targetIndex: u32, ref battle: Battle);
+    fn playTurnPlayer(ref self: Entity, spellIndex: u8, ref target: Entity, ref battle: Battle);
     fn endTurn(ref self: Entity, ref battle: Battle);
-    fn pickSkill(ref self: Entity) -> Skill::Skill;
+    fn die(ref self: Entity, ref battle: Battle);
+    fn pickSkill(ref self: Entity) -> u8;
     fn takeDamage(ref self: Entity, damage: u64);
     fn takeHeal(ref self: Entity, heal: u64);
     fn incrementTurnbar(ref self: Entity);
@@ -65,6 +72,7 @@ trait EntityTrait {
     fn applyPoison(ref self: Entity, ref battle: Battle, value: u64, duration: u8);
     fn applyRegen(ref self: Entity, ref battle: Battle, value: u64, duration: u8);
     fn applyStun(ref self: Entity, duration: u8);
+    fn setOnCooldown(ref self: Entity, skillIndex: u8, duration: u8);
     // fn randCrit(ref self: Entity) -> bool;
     fn isStunned(ref self: Entity) -> bool;
     fn isDead(ref self: Entity) -> bool;
@@ -83,37 +91,86 @@ trait EntityTrait {
 
 impl EntityImpl of EntityTrait {
     fn playTurn(ref self: Entity, ref battle: Battle) {
+        if(self.isDead()) {
+            self.die(ref battle);
+            return;
+        }
         if(self.isStunned()){
+            self.endTurn(ref battle);
             return;
         }
         else {
             match self.allyOrEnemy {
                 AllyOrEnemy::Ally => {
                     battle.waitForPlayerAction();
+                    battle.entities.set(self.getIndex(), self);
                 },
                 AllyOrEnemy::Enemy => {
-                    let skill = self.pickSkill();
-                    skill.cast(ref self, ref battle);
+                    let skillIndex = self.pickSkill();
+                    let skill = *self.skillSpan[skillIndex.into()];
+                    skill.cast(skillIndex, ref self, ref battle);
                     self.endTurn(ref battle);
                 },
             }
         }
     }
-    fn playTurnPlayer(ref self: Entity, spellIndex: u32, targetIndex: u32, ref battle: Battle) {
-        let skill = *self.skillSpan[spellIndex];
-        let mut target =  battle.getEntityByIndex(targetIndex);
-        skill.castOnTarget(ref self, ref target, ref battle);
+    fn playTurnPlayer(ref self: Entity, spellIndex: u8, ref target: Entity, ref battle: Battle) {
+        let skill = *self.skillSpan[spellIndex.into()];
+        skill.castOnTarget(spellIndex, ref self, ref target, ref battle);
         self.endTurn(ref battle);
     }
     fn endTurn(ref self: Entity, ref battle: Battle) {
         self.processEndTurnProcs(ref battle);
         self.turnBar.resetTurn();
+        self.cooldowns.reduceCooldowns();
         battle.entities.set(self.getIndex(), self);
     }
-    fn pickSkill(ref self: Entity) -> Skill::Skill {
-        let mut seed: u32 = 3;
-        let skillIndex = rand32(seed, self.skillSpan.len());
-        return *self.skillSpan[skillIndex];
+    fn die(ref self: Entity, ref battle: Battle) {
+        battle.deadEntities.append(self.getIndex());
+        if(battle.checkBattleOver()) {
+            return;
+        }
+        let mut i: u32 = 0;
+        loop {
+            if(i > battle.aliveEntities.len() - 1) {
+                break;
+            }
+            let entityIndex = battle.aliveEntities.getValue(i);
+            if (entityIndex == self.getIndex()) {
+                battle.aliveEntities.remove(i);
+                break;
+            }
+            i = i + 1;
+        };
+
+        let mut i: u32 = 0;
+        loop {
+            if(i > battle.turnTimeline.len() - 1) {
+                break;
+            }
+            let entityIndex = battle.turnTimeline.getValue(i);
+            if (entityIndex == self.getIndex()) {
+                battle.turnTimeline.remove(i);
+                break;
+            }
+            i = i + 1;
+        };
+
+    }
+    fn pickSkill(ref self: Entity) -> u8 {
+        let mut iSeed: u32 = 0;
+        if(self.cooldowns.isOnCooldown(1) && self.cooldowns.isOnCooldown(2)) {
+            return 0;
+        }
+        let mut skillIndex = rand8(iSeed, self.skillSpan.len());
+        loop {
+            if(!self.cooldowns.isOnCooldown(skillIndex)) {
+                break;
+            }
+            skillIndex = rand8(iSeed, self.skillSpan.len());
+            iSeed += 1;
+        };
+        return skillIndex.into();
     }
     fn takeDamage(ref self: Entity, damage: u64) {
         self.statistics.health -= i64Impl::new(damage, false);
@@ -144,6 +201,9 @@ impl EntityImpl of EntityTrait {
     }
     fn applyStun(ref self: Entity, duration: u8) {
         self.stunOnTurnProc.setStunned(duration);
+    }
+    fn setOnCooldown(ref self: Entity, skillIndex: u8, duration: u8) {
+        self.cooldowns.setCooldown(skillIndex, duration);
     }
     fn isStunned(ref self: Entity) -> bool {
         self.stunOnTurnProc.isStunned()
