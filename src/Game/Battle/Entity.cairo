@@ -25,7 +25,7 @@ use game::Game::libraries::Random::{rand8};
 
 use debug::PrintTrait;
 
-    #[derive(Copy, Drop)]
+#[derive(Copy, Drop)]
 enum AllyOrEnemy {
     Ally,
     Enemy,
@@ -173,6 +173,8 @@ impl EntityImpl of EntityTrait {
         return skillIndex.into();
     }
     fn takeDamage(ref self: Entity, damage: u64) {
+        PrintTrait::print('takeDamage');
+        damage.print();
         self.statistics.health -= i64Impl::new(damage, false);
     }
     fn takeHeal(ref self: Entity, heal: u64) {

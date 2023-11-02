@@ -35,7 +35,7 @@ impl DamageImpl of DamageTrait {
             let enemies = battle.getAlliesOf(target.index);
             let mut i: u32 = 0;
             loop {
-                if (i > enemies.len() - 1) {
+                if (i >= enemies.len()) {
                     break;
                 }
                 let mut enemy = *enemies[i];

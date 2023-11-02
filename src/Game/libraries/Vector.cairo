@@ -28,7 +28,7 @@ impl VectorImpl<T, +Drop<T>, +Copy<T>, +Felt252DictValue<T>> of VecTrait<Vector<
         let mut vec = VecTrait::<Vector, T>::new();
         let mut i: u32 = 0;
         loop {
-            if (i > array.len() - 1) {
+            if (i >= array.len()) {
                 break;
             }
             vec.push(*array.get(i).unwrap().unbox());

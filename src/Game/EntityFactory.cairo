@@ -53,7 +53,7 @@ impl EntityFactoryImpl of EntityFactoryTrait {
         let mut skills: Array<Skill::Skill> = Default::default();
         let skillSetLen = skillSet.len();
         loop {
-            if (i > skillSetLen - 1) {
+            if (i >= skillSetLen) {
                 break;
             }
             let skillNameOption = skillSet.pop_front();

@@ -26,7 +26,7 @@ impl NullableVectorImpl<T, +Drop<T>, +Copy<T>> of VecTrait<NullableVector<T>, T>
         let mut vec = VecTrait::<NullableVector, T>::new();
         let mut i: u32 = 0;
         loop {
-            if (i > array.len() - 1) {
+            if (i >= array.len()) {
                 break;
             }
             vec.push(*array.get(i).unwrap().unbox());

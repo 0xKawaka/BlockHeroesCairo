@@ -45,6 +45,7 @@ trait AccountTrait {
         enemies: @Array<Hero::Hero>,
         ref battleHeroFactory: EntityFactory::EntityFactory
     );
+    fn playerAction(self: Account, spellIndex: u8, targetIndex: u32);
     fn addHero(ref self: Account, hero: Hero::Hero);
     fn print(self: Account);
     fn printHeroes(self: Account);
@@ -63,7 +64,7 @@ impl AccountImpl of AccountTrait {
         let mut heroesIndexesSpan = heroesIndexes.span();
         let heroesIndexesSpanLen = heroesIndexesSpan.len();
         loop {
-            if (i > heroesIndexesSpanLen - 1) {
+            if (i >= heroesIndexesSpanLen) {
                 break;
             }
             let indexOption = heroesIndexesSpan.pop_front();
@@ -76,6 +77,14 @@ impl AccountImpl of AccountTrait {
         battle.battleLoop();
         // battle.print();
         self.battle = Option::Some(battle);
+    }
+    fn playerAction(self: Account, spellIndex: u8, targetIndex: u32) {
+        match self.battle {
+            Option::Some(mut battleVal) => {
+                battleVal.playerAction(spellIndex, targetIndex);
+            },
+            Option::None => {},
+        }
     }
     fn addHero(ref self: Account, hero: Hero::Hero) {
         self.heroes.append(hero);
@@ -90,7 +99,7 @@ impl AccountImpl of AccountTrait {
         let mut heroesSpan = self.heroes.span();
         let heroesSpanLen = heroesSpan.len();
         loop {
-            if (i > heroesSpanLen - 1) {
+            if (i >= heroesSpanLen) {
                 break;
             }
             let heroOption = heroesSpan.pop_front();

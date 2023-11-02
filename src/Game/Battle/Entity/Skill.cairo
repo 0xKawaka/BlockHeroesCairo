@@ -70,6 +70,11 @@ impl SkillImpl of SkillTrait {
         self.castOnTarget(skillIndex, ref caster, ref target, ref battle);
     }
     fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+        PrintTrait::print('caster:');
+        PrintTrait::print(caster.getIndex());
+        PrintTrait::print(self.name);
+        PrintTrait::print('target:');
+        PrintTrait::print(target.getIndex());
         self.applyDamage(ref caster, ref target, ref battle);
         self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
@@ -78,7 +83,7 @@ impl SkillImpl of SkillTrait {
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         let  mut i: u32 = 0;
         loop {
-            if (i > self.buffs.len() - 1) {
+            if (i >= self.buffs.len()) {
                 break;
             }
             let buff = *self.buffs[i];

@@ -1,3 +1,4 @@
+use game::Game::Account::AccountTrait;
 use core::box::BoxTrait;
 use core::option::OptionTrait;
 use core::array::ArrayTrait;
@@ -40,7 +41,9 @@ fn initGame() {
     let baseStatisticsDict = createBaseStatisticsDict();
     let battleInfosMatrix = WorldLevels::createWorldLevels();
     let mut battleHeroFactory = EntityFactory::new(baseStatisticsDict, skillsDict, heroesSkillsets);
-    startBattle(ref account, @indexesHero, 1, 1, @battleInfosMatrix, ref battleHeroFactory);
+    startBattle(ref account, @indexesHero, 1, 0, @battleInfosMatrix, ref battleHeroFactory);
+    account.playerAction(1, 2);
+    // account.playerAction(2, 2);
 }
 
 fn startBattle(
@@ -55,3 +58,5 @@ fn startBattle(
     let levelBattleInfos = worldBattleInfos.get(level).unwrap().unbox();
     account.startBattle(indexesHero, levelBattleInfos.monsters, ref battleHeroFactory);
 }
+
+
