@@ -1,4 +1,4 @@
-use game::Game::Battle::Entity::EntityTrait;
+use super::super::super::Battle::Entity::EntityTrait;
 use debug::PrintTrait;
 
 use super::{EntityImpl, Entity};

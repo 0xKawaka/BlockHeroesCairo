@@ -1,4 +1,4 @@
-use game::Game::libraries::IVector::VecTrait;
+use super::super::super::super::libraries::IVector::VecTrait;
 use super::super::super::{Battle, BattleTrait};
 use super::super::{Entity, EntityImpl, EntityTrait};
 

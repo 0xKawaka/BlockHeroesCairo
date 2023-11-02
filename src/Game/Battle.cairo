@@ -12,7 +12,7 @@ use core::option::OptionTrait;
 use super::libraries::NullableVector::{NullableVector, NullableVectorImpl, VecTrait};
 use super::libraries::Vector::{Vector, VectorImpl};
 use super::libraries::ArrayHelper;
-use game::Game::libraries::SignedIntegers::{i64::i64Impl};
+use super::libraries::SignedIntegers::{i64::i64Impl};
 use debug::PrintTrait;
 
 #[derive(Destruct)]

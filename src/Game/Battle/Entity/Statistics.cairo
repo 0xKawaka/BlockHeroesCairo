@@ -1,4 +1,4 @@
-use game::Game::Battle::Entity::Statistics::Statistic::StatisticTrait;
+use super::super::super::Battle::Entity::Statistics::Statistic::StatisticTrait;
 mod Statistic;
 mod StatModifier;
 

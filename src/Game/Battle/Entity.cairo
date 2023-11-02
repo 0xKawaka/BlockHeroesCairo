@@ -1,8 +1,8 @@
 use core::traits::Into;
-use game::Game::Battle::Entity::Cooldowns::CooldownsTrait;
-use game::Game::Battle::BattleTrait;
-use game::Game::Battle::Entity::StunOnTurnProc::StunOnTurnProcTrait;
-use game::Game::Battle::Entity::Statistics::StatisticsTrait;
+use super::super::Battle::Entity::Cooldowns::CooldownsTrait;
+use super::super::Battle::BattleTrait;
+use super::super::Battle::Entity::StunOnTurnProc::StunOnTurnProcTrait;
+use super::super::Battle::Entity::Statistics::StatisticsTrait;
 mod Statistics;
 mod TurnBar;
 mod Skill;
@@ -17,11 +17,11 @@ use StunOnTurnProc::{StunOnTurnProcImpl};
 use super::{Battle, BattleImpl};
 use Cooldowns::{CooldownsImpl};
 use super::super::libraries::NullableVector::{VecTrait, NullableVector};
-use game::Game::Battle::Entity::TurnBar::TurnBarTrait;
+use super::super::Battle::Entity::TurnBar::TurnBarTrait;
 use core::box::BoxTrait;
 
-use game::Game::libraries::SignedIntegers::{i64::i64, i64::i64Impl};
-use game::Game::libraries::Random::{rand8};
+use super::super::libraries::SignedIntegers::{i64::i64, i64::i64Impl};
+use super::super::libraries::Random::{rand8};
 
 use debug::PrintTrait;
 

@@ -1,4 +1,4 @@
-use game::Game::Battle::Entity::Skill::SkillTrait;
+use super::Battle::Entity::Skill::SkillTrait;
 use core::array::ArrayTrait;
 use core::traits::Destruct;
 mod BaseStatistics;

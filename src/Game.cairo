@@ -1,13 +1,14 @@
-use game::Game::Account::AccountTrait;
-use core::box::BoxTrait;
-use core::option::OptionTrait;
-use core::array::ArrayTrait;
 mod Account;
 mod Hero;
 mod Battle;
 mod EntityFactory;
 mod StaticData;
 mod libraries;
+
+use Account::AccountTrait;
+use core::box::BoxTrait;
+use core::option::OptionTrait;
+use core::array::ArrayTrait;
 use EntityFactory::EntityFactoryImpl;
 use Account::AccountImpl;
 use Hero::HeroImpl;
