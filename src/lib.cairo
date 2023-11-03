@@ -1,6 +1,3 @@
-use debug::PrintTrait;
-mod Game;
-fn main() {
-    Game::initGame();
-}
-
+mod Contracts;
+mod Components;
+mod Libraries;
