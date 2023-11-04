@@ -1,7 +1,7 @@
 use game::Components::Battle::Entity::EntityTrait;
 use debug::PrintTrait;
 
-use super::{EntityImpl, Entity};
+use game::Components::Battle::Entity::{EntityImpl, Entity};
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct StunOnTurnProc {

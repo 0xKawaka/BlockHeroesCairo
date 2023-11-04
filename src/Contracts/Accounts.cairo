@@ -1,5 +1,5 @@
 use starknet::ContractAddress;
-use super::super::Components::Hero::Hero;
+use game::Components::Hero::Hero;
 
 #[starknet::interface]
 trait IAccounts<TContractState> {

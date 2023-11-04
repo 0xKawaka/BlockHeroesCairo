@@ -1,5 +1,5 @@
 use starknet::ContractAddress;
-use super::super::Components::Battle::Entity::Entity;
+use game::Components::Battle::Entity::Entity;
 
 #[starknet::interface]
 trait IBattles<TContractState> {
