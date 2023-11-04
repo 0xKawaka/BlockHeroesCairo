@@ -8,15 +8,13 @@ trait IBattles<TContractState> {
 
 #[starknet::contract]
 mod Battles {
-    use core::box::BoxTrait;
-    use core::option::OptionTrait;
-    use core::array::ArrayTrait;
+
     use core::debug::PrintTrait;
     use starknet::ContractAddress;
-    use super::super::super::Components::Battle::{Battle, BattleImpl};
-    use super::super::super::Libraries::List::{List, ListTrait};
-    use super::super::super::Components::Battle::Entity::{Entity, EntityImpl, EntityTrait, AllyOrEnemy, Cooldowns::CooldownsTrait};
-    use super::super::super::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
+    use game::Components::Battle::{Battle, BattleImpl};
+    use game::Libraries::List::{List, ListTrait};
+    use game::Components::Battle::Entity::{Entity, EntityImpl, EntityTrait, AllyOrEnemy, Cooldowns::CooldownsTrait};
+    use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
 
     #[storage]
     struct Storage {
@@ -38,9 +36,13 @@ mod Battles {
         fn newBattle(ref self: ContractState, owner: ContractAddress, allies: Array<Entity>, enemies: Array<Entity>) {
             let mut battle = self.battles.read(owner);
             battle.new(owner, allies, enemies);
-            self.battles.write(owner, battle);
-            self.battles.read(owner).isBattleOver.print();
+            // self.battles.write(owner, battle);
+            // self.battles.read(owner).isBattleOver.print();
         }
+    }
+
+    #[generate_trait]
+    impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
     }
 
 

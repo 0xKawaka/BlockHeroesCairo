@@ -1,19 +1,14 @@
 use game::Libraries::List::ListTrait;
 mod Entity;
 
-use super::Hero::Hero;
-use super::EntityFactory;
-use super::EntityFactory::EntityFactoryImpl;
-use Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
-use Entity::TurnBar::{TurnBarTrait, TurnBarImpl};
-use core::array::ArrayTrait;
-use Entity::{EntityImpl, EntityTrait, AllyOrEnemy, Cooldowns::CooldownsTrait};
-use core::box::BoxTrait;
-use core::option::OptionTrait;
-use super::super::Libraries::NullableVector::{NullableVector, NullableVectorImpl, VecTrait};
-use super::super::Libraries::ArrayHelper;
-use super::super::Libraries::SignedIntegers::{i64::i64Impl};
-use super::super::Libraries::List::{List, ListImpl};
+use game::Components::Hero::Hero;
+use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
+use game::Components::Battle::Entity::TurnBar::{TurnBarTrait, TurnBarImpl};
+use game::Components::Battle::Entity::{EntityImpl, EntityTrait, AllyOrEnemy, Cooldowns::CooldownsTrait};
+use game::Libraries::NullableVector::{NullableVector, NullableVectorImpl, VecTrait};
+use game::Libraries::ArrayHelper;
+use game::Libraries::SignedIntegers::{i64::i64Impl};
+use game::Libraries::List::{List, ListImpl};
 use debug::PrintTrait;
 use starknet::ContractAddress;
 
@@ -70,9 +65,9 @@ impl BattleImpl of BattleTrait {
             }
             let ally = *alliesSpan[i];
             self.entities.append(ally);
-            self.aliveEntities.append(ally.getIndex());
-            self.turnTimeline.append(ally.getIndex());
-            self.alliesIndexes.append(ally.getIndex());
+            // self.aliveEntities.append(ally.getIndex());
+            // self.turnTimeline.append(ally.getIndex());
+            // self.alliesIndexes.append(ally.getIndex());
             i += 1;
         };
 
@@ -82,25 +77,28 @@ impl BattleImpl of BattleTrait {
                 break;
             }
             let enemy = *enemiesSpan[i];
-            self.entities.append(enemy);
+            // self.entities.append(enemy);
             self.aliveEntities.append(enemy.getIndex());
-            self.turnTimeline.append(enemy.getIndex());
-            self.enemiesIndexes.append(enemy.getIndex());
+            // self.turnTimeline.append(enemy.getIndex());
+            // self.enemiesIndexes.append(enemy.getIndex());
             i += 1;
         };
+        self.entities[0].print();
+        self.battleLoop();
     }
     fn battleLoop(ref self: Battle) {
         let mut i: u32 = 0;
-        loop {
-            if (self.isBattleOver || self.isWaitingForPlayerAction) {
-                break;
-            }
-            self.loopUntilNextTurn();
-            let mut entity = self.getEntityHighestTurn();
-            self.processHealthOnTurnProcs(ref entity);
-            entity.playTurn(ref self);
-            i += 1;
-        };
+        self.loopUntilNextTurn();
+        // loop {
+        //     if (self.isBattleOver || self.isWaitingForPlayerAction) {
+        //         break;
+        //     }
+        //     self.loopUntilNextTurn();
+        //     let mut entity = self.getEntityHighestTurn();
+        //     self.processHealthOnTurnProcs(ref entity);
+        //     entity.playTurn(ref self);
+        //     i += 1;
+        // };
     }
     fn playerAction(ref self: Battle, spellIndex: u8, targetIndex: u32) {
         assert(!self.isBattleOver, 'Battle is over');
@@ -143,16 +141,16 @@ impl BattleImpl of BattleTrait {
         // self.entities.set(entity.getIndex(), entity);
     }
     fn loopUntilNextTurn(ref self: Battle) {
+        // self.entities.get(0).unwrap().print();
         self.updateTurnBarsSpeed();
         self.sortTurnTimeline();
-        loop {
-            if ((*self.getEntityHighestTurn().getTurnBar()).isFull()) {
-                break;
-            }
-            self.incrementTurnBars();
-            self.sortTurnTimeline();
-        };
-    // self.printTurnTimeline();
+        // loop {
+        //     if ((*self.getEntityHighestTurn().getTurnBar()).isFull()) {
+        //         break;
+        //     }
+        //     self.incrementTurnBars();
+        //     self.sortTurnTimeline();
+        // };
     }
     fn updateTurnBarsSpeed(ref self: Battle) {
         let mut i: u32 = 0;

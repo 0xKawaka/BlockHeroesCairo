@@ -1,4 +1,4 @@
-use super::super::Components::Hero::Hero;
+use game::Components::Hero::Hero;
 
 #[starknet::interface]
 trait ILevels<TContractState> {
@@ -7,8 +7,8 @@ trait ILevels<TContractState> {
 
 #[starknet::contract]
 mod Levels {
-    use super::super::super::Components::{Hero};
-    use super::super::super::Libraries::List::{List, ListTrait};
+    use game::Components::{Hero};
+    use game::Libraries::List::{List, ListTrait};
     use debug::PrintTrait;
 
     #[storage]

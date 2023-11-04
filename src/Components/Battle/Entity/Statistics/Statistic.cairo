@@ -1,5 +1,4 @@
-use super::StatModifier;
-use super::StatModifier::StatModifierImpl;
+use game::Components::Battle::Entity::Statistics::{StatModifier, StatModifier::StatModifierImpl};
 
 #[derive(starknet::Store, Drop, Copy, Serde)]
 struct Statistic {

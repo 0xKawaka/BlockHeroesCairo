@@ -5,12 +5,12 @@ mod Heal;
 mod Buff;
 // use Damage::Damage;
 // use Heal::Heal;
-use Buff::{BuffImpl};
-use super::{Entity, EntityTrait};
-use super::super::{Battle, BattleImpl};
-use super::super::super::super::Libraries::Random::rand32;
-use Damage::{DamageImpl};
-use Heal::{HealImpl};
+use game::Components::Battle::Entity::Skill::Buff::{BuffImpl};
+use game::Components::Battle::Entity::Skill::Damage::{DamageImpl};
+use game::Components::Battle::Entity::Skill::Heal::{HealImpl};
+use game::Components::Battle::Entity::{Entity, EntityTrait};
+use game::Components::Battle::{Battle, BattleImpl};
+use game::Libraries::Random::rand32;
 
 use debug::PrintTrait;
 

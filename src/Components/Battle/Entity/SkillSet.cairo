@@ -1,4 +1,4 @@
-use super::Skill::{Skill};
+use game::Components::Battle::Entity::Skill::{Skill};
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct SkillSet {

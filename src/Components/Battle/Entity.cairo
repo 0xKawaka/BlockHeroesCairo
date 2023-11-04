@@ -7,22 +7,23 @@ mod StunOnTurnProc;
 mod Cooldowns;
 mod SkillSet;
 
-use core::traits::Into;
-use super::super::Battle::Entity::{StunOnTurnProc::StunOnTurnProcTrait, Statistics::StatisticsTrait};
-use super::super::Battle::BattleTrait;
-use Statistics::{StatisticsImpl, Statistic::StatModifier::StatModifier};
+
 use HealthOnTurnProc::{DamageOrHealEnum};
 use StunOnTurnProc::{StunOnTurnProcImpl};
 use Skill::{SkillImpl, Buff::BuffType};
-use super::{Battle, BattleImpl};
 use Cooldowns::{CooldownsImpl, CooldownsTrait};
 use SkillSet::{SkillSetImpl, SkillSetTrait};
-use super::super::Battle::Entity::TurnBar::TurnBarTrait;
-use core::box::BoxTrait;
+use game::Components::Battle::Entity::{StunOnTurnProc::StunOnTurnProcTrait, Statistics::StatisticsTrait};
+use game::Components::Battle::BattleTrait;
+use game::Components::Battle::Entity::Statistics::{StatisticsImpl, Statistic::StatModifier::StatModifier};
+use game::Components::Battle::Entity::TurnBar::TurnBarTrait;
+use game::Components::Battle::{Battle, BattleImpl};
 use super::super::super::Libraries::NullableVector::{VecTrait, NullableVector};
 use super::super::super::Libraries::SignedIntegers::{i64::i64, i64::i64Impl};
 use super::super::super::Libraries::Random::{rand8};
 use super::super::super::Libraries::List::{ListTrait};
+use core::box::BoxTrait;
+use core::traits::Into;
 use debug::PrintTrait;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]

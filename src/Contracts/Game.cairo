@@ -20,14 +20,14 @@ mod Game {
     use starknet::get_block_timestamp;
     use debug::PrintTrait;
 
-    use super::super::Accounts::{IAccountsDispatcher, IAccountsDispatcherTrait};
-    use super::super::EntityFactory::{IEntityFactoryDispatcher, IEntityFactoryDispatcherTrait};
-    use super::super::Levels::{ILevelsDispatcher, ILevelsDispatcherTrait};
-    use super::super::Battles::{IBattlesDispatcher, IBattlesDispatcherTrait};
-    use super::super::super::Components::Account::{Account, AccountImpl};
-    use super::super::super::Libraries::NullableVector::{NullableVector, NullableVectorImpl, VecTrait};
-    use super::super::super::Components::Hero::{Hero, HeroImpl, HeroTrait};
-    use super::super::super::Components::Battle::Entity::{Entity, EntityImpl, EntityTrait, AllyOrEnemy};
+    use game::Contracts::Accounts::{IAccountsDispatcher, IAccountsDispatcherTrait};
+    use game::Contracts::EntityFactory::{IEntityFactoryDispatcher, IEntityFactoryDispatcherTrait};
+    use game::Contracts::Levels::{ILevelsDispatcher, ILevelsDispatcherTrait};
+    use game::Contracts::Battles::{IBattlesDispatcher, IBattlesDispatcherTrait};
+    use game::Components::Account::{Account, AccountImpl};
+    use game::Libraries::NullableVector::{NullableVector, NullableVectorImpl, VecTrait};
+    use game::Components::Hero::{Hero, HeroImpl, HeroTrait};
+    use game::Components::Battle::Entity::{Entity, EntityImpl, EntityTrait, AllyOrEnemy};
 
     #[storage]
     struct Storage {

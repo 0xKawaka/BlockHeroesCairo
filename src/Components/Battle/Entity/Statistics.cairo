@@ -1,12 +1,9 @@
-use super::super::super::Battle::Entity::Statistics::Statistic::StatisticTrait;
 mod Statistic;
 mod StatModifier;
 
-use StatModifier::StatModifierImpl;
-use Statistic::StatisticImpl;
-use super::super::super::super::Libraries::SignedIntegers::{i64::i64, i64::i64Impl};
-use super::Skill::Buff::BuffType;
-
+use game::Components::Battle::Entity::Statistics::Statistic::{StatisticTrait, StatisticImpl, StatModifier::StatModifierImpl};
+use game::Libraries::SignedIntegers::{i64::i64, i64::i64Impl};
+use game::Components::Battle::Entity::Skill::Buff::BuffType;
 use debug::PrintTrait;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]

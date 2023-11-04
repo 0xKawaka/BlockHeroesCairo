@@ -1,7 +1,7 @@
-use super::super::super::super::super::Libraries::IVector::VecTrait;
-use super::super::super::{Battle, BattleTrait};
-use super::super::{Entity, EntityImpl, EntityTrait};
-use super::super::super::super::super::Libraries::List::ListTrait;
+use game::Libraries::IVector::VecTrait;
+use game::Components::Battle::{Battle, BattleTrait};
+use game::Components::Battle::Entity::{Entity, EntityImpl, EntityTrait};
+use game::Libraries::List::ListTrait;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct Damage {

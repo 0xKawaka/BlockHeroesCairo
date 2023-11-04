@@ -1,7 +1,7 @@
 mod SkillNameSet;
 
-use super::super::Components::Battle::Entity::{Entity, AllyOrEnemy};
-use super::super::Components::Hero::Hero;
+use game::Components::Battle::Entity::{Entity, AllyOrEnemy};
+use game::Components::Hero::Hero;
 
 #[starknet::interface]
 trait IEntityFactory<TContractState> {
@@ -12,13 +12,13 @@ trait IEntityFactory<TContractState> {
 #[starknet::contract]
 mod EntityFactory {
     use starknet::ContractAddress;
-    use super::super::super::Components::Battle::{Battle, BattleImpl};
-    use super::super::super::Libraries::List::{List, ListTrait};
-    use super::super::super::Components::Hero::{Hero};
-    use super::super::super::Components::Battle::{Entity, Entity::EntityImpl, Entity::EntityTrait, Entity::AllyOrEnemy, Entity::Cooldowns::CooldownsTrait, Entity::SkillSet};
-    use super::super::super::Components::Battle::Entity::{Skill, Skill::SkillImpl, Skill::TargetType, Skill::Damage, Skill::Heal};
-    use super::super::super::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
-    use super::super::super::Components::EntityFactory::{BaseStatistics, BaseStatistics::BaseStatisticsImpl};
+    use game::Components::Battle::{Battle, BattleImpl};
+    use game::Libraries::List::{List, ListTrait};
+    use game::Components::Hero::{Hero};
+    use game::Components::Battle::{Entity, Entity::EntityImpl, Entity::EntityTrait, Entity::AllyOrEnemy, Entity::Cooldowns::CooldownsTrait, Entity::SkillSet};
+    use game::Components::Battle::Entity::{Skill, Skill::SkillImpl, Skill::TargetType, Skill::Damage, Skill::Heal};
+    use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
+    use game::Components::{BaseStatistics, BaseStatistics::BaseStatisticsImpl};
     use super::SkillNameSet;
 
     use debug::PrintTrait;
@@ -89,6 +89,7 @@ mod EntityFactory {
             self.skillNameSets.write('knight', SkillNameSet::new('AttackKnight', 'Fire Swing', 'Fire Strike'));
             self.skillNameSets.write('priest', SkillNameSet::new('AttackPriest', 'Water Heal', 'Water Shield'));
             self.skillNameSets.write('hunter', SkillNameSet::new('AttackHunter', 'Forest Senses', 'Arrows Rain'));
+            self.skillNameSets.write('assassin', SkillNameSet::new('AttackAssassin', 'Sand Strike', 'Sandstorm'));
         }
         fn initSkills(ref self: ContractState) {
             self.skills.write('AttackKnight', Skill::new('AttackKnight', 'AttackKnight', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
@@ -100,6 +101,9 @@ mod EntityFactory {
             self.skills.write('AttackHunter', Skill::new('AttackHunter', 'AttackHunter', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
             self.skills.write('Arrows Rain', Skill::new('Arrows Rain', 'Arrows Rain', 1, Damage::new(0, false, true, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
             self.skills.write('Forest Senses', Skill::new('Forest Senses', 'Forest Senses', 1, Damage::new(0, false, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Ally, 1, array![].span()));
+            self.skills.write('AttackAssassin', Skill::new('AttackAssassin', 'AttackAssassin', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
+            self.skills.write('Sand Strike', Skill::new('Sand Strike', 'Sand Strike', 1, Damage::new(20, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
+            self.skills.write('Sandstorm', Skill::new('Sandstorm', 'Sandstorm', 1, Damage::new(10, false, true, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
         }
     }
 }

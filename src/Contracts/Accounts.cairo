@@ -11,16 +11,14 @@ trait IAccounts<TContractState> {
 
 #[starknet::contract]
 mod Accounts {
-    use core::option::OptionTrait;
-use core::array::SpanTrait;
-use  debug::PrintTrait;
+    use debug::PrintTrait;
     use starknet::ContractAddress;
     use starknet::get_caller_address;
 
     use game::Components::Account::AccountTrait;
-    use super::super::super::Components::{Account, Account::AccountImpl};
-    use super::super::super::Components::{Hero, Hero::HeroImpl};
-    use super::super::super::Libraries::List::{List, ListTrait};
+    use game::Components::{Account, Account::AccountImpl};
+    use game::Components::{Hero, Hero::HeroImpl};
+    use game::Libraries::List::{List, ListTrait};
 
     #[storage]
     struct Storage {
