@@ -25,6 +25,7 @@ trait ListTrait<T> {
     fn append(ref self: List<T>, value: T) -> u32;
     fn get(self: @List<T>, index: u32) -> Option<T>;
     fn set(ref self: List<T>, index: u32, value: T);
+    fn remove(ref self: List<T>, index: u32);
     fn clean(ref self: List<T>);
     fn pop_front(ref self: List<T>) -> Option<T>;
     fn array(self: @List<T>) -> Array<T>;
@@ -72,6 +73,17 @@ impl ListImpl<T, +Copy<T>, +Drop<T>, +Store<T>> of ListTrait<T> {
             self.base, index, self.storage_size
         );
         Store::write_at_offset(self.address_domain, base, offset, value).unwrap_syscall();
+    }
+
+    fn remove(ref self: List<T>, index: u32) {
+        assert(index < self.len, 'List index out of bounds');
+        let popped = self.get(self.len - 1).unwrap();
+        self.len -= 1;
+        let (base, offset) = calculate_base_and_offset_for_index(
+            self.base, index, self.storage_size
+        );
+        Store::write_at_offset(self.address_domain, base, offset, popped).unwrap_syscall();
+        Store::write(self.address_domain, self.base, self.len);
     }
 
     fn clean(ref self: List<T>) {

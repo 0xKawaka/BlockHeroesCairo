@@ -14,7 +14,6 @@ use starknet::ContractAddress;
 struct Account {
     energy: u32,
     shards: u32,
-    heroesCount: u16,
     owner: ContractAddress,
     // heroes: Array<Hero::Hero>,
     // heroes: List<Hero>,
@@ -26,7 +25,6 @@ fn new(owner: ContractAddress) -> Account {
     Account {
         energy: maxEnergy,
         shards: 0,
-        heroesCount: 0,
         owner: owner,
         // heroes: Default::default(),
         // battle: Option::None,
@@ -50,15 +48,11 @@ trait AccountTrait {
     //     ref battleHeroFactory: EntityFactory::EntityFactory
     // );
     // fn playerAction(self: Account, spellIndex: u8, targetIndex: u32);
-    fn incrementHeroes(ref self: Account);
     fn print(self: Account);
     // fn printHeroes(self: Account);
 }
 
 impl AccountImpl of AccountTrait {
-    fn incrementHeroes(ref self: Account) {
-        self.heroesCount = self.heroesCount + 1;
-    }
     // fn startBattle(
     //     ref self: Account,
     //     heroesIndexes: @Array<u32>,

@@ -84,18 +84,17 @@ fn EntityFactoryTest(){
     let factoryDispatcher = IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
     let levelsDispatcher = ILevelsSafeDispatcher { contract_address: levelsAdrs };
 
-    factoryDispatcher.initBaseStatisticsDict();
-    factoryDispatcher.initHeroSkillNameSet();
-    factoryDispatcher.initSkills();
-    levelsDispatcher.init();
     gameDispatcher.setAccountsAdrs(accountsAdrs);
     gameDispatcher.setEntityFactoryAdrs(factoryAdrs);
+    gameDispatcher.setLevelsAdrs(levelsAdrs);
+    gameDispatcher.setBattleAdrs(battlesAdrs);
     
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
     gameDispatcher.createAccount();
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
-    let heroIds: Array<u16> = array![0, 1];
+    gameDispatcher.mintHero();
+    let heroIds: Array<u32> = array![1, 2];
     gameDispatcher.startBattle(heroIds, 0, 1);
 }

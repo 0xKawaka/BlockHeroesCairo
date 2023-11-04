@@ -7,9 +7,6 @@ use super::super::Components::Hero::Hero;
 trait IEntityFactory<TContractState> {
     fn newEntities(ref self: TContractState, startIndex: u32, heroes: Array<Hero>, allyOrEnemy: AllyOrEnemy) -> Array<Entity>;
     fn newEntity(ref self: TContractState, index: u32, hero: Hero, allyOrEnemy: AllyOrEnemy) -> Entity;
-    fn initBaseStatisticsDict(ref self: TContractState);
-    fn initHeroSkillNameSet(ref self: TContractState);
-    fn initSkills(ref self: TContractState);
 }
 
 #[starknet::contract]
@@ -32,6 +29,13 @@ mod EntityFactory {
         baseStatistics: LegacyMap<felt252, BaseStatistics::BaseStatistics>,
         skills: LegacyMap<felt252, Skill::Skill>,
         skillNameSets: LegacyMap<felt252, SkillNameSet::SkillNameSet>,
+    }
+
+    #[constructor]
+    fn constructor(ref self: ContractState) {
+        self.initBaseStatisticsDict();
+        self.initHeroSkillNameSet();
+        self.initSkills();
     }
 
     #[external(v0)]
@@ -72,6 +76,10 @@ mod EntityFactory {
                 allyOrEnemy,
             );
         }
+    }
+
+    #[generate_trait]
+    impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
         fn initBaseStatisticsDict(ref self: ContractState) {
             self.baseStatistics.write('knight', BaseStatistics::new(1000, 100, 100, 100, 20, 100));
             self.baseStatistics.write('priest', BaseStatistics::new(2000, 200, 200, 102, 20, 150));

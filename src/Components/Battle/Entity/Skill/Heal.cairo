@@ -1,6 +1,7 @@
 use super::super::super::super::super::Libraries::IVector::VecTrait;
 use super::super::{Entity, EntityImpl, EntityTrait};
 use super::super::super::{Battle, BattleTrait};
+use super::super::super::super::super::Libraries::List::ListTrait;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct Heal {
