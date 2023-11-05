@@ -36,6 +36,18 @@ impl VectorImpl<T, +Drop<T>, +Copy<T>, +Felt252DictValue<T>> of VecTrait<Vector<
         };
         return vec;
     }
+    fn toArray(ref self: Vector<T>) -> Array<T> {
+        let mut array:Array<T> = Default::default();
+        let mut i: u32 = 0;
+        loop {
+            if (i >= self.len()) {
+                break;
+            }
+            array.append(self.getValue(i));
+            i += 1;  
+        };
+        return array;
+    }
     fn get(ref self: Vector<T>, index: usize) -> Option<T> {
         if index < self.len() {
             let item = self.items.get(index.into());

@@ -34,6 +34,18 @@ impl NullableVectorImpl<T, +Drop<T>, +Copy<T>> of VecTrait<NullableVector<T>, T>
         };
         return vec;
     }
+    fn toArray(ref self: NullableVector<T>) -> Array<T> {
+        let mut array:Array<T> = Default::default();
+        let mut i: u32 = 0;
+        loop {
+            if (i >= self.len()) {
+                break;
+            }
+            array.append(self.getValue(i));
+            i += 1;  
+        };
+        return array;
+    }
     fn get(ref self: NullableVector<T>, index: usize) -> Option<T> {
         if index < self.len() {
             Option::Some(self.items.get(index.into()).deref())

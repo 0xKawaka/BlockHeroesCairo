@@ -4,14 +4,15 @@ use game::Components::Battle::Entity::Entity;
 #[starknet::interface]
 trait IBattles<TContractState> {
     fn newBattle(ref self: TContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>);
-    // fn playerAction(ref self: Contract, spellIndex: u8, targetIndex: u32);
+    fn playTurn(ref self: TContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32);
 }
 
 #[starknet::contract]
 mod Battles {
 
-    use game::Components::Battle::BattleTrait;
-use core::debug::PrintTrait;
+    use game::Libraries::IVector::VecTrait;
+use game::Components::Battle::BattleTrait;
+    use core::debug::PrintTrait;
     use starknet::ContractAddress;
 
     use game::Libraries::List::{List, ListTrait};
@@ -39,6 +40,21 @@ use core::debug::PrintTrait;
     #[external(v0)]
     impl BattlesImpl of super::IBattles<ContractState> {
         fn newBattle(ref self: ContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>) {
+            self.initBattleStorage(owner, allyEntites, enemyEntities);
+            let mut battle = self.getBattle(owner);
+            battle.battleLoop();
+            self.storeBattleState(ref battle, owner);
+        }
+        fn playTurn(ref self: ContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32) {
+            let mut battle = self.getBattle(owner);
+            battle.playTurn(spellIndex, targetIndex);
+            self.storeBattleState(ref battle, owner);
+        }
+    }
+
+    #[generate_trait]
+    impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
+        fn initBattleStorage(ref self: ContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>) {
             self.isBattleOver.write(owner, false);
             self.isWaitingForPlayerAction.write(owner, false);
             self.cleanLists(owner, allyEntites.len() + enemyEntities.len());
@@ -75,16 +91,29 @@ use core::debug::PrintTrait;
                 enemies.append(enemy.getIndex());
                 i += 1;
             };
-            // let mut battle = self.getBattle(owner);
-            // battle.battleLoop();
-            // self.storeBattleState(battle, owner);
         }
-    }
-
-    #[generate_trait]
-    impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
-        fn storeBattleState(ref self: ContractState, battle: Battle::Battle, owner: ContractAddress) {
-
+        fn storeBattleState(ref self: ContractState, ref battle: Battle::Battle, owner: ContractAddress) {
+            let mut entities = self.entities.read(owner);
+            entities.from_array(@battle.entities.toArray());
+            let mut aliveEntities = self.aliveEntities.read(owner);
+            aliveEntities.from_array(@battle.aliveEntities.toArray());
+            let mut deadEntities = self.deadEntities.read(owner);
+            deadEntities.from_array(@battle.deadEntities);
+            let mut turnTimeline = self.turnTimeline.read(owner);
+            turnTimeline.from_array(@battle.turnTimeline.toArray());
+            let mut allies = self.allies.read(owner);
+            allies.from_array(@battle.alliesIndexes);
+            let mut enemies = self.enemies.read(owner);
+            enemies.from_array(@battle.enemiesIndexes);
+            let mut i: u32 = 0;
+            loop {
+                if( i == battle.entities.len() ) {
+                    break;
+                }
+                let mut healthOnTurnProcs = self.healthOnTurnProcs.read((owner, i));
+                healthOnTurnProcs.from_array(@battle.getHealthOnTurnProcsEntity(i));
+                i += 1;
+            };
         }
         fn getBattle(ref self: ContractState, owner: ContractAddress) -> Battle::Battle {
             let entities = self.entities.read(owner).array();

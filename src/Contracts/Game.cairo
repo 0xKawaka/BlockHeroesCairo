@@ -3,6 +3,7 @@ use starknet::ContractAddress;
 #[starknet::interface]
 trait IGame<TContractState> {
     fn startBattle(ref self: TContractState, heroesIds: Array<u32>, world: u16, level: u16);
+    fn playTurn(ref self: TContractState, spellIndex: u8, targetIndex: u32);
     fn mintHero(ref self: TContractState);
     fn createAccount(ref self: TContractState);
     fn setAccountsAdrs(ref self: TContractState, newAccountsAdrs: ContractAddress);
@@ -47,8 +48,11 @@ mod Game {
             let enemyEntities = IEntityFactoryDispatcher { contract_address: self.entityFactoryAdrs.read()}.newEntities(allyEntities.len(), enemyHeroes, AllyOrEnemy::Enemy);
             IBattlesDispatcher { contract_address: self.battlesAdrs.read()}.newBattle(caller, allyEntities, enemyEntities);
         }
+        fn playTurn(ref self: ContractState, spellIndex: u8, targetIndex: u32) {
+            IBattlesDispatcher { contract_address: self.battlesAdrs.read()}.playTurn(get_caller_address(), spellIndex, targetIndex);
+        }
         fn mintHero(ref self: ContractState) {
-            IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.addHero(get_caller_address(), 'priest', 1, 1);
+            IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.addHero(get_caller_address(), 'knight', 1, 1);
         }
         fn createAccount(ref self: ContractState) {
             IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.createAccount(get_caller_address());

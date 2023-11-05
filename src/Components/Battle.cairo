@@ -18,7 +18,7 @@ use debug::PrintTrait;
 #[derive(Destruct)]
 struct Battle {
     entities: NullableVector<Entity::Entity>,
-    aliveEntities: Vector<u32>, // Entities indexes
+    aliveEntities: Vector<u32>,
     deadEntities: Array<u32>,
     turnTimeline: Vector<u32>,
     alliesIndexes: Array<u32>,
@@ -45,7 +45,7 @@ fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities:
 
 trait BattleTrait {
     fn battleLoop(ref self: Battle);
-    fn playerAction(ref self: Battle, spellIndex: u8, targetIndex: u32);
+    fn playTurn(ref self: Battle, spellIndex: u8, targetIndex: u32);
     fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity);
     fn loopUntilNextTurn(ref self: Battle);
     fn updateTurnBarsSpeed(ref self: Battle);
@@ -59,6 +59,7 @@ trait BattleTrait {
     fn getEnemiesOf(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
     fn getAllAllies(ref self: Battle) -> Array<Entity::Entity>;
     fn getAllEnemies(ref self: Battle) -> Array<Entity::Entity>;
+    fn getHealthOnTurnProcsEntity(ref self: Battle, entityIndex: u32) -> Array<HealthOnTurnProc>;
     fn getEntityByIndex(ref self: Battle, entityIndex: u32) -> Entity::Entity;
     fn printAllEntities(ref self: Battle);
     fn printTurnTimeline(ref self: Battle);
@@ -81,7 +82,7 @@ impl BattleImpl of BattleTrait {
             i += 1;
         };
     }
-    fn playerAction(ref self: Battle, spellIndex: u8, targetIndex: u32) {
+    fn playTurn(ref self: Battle, spellIndex: u8, targetIndex: u32) {
         assert(!self.isBattleOver, 'Battle is over');
         assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
         assert(!self.isAlly(targetIndex), 'Target is not an enemy');
@@ -287,6 +288,21 @@ impl BattleImpl of BattleTrait {
             i = i + 1;
         };
         return enemies;
+    }
+    fn getHealthOnTurnProcsEntity(ref self: Battle, entityIndex: u32) -> Array<HealthOnTurnProc> {
+        let mut healthOnTurnProcs: Array<HealthOnTurnProc> = ArrayTrait::new();
+        let mut i: u32 = 0;
+        loop {
+            if (i == self.healthOnTurnProcs.len()) {
+                break;
+            }
+            let mut onTurnProc = self.healthOnTurnProcs.getValue(i);
+            if (onTurnProc.getEntityIndex() == entityIndex) {
+                healthOnTurnProcs.append(onTurnProc);
+            }
+            i = i + 1;
+        };
+        return healthOnTurnProcs;
     }
     fn getEntityByIndex(ref self: Battle, entityIndex: u32) -> Entity::Entity {
         return self.entities.getValue(entityIndex);
