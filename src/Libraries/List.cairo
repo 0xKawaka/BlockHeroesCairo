@@ -11,7 +11,7 @@ use traits::{Default, DivRem, IndexView, Into, TryInto};
 
 const POW2_8: u32 = 256; // 2^8
 
-#[derive(Drop)]
+#[derive(Drop, Copy)]
 struct List<T> {
     address_domain: u32,
     base: StorageBaseAddress,

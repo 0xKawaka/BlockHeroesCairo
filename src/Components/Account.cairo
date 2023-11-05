@@ -4,7 +4,6 @@ use super::Hero::{Hero, HeroTrait, HeroImpl};
 // use super::Hero::HeroTrait;
 // use super::Hero::HeroImpl;
 use super::Battle;
-use super::Battle::BattleImpl;
 // use super::EntityFactory;
 // use super::EntityFactoryImpl;
 use starknet::ContractAddress;

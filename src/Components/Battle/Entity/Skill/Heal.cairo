@@ -1,5 +1,4 @@
 use game::Libraries::IVector::VecTrait;
-use game::Components::Battle::{Battle, BattleTrait};
 use game::Components::Battle::Entity::{Entity, EntityImpl, EntityTrait};
 use game::Libraries::List::ListTrait;
 
@@ -23,40 +22,40 @@ fn new(value: u64, target: bool, aoe: bool, self: bool, healType: HealType) -> H
 }
 
 trait HealTrait {
-    fn apply(self: Heal, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn apply(self: Heal, ref caster: Entity, ref target: Entity);
 }
 
 impl HealImpl of HealTrait {
-    fn apply(self: Heal, ref caster: Entity, ref target: Entity, ref battle: Battle) {
-        if (self.value == 0) {
-            return;
-        }
+    fn apply(self: Heal, ref caster: Entity, ref target: Entity) {
+        // if (self.value == 0) {
+        //     return;
+        // }
 
-        if (self.aoe) {
-            let allies = battle.getAlliesOf(caster.index);
-            let mut i: u32 = 0;
-            loop {
-                if (i >= allies.len()) {
-                    break;
-                }
-                let mut ally = *allies[i];
-                let heal = (self.value * ally.getMaxHealth()) / 100;
-                ally.takeHeal(heal);
-                battle.entities.set(ally.index, ally);
-                i += 1;
-            }
-        } else {
-            if (self.self) {
-                let heal = (self.value * caster.getMaxHealth()) / 100;
-                caster.takeHeal(heal);
-                battle.entities.set(caster.index, caster);
-            }
-            if (self.target) {
-                let heal = (self.value * target.getMaxHealth()) / 100;
-                target.takeHeal(heal);
-                battle.entities.set(target.index, target);
-            }
-        }
+        // if (self.aoe) {
+        //     let allies = battle.getAlliesOf(caster.index);
+        //     let mut i: u32 = 0;
+        //     loop {
+        //         if (i >= allies.len()) {
+        //             break;
+        //         }
+        //         let mut ally = *allies[i];
+        //         let heal = (self.value * ally.getMaxHealth()) / 100;
+        //         ally.takeHeal(heal);
+        //         battle.entities.set(ally.index, ally);
+        //         i += 1;
+        //     }
+        // } else {
+        //     if (self.self) {
+        //         let heal = (self.value * caster.getMaxHealth()) / 100;
+        //         caster.takeHeal(heal);
+        //         battle.entities.set(caster.index, caster);
+        //     }
+        //     if (self.target) {
+        //         let heal = (self.value * target.getMaxHealth()) / 100;
+        //         target.takeHeal(heal);
+        //         battle.entities.set(target.index, target);
+        //     }
+        // }
 
     }
 }

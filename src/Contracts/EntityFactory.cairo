@@ -12,7 +12,6 @@ trait IEntityFactory<TContractState> {
 #[starknet::contract]
 mod EntityFactory {
     use starknet::ContractAddress;
-    use game::Components::Battle::{Battle, BattleImpl};
     use game::Libraries::List::{List, ListTrait};
     use game::Components::Hero::{Hero};
     use game::Components::Battle::{Entity, Entity::EntityImpl, Entity::EntityTrait, Entity::AllyOrEnemy, Entity::Cooldowns::CooldownsTrait, Entity::SkillSet};

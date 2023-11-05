@@ -9,7 +9,6 @@ use game::Components::Battle::Entity::Skill::Buff::{BuffImpl};
 use game::Components::Battle::Entity::Skill::Damage::{DamageImpl};
 use game::Components::Battle::Entity::Skill::Heal::{HealImpl};
 use game::Components::Battle::Entity::{Entity, EntityTrait};
-use game::Components::Battle::{Battle, BattleImpl};
 use game::Libraries::Random::rand32;
 
 use debug::PrintTrait;
@@ -55,32 +54,32 @@ fn new(
 }
 
 trait SkillTrait {
-    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle);
-    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity;
+    fn cast(self: Skill, skillIndex: u8, ref caster: Entity);
+    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity);
+    fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity);
+    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity);
+    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity);
+    fn pickTarget(self: Skill, caster: Entity) -> Entity;
     fn print(self: @Skill);
 }
 
 impl SkillImpl of SkillTrait {
-    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle) {
-        let mut target = self.pickTarget(caster, ref battle);
-        self.castOnTarget(skillIndex, ref caster, ref target, ref battle);
+    fn cast(self: Skill, skillIndex: u8, ref caster: Entity) {
+        // let mut target = self.pickTarget(caster, ref battle);
+        // self.castOnTarget(skillIndex, ref caster, ref target, ref battle);
     }
-    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle) {
-        PrintTrait::print('caster:');
-        PrintTrait::print(caster.getIndex());
-        PrintTrait::print(self.name);
-        PrintTrait::print('target:');
-        PrintTrait::print(target.getIndex());
-        self.applyDamage(ref caster, ref target, ref battle);
-        self.applyHeal(ref caster, ref target, ref battle);
-        self.applyBuffs(ref caster, ref target, ref battle);
-        caster.setOnCooldown(self.cooldown, skillIndex);
+    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity) {
+        // PrintTrait::print('caster:');
+        // PrintTrait::print(caster.getIndex());
+        // PrintTrait::print(self.name);
+        // PrintTrait::print('target:');
+        // PrintTrait::print(target.getIndex());
+        // self.applyDamage(ref caster, ref target, ref battle);
+        // self.applyHeal(ref caster, ref target, ref battle);
+        // self.applyBuffs(ref caster, ref target, ref battle);
+        // caster.setOnCooldown(self.cooldown, skillIndex);
     }
-    fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+    fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity) {
         // let  mut i: u32 = 0;
         // loop {
         //     if (i >= self.buffs.len()) {
@@ -91,26 +90,27 @@ impl SkillImpl of SkillTrait {
         //     i += 1;
         // }
     }
-    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
-        self.damage.apply(ref caster, ref target, ref battle);
+    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity) {
+        // self.damage.apply(ref caster, ref target, ref battle);
         // ADD CRIT LATER
     }
-    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
-        self.heal.apply(ref caster, ref target, ref battle);
+    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity) {
+        // self.heal.apply(ref caster, ref target, ref battle);
     }
-    fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity {
-        let seed: u32 = 3;
-        if self.targetType == TargetType::Ally {
-            let allies = battle.getAlliesOf(caster.getIndex());
-            let entity = *allies.get(rand32(seed, allies.len())).unwrap().unbox();
-            return entity;
-        } else if self.targetType == TargetType::Enemy {
-            let enemies = battle.getEnemiesOf(caster.getIndex());
-            let entity = *enemies.get(rand32(seed, enemies.len())).unwrap().unbox();
-            return entity;
-        } else {
-            return caster;
-        }
+    fn pickTarget(self: Skill, caster: Entity) -> Entity {
+        // let seed: u32 = 3;
+        // if self.targetType == TargetType::Ally {
+        //     let allies = battle.getAlliesOf(caster.getIndex());
+        //     let entity = *allies.get(rand32(seed, allies.len())).unwrap().unbox();
+        //     return entity;
+        // } else if self.targetType == TargetType::Enemy {
+        //     let enemies = battle.getEnemiesOf(caster.getIndex());
+        //     let entity = *enemies.get(rand32(seed, enemies.len())).unwrap().unbox();
+        //     return entity;
+        // } else {
+        //     return caster;
+        // }
+        return caster;
     }
     fn print(self: @Skill) {
         (*self.name).print();
