@@ -93,6 +93,8 @@ use game::Components::Battle::BattleTrait;
             };
         }
         fn storeBattleState(ref self: ContractState, ref battle: Battle::Battle, owner: ContractAddress) {
+            self.isWaitingForPlayerAction.write(owner, battle.isWaitingForPlayerAction);
+            self.isBattleOver.write(owner, battle.isBattleOver);
             let mut entities = self.entities.read(owner);
             entities.from_array(@battle.entities.toArray());
             let mut aliveEntities = self.aliveEntities.read(owner);
@@ -124,7 +126,7 @@ use game::Components::Battle::BattleTrait;
             let enemies = self.enemies.read(owner).array();
             let healthOnTurnProcs = self.getHealthOnTurnProcs(owner);
 
-            let battle = Battle::new(entities, aliveEntities, deadEntities, turnTimeline, allies, enemies, healthOnTurnProcs);
+            let battle = Battle::new(entities, aliveEntities, deadEntities, turnTimeline, allies, enemies, healthOnTurnProcs, self.isBattleOver.read(owner), self.isWaitingForPlayerAction.read(owner));
             return battle;
         }
         fn getHealthOnTurnProcs(ref self: ContractState, owner: ContractAddress) -> Array<HealthOnTurnProc> {

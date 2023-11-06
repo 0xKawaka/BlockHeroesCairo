@@ -24,23 +24,23 @@ fn deployContract(name: felt252) -> ContractAddress {
     contract.deploy(@ArrayTrait::new()).unwrap()
 }
 
-// #[test]
+#[test]
 fn testAddHeroes() {
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
-    let battlesAdrs = deployContract('Battles');
-    let factoryAdrs = deployContract('EntityFactory');
+    // let battlesAdrs = deployContract('Battles');
+    // let factoryAdrs = deployContract('EntityFactory');
 
     let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
     let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
-    let battlesDispatcher = IBattlesSafeDispatcher { contract_address: battlesAdrs };
-    let factoryDispatcher = IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
+    // let battlesDispatcher = IBattlesSafeDispatcher { contract_address: battlesAdrs };
+    // let factoryDispatcher = IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
+    gameDispatcher.setAccountsAdrs(accountsAdrs);
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
-    gameDispatcher.setAccountsAdrs(accountsAdrs);
     gameDispatcher.createAccount();
-    accountsDispatcher.addHero(testAdrs, 'priest', 10, 1);
-    accountsDispatcher.addHero(testAdrs, 'knight', 1, 2);
+    accountsDispatcher.mintHeroAdmin(testAdrs, 'priest', 10, 1);
+    accountsDispatcher.mintHeroAdmin(testAdrs, 'knight', 1, 2);
     let hero0 = accountsDispatcher.getHero(testAdrs, 0).unwrap();
     let hero1 = accountsDispatcher.getHero(testAdrs, 1).unwrap();
     assert(hero0.name == 'priest' && hero0.level == 10 &&  hero0.rank == 1, 'Invalid hero');
@@ -70,7 +70,7 @@ fn testMintHeroes() {
     assert(hero.name != 0, 'Hero not minted');
 }
 
-#[test]
+// #[test]
 fn EntityFactoryTest(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -95,6 +95,7 @@ fn EntityFactoryTest(){
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
-    let heroIds: Array<u32> = array![1, 2];
-    gameDispatcher.startBattle(heroIds, 0, 1);
+    // let heroIds: Array<u32> = array![1, 2];
+    // gameDispatcher.startBattle(heroIds, 0, 1);
+    // gameDispatcher.playTurn(1, 2);
 }

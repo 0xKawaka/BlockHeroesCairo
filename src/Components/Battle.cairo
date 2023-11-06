@@ -28,7 +28,7 @@ struct Battle {
     isWaitingForPlayerAction: bool,
 }
 
-fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities: Array<u32>, turnTimeline: Array<u32>, allies: Array<u32>, enemies: Array<u32>, healthOnTurnProcs: Array<HealthOnTurnProc>) -> Battle {
+fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities: Array<u32>, turnTimeline: Array<u32>, allies: Array<u32>, enemies: Array<u32>, healthOnTurnProcs: Array<HealthOnTurnProc>, isBattleOver: bool, isWaitingForPlayerAction: bool) -> Battle {
     let mut battle = Battle {
         entities: NullableVectorImpl::newFromArray(entities),
         aliveEntities: VectorImpl::newFromArray(aliveEntities),
@@ -37,8 +37,8 @@ fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities:
         alliesIndexes: allies,
         enemiesIndexes: enemies,
         healthOnTurnProcs: NullableVectorImpl::newFromArray(healthOnTurnProcs),
-        isBattleOver: false,
-        isWaitingForPlayerAction: false,
+        isBattleOver: isBattleOver,
+        isWaitingForPlayerAction: isWaitingForPlayerAction,
     };
     return battle;
 }

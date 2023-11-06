@@ -52,7 +52,7 @@ mod Game {
             IBattlesDispatcher { contract_address: self.battlesAdrs.read()}.playTurn(get_caller_address(), spellIndex, targetIndex);
         }
         fn mintHero(ref self: ContractState) {
-            IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.addHero(get_caller_address(), 'knight', 1, 1);
+            IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.mintHero(get_caller_address());
         }
         fn createAccount(ref self: ContractState) {
             IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.createAccount(get_caller_address());
