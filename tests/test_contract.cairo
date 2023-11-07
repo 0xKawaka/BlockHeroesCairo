@@ -18,6 +18,7 @@ use game::Contracts::Levels::ILevelsSafeDispatcher;
 use game::Contracts::Levels::ILevelsSafeDispatcherTrait;
 use game::Contracts::SkillFactory::ISkillFactorySafeDispatcher;
 use game::Contracts::SkillFactory::ISkillFactorySafeDispatcherTrait;
+use game::Components::Hero::{Hero, HeroImpl};
 
 use debug::PrintTrait;
 

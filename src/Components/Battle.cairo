@@ -61,6 +61,8 @@ trait BattleTrait {
     fn getEnemiesOf(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
     fn getAllAllies(ref self: Battle) -> Array<Entity::Entity>;
     fn getAllEnemies(ref self: Battle) -> Array<Entity::Entity>;
+    fn getAllAlliesButIndex(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
+    fn getAllEnemiesButIndex(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
     fn getHealthOnTurnProcsEntity(ref self: Battle, entityIndex: u32) -> Array<HealthOnTurnProc>;
     fn getEntityByIndex(ref self: Battle, entityIndex: u32) -> Entity::Entity;
     fn printAllEntities(ref self: Battle);
@@ -243,7 +245,7 @@ impl BattleImpl of BattleTrait {
     }
     fn getAlliesOf(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity> {
         if (self.isAlly(entityIndex)) {
-            return self.getAllAllies();
+           return self.getAllAllies();
         }
         return self.getAllEnemies();
     }
@@ -286,6 +288,48 @@ impl BattleImpl of BattleTrait {
             let mut entity =self.entities.getValue(enemyIndex);
             if(!entity.isDead()) {
                 enemies.append(entity);
+            }
+            i = i + 1;
+        };
+        return enemies;
+    }
+    fn getAllAlliesButIndex(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity> {
+        let mut allies: Array<Entity::Entity> = ArrayTrait::new();
+        let mut i: u32 = 0;
+        let mut alliesIndexesSpan = self.alliesIndexes.span();
+        let alliesIndexesSpanLen = alliesIndexesSpan.len();
+        loop {
+            if (i == alliesIndexesSpanLen) {
+                break;
+            }
+            let allyIndexOption = alliesIndexesSpan.pop_front();
+            let allyIndex = *allyIndexOption.unwrap();
+            if (allyIndex != entityIndex) {
+                let mut entity = self.entities.getValue(allyIndex);
+                if(!entity.isDead()) {
+                    allies.append(entity);
+                }
+            }
+            i = i + 1;
+        };
+        return allies;
+    }
+    fn getAllEnemiesButIndex(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity> {
+        let mut enemies: Array<Entity::Entity> = ArrayTrait::new();
+        let mut i: u32 = 0;
+        let mut enemiesIndexesSpan = self.enemiesIndexes.span();
+        let enemiesIndexesSpanLen = enemiesIndexesSpan.len();
+        loop {
+            if (i == enemiesIndexesSpanLen) {
+                break;
+            }
+            let enemyIndexOption = enemiesIndexesSpan.pop_front();
+            let enemyIndex = *enemyIndexOption.unwrap();
+            if (enemyIndex != entityIndex) {
+                let mut entity = self.entities.getValue(enemyIndex);
+                if(!entity.isDead()) {
+                    enemies.append(entity);
+                }
             }
             i = i + 1;
         };

@@ -11,6 +11,7 @@ use game::Components::Battle::Entity::Skill::Heal::{HealImpl};
 use game::Components::Battle::Entity::{Entity, EntityTrait};
 use game::Components::Battle::{Battle, BattleImpl};
 use game::Libraries::Random::rand32;
+use starknet::get_block_timestamp;
 
 use debug::PrintTrait;
 
@@ -75,15 +76,15 @@ impl SkillImpl of SkillTrait {
         caster.setOnCooldown(self.cooldown, skillIndex);
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
-        // let  mut i: u32 = 0;
-        // loop {
-        //     if (i >= self.buffs.len()) {
-        //         break;
-        //     }
-        //     let buff = *self.buffs[i];
-        //     buff.apply(ref caster, ref target, ref battle);
-        //     i += 1;
-        // }
+        let  mut i: u32 = 0;
+        loop {
+            if (i >= self.buffs.len()) {
+                break;
+            }
+            let buff = *self.buffs[i];
+            buff.apply(ref caster, ref target, ref battle);
+            i += 1;
+        }
     }
     fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         self.damage.apply(ref caster, ref target, ref battle);
@@ -93,10 +94,11 @@ impl SkillImpl of SkillTrait {
         self.heal.apply(ref caster, ref target, ref battle);
     }
     fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity {
-        let seed: u32 = 3;
+        let mut seed = get_block_timestamp() + 22;
         if self.targetType == TargetType::Ally {
             let allies = battle.getAlliesOf(caster.getIndex());
-            let entity = *allies.get(rand32(seed, allies.len())).unwrap().unbox();
+            let randIndex = rand32(seed, allies.len());
+            let entity = *allies.get(randIndex).unwrap().unbox();
             return entity;
         } else if self.targetType == TargetType::Enemy {
             let enemies = battle.getEnemiesOf(caster.getIndex());

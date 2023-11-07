@@ -12,6 +12,7 @@ trait IGame<TContractState> {
     fn setBattleAdrs(ref self: TContractState, newBattleAdrs: ContractAddress);
     fn getAccountsAdrs(self: @TContractState) -> ContractAddress;
     fn getEntityFactoryAdrs(self: @TContractState) -> ContractAddress;
+    fn getLevelsAdrs(self: @TContractState) -> ContractAddress;
 }
 #[starknet::contract]
 mod Game {
@@ -75,5 +76,9 @@ mod Game {
         fn getEntityFactoryAdrs(self: @ContractState) -> ContractAddress {
             return self.entityFactoryAdrs.read();
         }
+        fn getLevelsAdrs(self: @ContractState) -> ContractAddress {
+            return self.levelsAdrs.read();
+        }
+
     }
 }

@@ -25,6 +25,7 @@ use game::Libraries::List::{List, ListTrait};
 use core::box::BoxTrait;
 use core::traits::Into;
 use debug::PrintTrait;
+use starknet::get_block_timestamp;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 enum AllyOrEnemy {
@@ -159,17 +160,17 @@ impl EntityImpl of EntityTrait {
 
     }
     fn pickSkill(ref self: Entity) -> u8 {
-        let mut iSeed: u32 = 0;
+        let mut seed = get_block_timestamp() + 22;
         if(self.cooldowns.isOnCooldown(1) && self.cooldowns.isOnCooldown(2)) {
             return 0;
         }
-        let mut skillIndex = rand8(iSeed, 3);
+        let mut skillIndex = rand8(seed, 3);
         loop {
             if(!self.cooldowns.isOnCooldown(skillIndex)) {
                 break;
             }
-            skillIndex = rand8(iSeed, 3);
-            iSeed += 1;
+            skillIndex = rand8(seed, 3);
+            seed += 1;
         };
         return skillIndex;
     }

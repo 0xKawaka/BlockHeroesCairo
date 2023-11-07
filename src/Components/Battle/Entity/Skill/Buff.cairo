@@ -40,7 +40,7 @@ fn new(buffType: BuffType, value: u64, duration: u8, target: bool, aoe: bool, se
 
 trait BuffTrait {
     fn apply(self: Buff, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn applyStatOrOther(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool);
+    fn applyByType(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool);
     fn getAoeEntities(self: Buff, ref caster: Entity, ref battle: Battle, isBonus: bool) -> Array<Entity>;
     fn isBonus(self: Buff) -> bool;
     fn isStat(self: Buff) -> bool;
@@ -59,27 +59,27 @@ impl BuffImpl of BuffTrait {
                     break;
                 }
                 let mut entity = *entities[i];
-                self.applyStatOrOther(ref entity, ref battle, isStat, isBonus);
+                self.applyByType(ref entity, ref battle, isStat, isBonus);
                 battle.entities.set(entity.getIndex(), entity);
                 i += 1;
             }
         }
         else {
             if(self.self && self.target && caster.getIndex() == target.getIndex() && battle.getAlliesOf(caster.getIndex()).len() > 1){
-                self.applyStatOrOther(ref caster, ref battle, isStat, isBonus);
+                self.applyByType(ref caster, ref battle, isStat, isBonus);
                 // battle.pickAllyTarget(caster).applyBonusStatModifier(self.type, new StatModifier(self.value, self.duration))
                 return;
             }
             if(self.self){
-                self.applyStatOrOther(ref caster, ref battle, isStat, isBonus);
+                self.applyByType(ref caster, ref battle, isStat, isBonus);
 
             }
             if(self.target) {
-                self.applyStatOrOther(ref target, ref battle, isStat, isBonus);
+                self.applyByType(ref target, ref battle, isStat, isBonus);
             }
         }
     }
-    fn applyStatOrOther(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool) {
+    fn applyByType(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool) {
         if(isStat){
             entity.applyStatModifier(self.buffType, self.value, self.duration);
         }
