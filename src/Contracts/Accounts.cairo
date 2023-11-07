@@ -6,15 +6,15 @@ trait IAccounts<TContractState> {
     fn mintHero(ref self: TContractState, accountAdrs: ContractAddress);
     fn mintHeroAdmin(ref self: TContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16);
     fn createAccount(ref self: TContractState, accountAdrs: ContractAddress);
-    fn getHeroes(ref self: TContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero>;
-    fn getHero(ref self: TContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero;
+    fn getHeroes(self: @TContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero>;
+    fn getHero(self: @TContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero;
+    fn getAllHeroes(self: @TContractState, accountAdrs: ContractAddress) -> Array<Hero>;
 }
 
 #[starknet::contract]
 mod Accounts {
     use game::Components::Hero::HeroTrait;
-use core::starknet::event::EventEmitter;
-use debug::PrintTrait;
+    use core::starknet::event::EventEmitter;
     use starknet::ContractAddress;
     use starknet::get_caller_address;
 
@@ -69,7 +69,7 @@ use debug::PrintTrait;
             self.accounts.write(accountAdrs, acc);
             self.emit(NewAccount { owner: accountAdrs });
         }
-        fn getHeroes(ref self: ContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero::Hero> {
+        fn getHeroes(self: @ContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero::Hero> {
             let mut heroes: Array<Hero::Hero> = Default::default();
             let heroesList = self.heroes.read(accountAdrs);
             let mut i: u32 = 0;
@@ -83,11 +83,14 @@ use debug::PrintTrait;
             };
             return heroes;
         }
-        fn getHero(ref self: ContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero::Hero {
+        fn getHero(self: @ContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero::Hero {
             let heroesList = self.heroes.read(accountAdrs);
             assert(heroesList.len() > heroId, 'Hero not found');
-            heroesList[heroId].print();
             return heroesList[heroId];
+        }
+        fn getAllHeroes(self: @ContractState, accountAdrs: ContractAddress) -> Array<Hero::Hero> {
+            let heroesList = self.heroes.read(accountAdrs);
+            return heroesList.array();
         }
     }
 

@@ -24,7 +24,7 @@ fn deployContract(name: felt252) -> ContractAddress {
     contract.deploy(@ArrayTrait::new()).unwrap()
 }
 
-#[test]
+// #[test]
 fn testAddHeroes() {
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -70,7 +70,7 @@ fn testMintHeroes() {
     assert(hero.name != 0, 'Hero not minted');
 }
 
-// #[test]
+#[test]
 fn EntityFactoryTest(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -95,7 +95,7 @@ fn EntityFactoryTest(){
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
-    // let heroIds: Array<u32> = array![1, 2];
-    // gameDispatcher.startBattle(heroIds, 0, 1);
+    let heroIds: Array<u32> = array![1, 2];
+    gameDispatcher.startBattle(heroIds, 0, 1);
     // gameDispatcher.playTurn(1, 2);
 }

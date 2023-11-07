@@ -9,14 +9,11 @@ trait IBattles<TContractState> {
 
 #[starknet::contract]
 mod Battles {
-
-    use game::Libraries::IVector::VecTrait;
-use game::Components::Battle::BattleTrait;
     use core::debug::PrintTrait;
     use starknet::ContractAddress;
 
     use game::Libraries::List::{List, ListTrait};
-    use game::Libraries::ArrayHelper;
+    use game::Libraries::IVector::VecTrait;
     use game::Components::{Battle, Battle::BattleImpl};
     use game::Components::Battle::Entity::{Entity, EntityImpl};
     use game::Components::Battle::Entity::{TurnBar::TurnBarImpl};
