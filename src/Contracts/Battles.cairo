@@ -27,7 +27,6 @@ use core::debug::PrintTrait;
 
     #[storage]
     struct Storage {
-        // battles: LegacyMap<ContractAddress, Battle>
         entities: LegacyMap<ContractAddress, List<Entity>>,
         aliveEntities: LegacyMap<ContractAddress, List<u32>>,
         deadEntities: LegacyMap<ContractAddress, List<u32>>,

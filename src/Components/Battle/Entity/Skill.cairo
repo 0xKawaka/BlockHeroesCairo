@@ -3,8 +3,6 @@ use core::option::OptionTrait;
 mod Damage;
 mod Heal;
 mod Buff;
-// use Damage::Damage;
-// use Heal::Heal;
 use game::Components::Battle::Entity::Skill::Buff::{BuffImpl};
 use game::Components::Battle::Entity::Skill::Damage::{DamageImpl};
 use game::Components::Battle::Entity::Skill::Heal::{HealImpl};
@@ -118,25 +116,3 @@ impl SkillImpl of SkillTrait {
     // (*self.accuracy).print();
     }
 }
-
-// applyBuffs(caster: IEntity, target: IEntity, battle:Battle) {
-//   for (let i = 0; i < this.skillBuffArray.length; i++) {
-//     this.skillBuffArray[i].apply(caster, target, battle)
-//   }
-// }
-
-// applyStatus(caster: IEntity, target: IEntity, battle:Battle) {
-//   for (let i = 0; i < this.skillStatusArray.length; i++) {
-//     this.skillStatusArray[i].apply(caster, target, battle)
-//   }
-// }
-
-// applyCrit(caster: IEntity, damageDict: {[key: number]: {isCrit: boolean, value: number}}) {
-//   for (let key in damageDict) {
-//     let isCrit = Math.random() < caster.getCriticalChance()
-//     damageDict[key].isCrit = isCrit
-//     if (isCrit) {
-//       damageDict[key].value *= caster.getCriticalDamage()
-//     }
-//   }
-// }

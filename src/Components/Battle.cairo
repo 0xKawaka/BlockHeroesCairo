@@ -67,8 +67,6 @@ trait BattleTrait {
     fn getEntityByIndex(ref self: Battle, entityIndex: u32) -> Entity::Entity;
     fn printAllEntities(ref self: Battle);
     fn printTurnTimeline(ref self: Battle);
-    // fn printAllies(self: @Battle);
-    // fn printEnemies(self: @Battle);
     fn print(ref self: Battle);
 }
 
@@ -174,7 +172,6 @@ impl BattleImpl of BattleTrait {
         loop {
             if idx2 == self.turnTimeline.len() {
                 sortedArray.append(self.turnTimeline.getValue(idx1));
-                // ArrayHelper::print(@sortedArray);
                 if sortedIteration == 0 {
                     break;
                 }
@@ -190,20 +187,16 @@ impl BattleImpl of BattleTrait {
                 let entity2TurnBar = *self.entities.getValue(entityIndex2).getTurnBar().turnbar;
                 if entity2TurnBar > entity1TurnBar {
                     sortedArray.append(self.turnTimeline.getValue(idx2));
-                    // ArrayHelper::print(@sortedArray);
                     idx2 += 1;
                     sortedIteration = 1;
                 } else {
                     sortedArray.append(self.turnTimeline.getValue(idx1));
-                    // ArrayHelper::print(@sortedArray);
                     idx1 = idx2;
                     idx2 += 1;
                 }
             };
         };
-        // ArrayHelper::print(@sortedArray);
         self.turnTimeline = VecTrait::<Vector, u32>::newFromArray(sortedArray);
-    // self.printTurnTimeline();
     }
     fn getEntityHighestTurn(ref self: Battle) -> Entity::Entity {
         let entityIndex = self.turnTimeline.getValue(0);
@@ -369,8 +362,6 @@ impl BattleImpl of BattleTrait {
     }
     fn print(ref self: Battle) {
         self.printAllEntities();
-    //     self.printAllies();
-    //     self.printEnemies();
     }
     fn printAllEntities(ref self: Battle) {
         let mut i: u32 = 0;
@@ -383,32 +374,4 @@ impl BattleImpl of BattleTrait {
             i = i + 1;
         };
     }
-// fn printAllies(self: @Battle) {
-//     let mut i: u32 = 0;
-//     let mut allyEntitiesSpan = self.entities.span();
-//     let  allyEntitiesSpanLen = allyEntitiesSpan.len();
-//     loop {
-//         if(i > allyEntitiesSpanLen - 1) {
-//             break;
-//         }
-//         let battleHeroOption = allyEntitiesSpan.pop_front();
-//         let battleHero = *battleHeroOption.unwrap();
-//         battleHero.print();
-//         i = i + 1;
-//     };
-// }
-// fn printEnemies(self: @Battle) {
-//     let mut i: u32 = 0;
-//     let mut enemyEntitiesSpan = self.enemyEntities.span();
-//     let  enemyEntitiesSpanLen = enemyEntitiesSpan.len();
-//     loop {
-//         if(i > enemyEntitiesSpanLen - 1) {
-//             break;
-//         }
-//         let battleHeroOption = enemyEntitiesSpan.pop_front();
-//         let battleHero = *battleHeroOption.unwrap();
-//         battleHero.print();
-//         i = i + 1;
-//     };
-// }
 }

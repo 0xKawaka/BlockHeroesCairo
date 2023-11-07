@@ -67,7 +67,6 @@ impl BuffImpl of BuffTrait {
         else {
             if(self.self && self.target && caster.getIndex() == target.getIndex() && battle.getAlliesOf(caster.getIndex()).len() > 1){
                 self.applyByType(ref caster, ref battle, isStat, isBonus);
-                // battle.pickAllyTarget(caster).applyBonusStatModifier(self.type, new StatModifier(self.value, self.duration))
                 return;
             }
             if(self.self){

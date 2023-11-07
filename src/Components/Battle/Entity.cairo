@@ -85,7 +85,6 @@ trait EntityTrait {
     fn getHealth(self: @Entity) -> i64;
     fn getMaxHealth(self: @Entity) -> u64;
     fn print(self: @Entity);
-    fn printSkill(self: @Entity);
 }
 
 impl EntityImpl of EntityTrait {
@@ -251,16 +250,5 @@ impl EntityImpl of EntityTrait {
         (*self.index).print();
         self.statistics.print();
         self.printSkill();
-    }
-    fn printSkill(self: @Entity) {
-        // let mut i: u32 = 0;
-        // loop {
-        //     if(i > (*self.skillSpan).len() - 1) {
-        //         break;
-        //     }
-        //     let skill = (*self.skillSpan)[i];
-        //     skill.print();
-        //     i = i + 1;
-        // };
     }
 }
