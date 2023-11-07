@@ -1,2 +1,74 @@
--- Tuesday, November  7, 2023 10:31:14 --
+-- Tuesday, November  7, 2023 12:19:30 --
+
+> declare: game_Game
+|     tx_hash      |  0x02d728347eee22c66cf4690d600ad3388cb0b04cf6919e2f2a9031aa076209dd  |
+|    class_hash    |  0x05ef7a192187cb9be3b738c2c929c72082a6695c5d356cf8ff965a299a3da326  |
+
+> deploy: 0x05ef7a192187cb9be3b738c2c929c72082a6695c5d356cf8ff965a299a3da326
+|     tx_hash      |  0x06414e7ab67c28589596b1a18179a7957e415038935889c3e388d0f772789e8a  |
+| deployed address |  0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819  |
+
+> declare: game_Levels
+|     tx_hash      |  0x00e0a3dff7df2e4f2782c3a62ed6bfd2c06513c849eeab7fb371e131137d457a  |
+|    class_hash    |  0x07ef83ead99ef41158680357f581ae5700bed4096ec62dac4977a5df2646117f  |
+
+> deploy: 0x07ef83ead99ef41158680357f581ae5700bed4096ec62dac4977a5df2646117f
+|     tx_hash      |  0x010cec92cc6293807d690dd81f208562335657b48e0ce6104ecf2f4265455996  |
+| deployed address |  0x013821a5471b3b8c31069feb2fa1526f3645d918f1b7cdd74bf696699093d718  |
+
+> declare: game_EntityFactory
+|     tx_hash      |  0x044501a5b2561cc51898afa5fe39a77ae9f7527c1e29ce36cc703cfc236101c6  |
+|    class_hash    |  0x0095be6ce6d9cfaa6eb520bfeab87e0d6706c0944d74bf14a9c6834852a3accf  |
+
+> deploy: 0x0095be6ce6d9cfaa6eb520bfeab87e0d6706c0944d74bf14a9c6834852a3accf
+|     tx_hash      |  0x050b0a1095e3c31630e6cfd79d72a492b1e24aaf148e0e2e19abd2bd4386a9aa  |
+| deployed address |  0x06db0da96e160b86fb54ae26cbd1664c3663cc7516b4a8df85288cacc9b79381  |
+
+> declare: game_Accounts
+|     tx_hash      |  0x04007ff033b0e63fb39c0c15b5b096b407496e410b0aed5fde16f4fc47162e2a  |
+|    class_hash    |  0x05079051f81fa0d5eb7fc1d9931bf533a10eb94c0067a42fa6b046645e410e5e  |
+
+> deploy: 0x05079051f81fa0d5eb7fc1d9931bf533a10eb94c0067a42fa6b046645e410e5e
+|     tx_hash      |  0x02ea84beb3343a574b72c541fadef77a759d6e5991396fe4f5322cacaee67067  |
+| deployed address |  0x00160e3b51d8a6eae2fca8de502db50412d68f9f1faab3a9e9d63db3278b713c  |
+
+> declare: game_Battles
+|     tx_hash      |  0x02ac410887ddf6af8c3fc2a012c4a7d8afb592b609d3705e4d14114b43f17b67  |
+|    class_hash    |  0x048fa4a8010275c05484c5122338cdac240f29e5631ce5983216be8e37a29450  |
+
+> deploy: 0x048fa4a8010275c05484c5122338cdac240f29e5631ce5983216be8e37a29450
+|     tx_hash      |  0x02e0772ec3212dde4e27f88198a580ce021218b25bf90899666fe1aab03b7390  |
+| deployed address |  0x029a9f9350304272ac28939db4ccfc6c3109c146a314fbf8fa7261217b0e8d0f  |
+
+> invoke: (1)
+call #0 -> 0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819 setAccountsAdrs
+|     tx_hash      |  0x024031c9f6ae7a9b4427afca9e3498283ae4e0ff09273eff08ef044d01a7d340  |
+
+> invoke: (1)
+call #0 -> 0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819 setEntityFactoryAdrs
+|     tx_hash      |  0x01f805487cab6caf9ec3bdd5027eb05af267b8ce7cd0732aa02e912e505d2881  |
+
+> invoke: (1)
+call #0 -> 0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819 setLevelsAdrs
+|     tx_hash      |  0x06c6394524ad5959f543c86ee0b54232bac034c1504aac3c64f448d9725222bc  |
+
+> invoke: (1)
+call #0 -> 0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819 setBattleAdrs
+|     tx_hash      |  0x07fca51a923803da61af4ea2b7d41ca9b09fbd2b7ffe4ff1528a6cb76438b1d9  |
+
+> invoke: (1)
+call #0 -> 0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819 createAccount
+|     tx_hash      |  0x009213ad956b93d1278ebe1be2b6e0f21786b601f24141dbe237015e9e5fb37c  |
+
+> invoke: (1)
+call #0 -> 0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819 mintHero
+|     tx_hash      |  0x06f0702bac26ac2e8ffee478e180b2847b32541fa8acc24889b93838748d7d01  |
+
+> invoke: (1)
+call #0 -> 0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819 mintHero
+|     tx_hash      |  0x0534fdda7d3f99b875c17d4bb8aba793c9d57445ebf8cfac99b97ce160103417  |
+
+> invoke: (1)
+call #0 -> 0x00c2e793f407c484e96596a56203690835efe5d2a74f51cf7f5040e386b54819 mintHero
+|     tx_hash      |  0x0799a40907c37b914695c322ec0d7df135d42ed7931f6110834cf1b21974dc8d  |
 
