@@ -48,6 +48,7 @@ trait BuffTrait {
 
 impl BuffImpl of BuffTrait {
     fn apply(self: Buff, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+        PrintTrait::print('Applying buff');
         let isBonus = self.isBonus();
         let isStat = self.isStat();
         if(self.aoe){

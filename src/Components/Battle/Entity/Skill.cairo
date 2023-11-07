@@ -20,37 +20,31 @@ enum TargetType {
     Enemy,
 }
 
-#[derive(starknet::Store, Copy, Drop, Serde)]
+#[derive(Copy, Drop, Serde)]
 struct Skill {
     name: felt252,
-    description: felt252,
     cooldown: u8,
     damage: Damage::Damage,
     heal: Heal::Heal,
     targetType: TargetType,
-    accuracy: u16,
-    // buffs: Span<Buff::Buff>
+    buffs: Span<Buff::Buff>
 }
 
 fn new(
     name: felt252,
-    description: felt252,
     cooldown: u8,
     damage: Damage::Damage,
     heal: Heal::Heal,
     targetType: TargetType,
-    accuracy: u16,
     buffs: Span<Buff::Buff>
 ) -> Skill {
     Skill {
         name: name,
-        description: description,
         cooldown: cooldown,
         damage: damage,
         heal: heal,
         targetType: targetType,
-        accuracy: accuracy,
-        // buffs: buffs
+        buffs: buffs
     }
 }
 

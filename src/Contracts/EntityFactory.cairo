@@ -1,5 +1,3 @@
-mod SkillNameSet;
-
 use game::Components::Battle::Entity::{Entity, AllyOrEnemy};
 use game::Components::Hero::Hero;
 
@@ -18,7 +16,6 @@ mod EntityFactory {
     use game::Components::Battle::Entity::{Skill, Skill::SkillImpl, Skill::TargetType, Skill::Damage, Skill::Heal};
     use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
     use game::Components::{BaseStatistics, BaseStatistics::BaseStatisticsImpl};
-    use super::SkillNameSet;
 
     use debug::PrintTrait;
 
@@ -26,15 +23,11 @@ mod EntityFactory {
     #[storage]
     struct Storage {
         baseStatistics: LegacyMap<felt252, BaseStatistics::BaseStatistics>,
-        skills: LegacyMap<felt252, Skill::Skill>,
-        skillNameSets: LegacyMap<felt252, SkillNameSet::SkillNameSet>,
     }
 
     #[constructor]
     fn constructor(ref self: ContractState) {
         self.initBaseStatisticsDict();
-        self.initHeroSkillNameSet();
-        self.initSkills();
     }
 
     #[external(v0)]
@@ -57,11 +50,6 @@ mod EntityFactory {
             let (health, attack, defense, speed, criticalRate, criticalDamage) = baseStats
                 .getAllStatistics(hero.level, hero.rank);
 
-            let skillNameSet = self.skillNameSets.read(hero.name);
-            let skill0 = self.skills.read(skillNameSet.skill0);
-            let skill1 = self.skills.read(skillNameSet.skill1);
-            let skill2 = self.skills.read(skillNameSet.skill2);
-
             return Entity::new(
                 index,
                 hero.name,
@@ -71,7 +59,6 @@ mod EntityFactory {
                 speed,
                 criticalRate,
                 criticalDamage,
-                SkillSet::new(skill0, skill1, skill2),
                 allyOrEnemy,
             );
         }
@@ -83,26 +70,6 @@ mod EntityFactory {
             self.baseStatistics.write('knight', BaseStatistics::new(1000, 100, 100, 100, 20, 100));
             self.baseStatistics.write('priest', BaseStatistics::new(2000, 200, 200, 102, 20, 150));
             self.baseStatistics.write('hunter', BaseStatistics::new(3000, 300, 300, 103, 20, 300));
-        }
-        fn initHeroSkillNameSet(ref self: ContractState) {
-            self.skillNameSets.write('knight', SkillNameSet::new('AttackKnight', 'Fire Swing', 'Fire Strike'));
-            self.skillNameSets.write('priest', SkillNameSet::new('AttackPriest', 'Water Heal', 'Water Shield'));
-            self.skillNameSets.write('hunter', SkillNameSet::new('AttackHunter', 'Forest Senses', 'Arrows Rain'));
-            self.skillNameSets.write('assassin', SkillNameSet::new('AttackAssassin', 'Sand Strike', 'Sandstorm'));
-        }
-        fn initSkills(ref self: ContractState) {
-            self.skills.write('AttackKnight', Skill::new('AttackKnight', 'AttackKnight', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
-            self.skills.write('Fire Swing', Skill::new('Fire Swing', 'Fire Swing', 1, Damage::new(20, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
-            self.skills.write('Fire Strike', Skill::new('Fire Strike', 'Fire Strike', 1, Damage::new(20, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
-            self.skills.write('AttackPriest', Skill::new('AttackPriest', 'AttackPriest', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
-            self.skills.write('Water Heal', Skill::new('Water Heal', 'Water Heal', 3, Damage::new(0, false, false, false, Damage::DamageType::Flat), Skill::Heal::new(10, false, true, false, Heal::HealType::Percent), TargetType::Ally, 1, array![].span()));
-            self.skills.write('Water Shield', Skill::new('Water Shield', 'Water Shield', 2, Damage::new(0, false, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Ally, 1, array![].span()));
-            self.skills.write('AttackHunter', Skill::new('AttackHunter', 'AttackHunter', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
-            self.skills.write('Arrows Rain', Skill::new('Arrows Rain', 'Arrows Rain', 1, Damage::new(0, false, true, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
-            self.skills.write('Forest Senses', Skill::new('Forest Senses', 'Forest Senses', 1, Damage::new(0, false, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Ally, 1, array![].span()));
-            self.skills.write('AttackAssassin', Skill::new('AttackAssassin', 'AttackAssassin', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
-            self.skills.write('Sand Strike', Skill::new('Sand Strike', 'Sand Strike', 1, Damage::new(20, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
-            self.skills.write('Sandstorm', Skill::new('Sandstorm', 'Sandstorm', 1, Damage::new(10, false, true, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1, array![].span()));
         }
     }
 }

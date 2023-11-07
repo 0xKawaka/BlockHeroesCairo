@@ -16,6 +16,8 @@ use game::Contracts::EntityFactory::IEntityFactorySafeDispatcher;
 use game::Contracts::EntityFactory::IEntityFactorySafeDispatcherTrait;
 use game::Contracts::Levels::ILevelsSafeDispatcher;
 use game::Contracts::Levels::ILevelsSafeDispatcherTrait;
+use game::Contracts::SkillFactory::ISkillFactorySafeDispatcher;
+use game::Contracts::SkillFactory::ISkillFactorySafeDispatcherTrait;
 
 use debug::PrintTrait;
 
@@ -75,19 +77,23 @@ fn EntityFactoryTest(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
     let battlesAdrs = deployContract('Battles');
-    let factoryAdrs = deployContract('EntityFactory');
+    let entityFactoryAdrs = deployContract('EntityFactory');
+    let skillFactoryAdrs = deployContract('SkillFactory');
     let levelsAdrs = deployContract('Levels');
+
 
     let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
     let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
     let battlesDispatcher = IBattlesSafeDispatcher { contract_address: battlesAdrs };
-    let factoryDispatcher = IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
+    let factoryDispatcher = IEntityFactorySafeDispatcher { contract_address: entityFactoryAdrs };
+    let skillFactoryDispatcher = ISkillFactorySafeDispatcher { contract_address: levelsAdrs };
     let levelsDispatcher = ILevelsSafeDispatcher { contract_address: levelsAdrs };
 
     gameDispatcher.setAccountsAdrs(accountsAdrs);
-    gameDispatcher.setEntityFactoryAdrs(factoryAdrs);
+    gameDispatcher.setEntityFactoryAdrs(entityFactoryAdrs);
     gameDispatcher.setLevelsAdrs(levelsAdrs);
     gameDispatcher.setBattleAdrs(battlesAdrs);
+    battlesDispatcher.setSkillFactoryAdrs(skillFactoryAdrs);
     
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);

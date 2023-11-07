@@ -1,3 +1,4 @@
+use core::option::OptionTrait;
 mod Statistics;
 mod TurnBar;
 mod Skill;
@@ -37,20 +38,17 @@ struct Entity {
     name: felt252,
     turnBar: TurnBar::TurnBar,
     statistics: Statistics::Statistics,
-    skillSet: SkillSet::SkillSet,
     cooldowns: Cooldowns::Cooldowns,
     stunOnTurnProc: StunOnTurnProc::StunOnTurnProc,
     allyOrEnemy: AllyOrEnemy,
 }
 
-fn new(index: u32, name: felt252, health: u64, attack: u64, defense: u64, speed: u64, criticalChance: u64, criticalDamage:u64,
-skillSet: SkillSet::SkillSet, allyOrEnemy: AllyOrEnemy) -> Entity {
+fn new(index: u32, name: felt252, health: u64, attack: u64, defense: u64, speed: u64, criticalChance: u64, criticalDamage:u64, allyOrEnemy: AllyOrEnemy) -> Entity {
     Entity {
         index: index,
         name: name,
         statistics: Statistics::new(health, attack, defense, speed, criticalChance, criticalDamage),
         turnBar: TurnBar::new(index, speed),
-        skillSet: skillSet,
         cooldowns: Cooldowns::new(),
         stunOnTurnProc: StunOnTurnProc::new(0),
         allyOrEnemy: allyOrEnemy,
@@ -107,8 +105,8 @@ impl EntityImpl of EntityTrait {
                 },
                 AllyOrEnemy::Enemy => {
                     let skillIndex = self.pickSkill();
-                    // let skill = *self.skillSpan[skillIndex.into()];
-                    let skill = self.skillSet.get(skillIndex);
+                    let skillSet = battle.skillSets.get(self.index).unwrap().unbox();
+                    let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
                     skill.cast(skillIndex, ref self, ref battle);
                     self.endTurn(ref battle);
                 },
@@ -116,7 +114,9 @@ impl EntityImpl of EntityTrait {
         }
     }
     fn playTurnPlayer(ref self: Entity, skillIndex: u8, ref target: Entity, ref battle: Battle) {
-        let skill = self.skillSet.get(skillIndex);
+        let skillIndex = self.pickSkill();
+        let skillSet = battle.skillSets.get(self.index).unwrap().unbox();
+        let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
         skill.castOnTarget(skillIndex, ref self, ref target, ref battle);
         self.endTurn(ref battle);
     }
@@ -159,20 +159,19 @@ impl EntityImpl of EntityTrait {
 
     }
     fn pickSkill(ref self: Entity) -> u8 {
-        // let mut iSeed: u32 = 0;
-        // if(self.cooldowns.isOnCooldown(1) && self.cooldowns.isOnCooldown(2)) {
-        //     return 0;
-        // }
-        // let mut skillIndex = rand8(iSeed, self.skillSpan.len());
-        // loop {
-        //     if(!self.cooldowns.isOnCooldown(skillIndex)) {
-        //         break;
-        //     }
-        //     skillIndex = rand8(iSeed, self.skillSpan.len());
-        //     iSeed += 1;
-        // };
-        // return skillIndex.into();
-        return 0;
+        let mut iSeed: u32 = 0;
+        if(self.cooldowns.isOnCooldown(1) && self.cooldowns.isOnCooldown(2)) {
+            return 0;
+        }
+        let mut skillIndex = rand8(iSeed, 3);
+        loop {
+            if(!self.cooldowns.isOnCooldown(skillIndex)) {
+                break;
+            }
+            skillIndex = rand8(iSeed, 3);
+            iSeed += 1;
+        };
+        return skillIndex;
     }
     fn takeDamage(ref self: Entity, damage: u64) {
         PrintTrait::print('takeDamage');

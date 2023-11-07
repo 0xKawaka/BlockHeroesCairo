@@ -5,19 +5,25 @@ use game::Components::Battle::Entity::Entity;
 trait IBattles<TContractState> {
     fn newBattle(ref self: TContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>);
     fn playTurn(ref self: TContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32);
+    fn setSkillFactoryAdrs(ref self: TContractState, skillFactoryAdrs: ContractAddress);
 }
 
 #[starknet::contract]
 mod Battles {
-    use core::debug::PrintTrait;
+    use game::Components::Battle::Entity::Skill::SkillTrait;
+use core::box::BoxTrait;
+use core::option::OptionTrait;
+use core::array::ArrayTrait;
+use core::debug::PrintTrait;
     use starknet::ContractAddress;
 
     use game::Libraries::List::{List, ListTrait};
     use game::Libraries::IVector::VecTrait;
     use game::Components::{Battle, Battle::BattleImpl};
-    use game::Components::Battle::Entity::{Entity, EntityImpl};
+    use game::Components::Battle::Entity::{Entity, EntityImpl, Skill::SkillImpl};
     use game::Components::Battle::Entity::{TurnBar::TurnBarImpl};
     use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
+    use game::Contracts::SkillFactory::{ISkillFactoryDispatcher, ISkillFactoryDispatcherTrait};
 
     #[storage]
     struct Storage {
@@ -31,6 +37,8 @@ mod Battles {
         healthOnTurnProcs: LegacyMap<(ContractAddress, u32), List<HealthOnTurnProc>>,
         isBattleOver: LegacyMap<ContractAddress, bool>,
         isWaitingForPlayerAction: LegacyMap<ContractAddress, bool>,
+
+        skillFactoryAdrs: ContractAddress,
     }
 
 
@@ -46,6 +54,9 @@ mod Battles {
             let mut battle = self.getBattle(owner);
             battle.playTurn(spellIndex, targetIndex);
             self.storeBattleState(ref battle, owner);
+        }
+        fn setSkillFactoryAdrs(ref self: ContractState, skillFactoryAdrs: ContractAddress) {
+            self.skillFactoryAdrs.write(skillFactoryAdrs);
         }
     }
 
@@ -122,8 +133,20 @@ mod Battles {
             let allies = self.allies.read(owner).array();
             let enemies = self.enemies.read(owner).array();
             let healthOnTurnProcs = self.getHealthOnTurnProcs(owner);
+            let mut entitiesNames: Array<felt252> = Default::default();
+            let entitiesSpan = entities.span();
+            let mut i: u32 = 0;
+            loop {
+                if( i == entitiesSpan.len() ) {
+                    break;
+                }
+                let entity = *entitiesSpan[i];
+                entitiesNames.append(entity.name);
+                i += 1;
+            };
+            let skillSets = ISkillFactoryDispatcher { contract_address: self.skillFactoryAdrs.read() }.getSkillSets(entitiesNames);
 
-            let battle = Battle::new(entities, aliveEntities, deadEntities, turnTimeline, allies, enemies, healthOnTurnProcs, self.isBattleOver.read(owner), self.isWaitingForPlayerAction.read(owner));
+            let battle = Battle::new(entities, aliveEntities, deadEntities, turnTimeline, allies, enemies, healthOnTurnProcs, skillSets, self.isBattleOver.read(owner), self.isWaitingForPlayerAction.read(owner));
             return battle;
         }
         fn getHealthOnTurnProcs(ref self: ContractState, owner: ContractAddress) -> Array<HealthOnTurnProc> {

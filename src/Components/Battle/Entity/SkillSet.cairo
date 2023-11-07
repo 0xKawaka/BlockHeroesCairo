@@ -1,6 +1,6 @@
 use game::Components::Battle::Entity::Skill::{Skill};
 
-#[derive(starknet::Store, Copy, Drop, Serde)]
+#[derive(Copy, Drop, Serde)]
 struct SkillSet {
     skill0: Skill,
     skill1: Skill,
