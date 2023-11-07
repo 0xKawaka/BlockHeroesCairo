@@ -249,6 +249,5 @@ impl EntityImpl of EntityTrait {
         (*self.name).print();
         (*self.index).print();
         self.statistics.print();
-        self.printSkill();
     }
 }
