@@ -2,13 +2,14 @@ use debug::PrintTrait;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct Hero {
+    id: u32,
     name: felt252,
     level: u16,
     rank: u16,
 }
 
-fn new(name: felt252, level: u16, rank: u16) -> Hero {
-    Hero { name: name, level: level, rank: rank, }
+fn new(id: u32, name: felt252, level: u16, rank: u16) -> Hero {
+    Hero { id:id, name: name, level: level, rank: rank, }
 }
 
 trait HeroTrait {

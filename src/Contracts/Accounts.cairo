@@ -53,13 +53,13 @@ mod Accounts {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
             let mut heroesList = self.heroes.read(accountAdrs);
             let heroName = 'knight';
-            heroesList.append(Hero::new(heroName, 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), heroName, 1, 1));
             self.emit(HeroMinted { owner: accountAdrs, heroName: heroName });
         }
         fn mintHeroAdmin(ref self: ContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
             let mut heroesList = self.heroes.read(accountAdrs);
-            heroesList.append(Hero::new(name, level, rank));
+            heroesList.append(Hero::new(heroesList.len(), name, level, rank));
             self.emit(HeroMinted { owner: accountAdrs, heroName: name });
         }
 

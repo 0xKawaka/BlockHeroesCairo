@@ -35,22 +35,32 @@ mod Levels {
             // ------------------ World 0 ------------------
             // Level 0
             let mut heroes = self.enemies.read((0, 0));
-            heroes.append(Hero::new('knight', 1, 1));
+            heroes.append(Hero::new(0, 'knight', 1, 1));
+            heroes.append(Hero::new(0, 'hunter', 1, 1));
+            heroes.append(Hero::new(0, 'priest', 1, 1));
+            heroes.append(Hero::new(0, 'assassin', 1, 1));
             self.energyCost.write((0, 0), 1);
             // Level 1
             let mut heroes = self.enemies.read((0, 1));
-            heroes.append(Hero::new('priest', 1, 1));
-            heroes.append(Hero::new('priest', 1, 1));
+            heroes.append(Hero::new(0, 'knight', 1, 1));
+            heroes.append(Hero::new(0, 'knight', 1, 1));
+            heroes.append(Hero::new(0, 'hunter', 1, 1));
+            heroes.append(Hero::new(0, 'assassin', 1, 1));
             self.energyCost.write((0, 1), 2);
             // ------------------ World 1 ------------------
             // Level 0
             let mut heroes = self.enemies.read((1, 0));
-            heroes.append(Hero::new('knight', 2, 2));
+            heroes.append(Hero::new(0, 'priest', 1, 1));
+            heroes.append(Hero::new(0, 'priest', 1, 1));
+            heroes.append(Hero::new(0, 'hunter', 1, 1));
+            heroes.append(Hero::new(0, 'assassin', 1, 1));
             self.energyCost.write((1, 0), 3);
             // Level 1
             let mut heroes = self.enemies.read((1, 1));
-            heroes.append(Hero::new('priest', 2, 2));
-            heroes.append(Hero::new('priest', 2, 2));
+            heroes.append(Hero::new(0, 'priest', 1, 1));
+            heroes.append(Hero::new(0, 'hunter', 1, 1));
+            heroes.append(Hero::new(0, 'assassin', 1, 1));
+            heroes.append(Hero::new(0, 'assassin', 1, 1));
             self.energyCost.write((1, 1), 4);
         }
     }

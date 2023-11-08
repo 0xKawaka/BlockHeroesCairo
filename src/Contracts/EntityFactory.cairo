@@ -67,9 +67,10 @@ mod EntityFactory {
     #[generate_trait]
     impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
         fn initBaseStatisticsDict(ref self: ContractState) {
-            self.baseStatistics.write('knight', BaseStatistics::new(1000, 100, 100, 100, 20, 100));
-            self.baseStatistics.write('priest', BaseStatistics::new(2000, 200, 200, 102, 20, 150));
-            self.baseStatistics.write('hunter', BaseStatistics::new(3000, 300, 300, 103, 20, 300));
+            self.baseStatistics.write('assassin', BaseStatistics::new(1300, 200, 100, 200, 10, 100));
+            self.baseStatistics.write('knight', BaseStatistics::new(2000, 100, 200, 150, 10, 100));
+            self.baseStatistics.write('priest', BaseStatistics::new(1500, 200, 100, 160, 10, 100));
+            self.baseStatistics.write('hunter', BaseStatistics::new(1400, 100, 100, 170, 10, 200));
         }
     }
 }
