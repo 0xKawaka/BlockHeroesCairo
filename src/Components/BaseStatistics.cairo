@@ -14,20 +14,20 @@ struct BaseStatistics {
     attack: u64,
     defense: u64,
     speed: u64,
-    criticalChance: u64,
+    criticalRate: u64,
     criticalDamage: u64,
 }
 
 
 fn new(
-    health: u64, attack: u64, defense: u64, speed: u64, criticalChance: u64, criticalDamage: u64
+    health: u64, attack: u64, defense: u64, speed: u64, criticalRate: u64, criticalDamage: u64
 ) -> BaseStatistics {
     return BaseStatistics {
         health: health,
         attack: attack,
         defense: defense,
         speed: speed,
-        criticalChance: criticalChance,
+        criticalRate: criticalRate,
         criticalDamage: criticalDamage,
     };
 }
@@ -37,11 +37,11 @@ trait BaseStatisticsTrait {
     fn getAttack(self: BaseStatistics, level: u16, rank: u16) -> u64;
     fn getDefense(self: BaseStatistics, level: u16, rank: u16) -> u64;
     fn getSpeed(self: BaseStatistics, level: u16, rank: u16) -> u64;
-    fn getCriticalChance(self: BaseStatistics, level: u16, rank: u16) -> u64;
+    fn getCriticalRate(self: BaseStatistics, level: u16, rank: u16) -> u64;
     fn getCriticalDamage(self: BaseStatistics, level: u16, rank: u16) -> u64;
     fn getAllStatistics(
         self: BaseStatistics, level: u16, rank: u16
-    ) -> (u64, u64, u64, u64, u64, u64);
+    ) -> BaseStatistics;
 }
 
 impl BaseStatisticsImpl of BaseStatisticsTrait {
@@ -57,21 +57,21 @@ impl BaseStatisticsImpl of BaseStatisticsTrait {
     fn getSpeed(self: BaseStatistics, level: u16, rank: u16) -> u64 {
         return self.speed + self.speed * (level.into() - 1) / decimals;
     }
-    fn getCriticalChance(self: BaseStatistics, level: u16, rank: u16) -> u64 {
-        return self.criticalChance;
+    fn getCriticalRate(self: BaseStatistics, level: u16, rank: u16) -> u64 {
+        return self.criticalRate;
     }
     fn getCriticalDamage(self: BaseStatistics, level: u16, rank: u16) -> u64 {
         return self.criticalDamage;
     }
     fn getAllStatistics(
         self: BaseStatistics, level: u16, rank: u16
-    ) -> (u64, u64, u64, u64, u64, u64) {
-        return (
+    ) -> BaseStatistics {
+        return super::BaseStatistics::new(
             self.getHealth(level, rank),
             self.getAttack(level, rank),
             self.getDefense(level, rank),
             self.getSpeed(level, rank),
-            self.getCriticalChance(level, rank),
+            self.getCriticalRate(level, rank),
             self.getCriticalDamage(level, rank)
         );
     }

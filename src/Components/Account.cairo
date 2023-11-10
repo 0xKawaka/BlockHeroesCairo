@@ -6,14 +6,16 @@ use starknet::ContractAddress;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct Account {
+    username: felt252,
     energy: u32,
     shards: u32,
     owner: ContractAddress,
 }
 
 const maxEnergy: u32 = 100;
-fn new(owner: ContractAddress) -> Account {
+fn new(username: felt252, owner: ContractAddress) -> Account {
     Account {
+        username: username,
         energy: maxEnergy,
         shards: 0,
         owner: owner,

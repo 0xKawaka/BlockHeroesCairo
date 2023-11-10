@@ -1,3 +1,4 @@
+use game::Components::Hero::HeroTrait;
 use core::result::ResultTrait;
 use core::option::OptionTrait;
 use starknet::ContractAddress;
@@ -19,6 +20,7 @@ use game::Contracts::Levels::ILevelsSafeDispatcherTrait;
 use game::Contracts::SkillFactory::ISkillFactorySafeDispatcher;
 use game::Contracts::SkillFactory::ISkillFactorySafeDispatcherTrait;
 use game::Components::Hero::{Hero, HeroImpl};
+use game::Components::Hero::EquippedRunes::{EquippedRunes, EquippedRunesImpl};
 
 use debug::PrintTrait;
 
@@ -28,7 +30,7 @@ fn deployContract(name: felt252) -> ContractAddress {
 }
 
 // #[test]
-fn testAddHeroes() {
+fn addHeroes() {
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
     // let battlesAdrs = deployContract('Battles');
@@ -37,11 +39,11 @@ fn testAddHeroes() {
     let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
     let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
     // let battlesDispatcher = IBattlesSafeDispatcher { contract_address: battlesAdrs };
-    // let factoryDispatcher = IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
+    // let entityF= IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
     gameDispatcher.setAccountsAdrs(accountsAdrs);
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
-    gameDispatcher.createAccount();
+    gameDispatcher.createAccount('usernameTest');
     accountsDispatcher.mintHeroAdmin(testAdrs, 'priest', 10, 1);
     accountsDispatcher.mintHeroAdmin(testAdrs, 'knight', 1, 2);
     let hero0 = accountsDispatcher.getHero(testAdrs, 0).unwrap();
@@ -51,7 +53,7 @@ fn testAddHeroes() {
 }
 
 // #[test]
-fn testMintHeroes() {
+fn mintHeroes() {
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
     let battlesAdrs = deployContract('Battles');
@@ -60,21 +62,23 @@ fn testMintHeroes() {
     let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
     let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
     let battlesDispatcher = IBattlesSafeDispatcher { contract_address: battlesAdrs };
-    let factoryDispatcher = IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
+    let entityF= IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
 
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
     gameDispatcher.setAccountsAdrs(accountsAdrs);
     let gameAccountsAdrs = gameDispatcher.getAccountsAdrs().unwrap();
     assert(gameAccountsAdrs == accountsAdrs, 'Invalid accounts address');
-    gameDispatcher.createAccount();
+    gameDispatcher.createAccount('usernameTest');
+    let accountTest =  accountsDispatcher.getAccount(testAdrs).unwrap();
+    assert(accountTest.username == 'usernameTest', 'Invalid username');
     gameDispatcher.mintHero();
     let hero = accountsDispatcher.getHero(testAdrs, 0).unwrap();
     assert(hero.name != 0, 'Hero not minted');
 }
 
-#[test]
-fn EntityFactoryTest(){
+// #[test]
+fn mintRunes(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
     let battlesAdrs = deployContract('Battles');
@@ -82,15 +86,75 @@ fn EntityFactoryTest(){
     let skillFactoryAdrs = deployContract('SkillFactory');
     let levelsAdrs = deployContract('Levels');
 
+    let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
+
+    gameDispatcher.setAccountsAdrs(accountsAdrs);
+    
+    let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
+    snforge_std::start_prank(gameAdrs, testAdrs);
+    gameDispatcher.createAccount('usernameTest');
+    gameDispatcher.mintRune();
+    gameDispatcher.mintRune();
+    gameDispatcher.mintRune();
+
+    // FOUNDRY BUG IF UNCOMMENT BOTH LINE
+    // let allRunes = accountsDispatcher.getAllRunes(testAdrs).unwrap();
+    // assert(allRunes.len() == 3, 'Invalid allRunes length');
+    let selectedRunes = accountsDispatcher.getRunes(testAdrs, array![0, 1]).unwrap();
+    assert(selectedRunes.len() == 2, 'Invalid selectedRunes length');
+}
+
+// #[test]
+fn equipRunes(){
+    let gameAdrs = deployContract('Game');
+    let accountsAdrs = deployContract('Accounts');
+    let battlesAdrs = deployContract('Battles');
+    let entityFactoryAdrs = deployContract('EntityFactory');
+    let skillFactoryAdrs = deployContract('SkillFactory');
+    let levelsAdrs = deployContract('Levels');
+
+    let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
+
+    gameDispatcher.setAccountsAdrs(accountsAdrs);
+    
+    let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
+    snforge_std::start_prank(gameAdrs, testAdrs);
+    gameDispatcher.createAccount('usernameTest');
+
+    gameDispatcher.mintHero();
+    gameDispatcher.mintHero();
+    gameDispatcher.mintHero();
+    // FOUNDRY BUG IF HERO NOT MINTED ASSERT ERROR ISN'T RAISED
+
+    gameDispatcher.mintRune();
+    gameDispatcher.mintRune();
+    gameDispatcher.mintRune();
+
+    gameDispatcher.equipRune(0, 1);
+    // let hero = accountsDispatcher.getHero(testAdrs, 1).unwrap();
+    // hero.getRunes().print();
+}
+
+#[test]
+fn startBattle(){
+    let gameAdrs = deployContract('Game');
+    let accountsAdrs = deployContract('Accounts');
+    let battlesAdrs = deployContract('Battles');
+    let entityFactoryAdrs = deployContract('EntityFactory');
+    let skillFactoryAdrs = deployContract('SkillFactory');
+    let levelsAdrs = deployContract('Levels');
 
     let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
     let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
     let battlesDispatcher = IBattlesSafeDispatcher { contract_address: battlesAdrs };
-    let factoryDispatcher = IEntityFactorySafeDispatcher { contract_address: entityFactoryAdrs };
-    let skillFactoryDispatcher = ISkillFactorySafeDispatcher { contract_address: levelsAdrs };
+    let entityFactoryDispatcher = IEntityFactorySafeDispatcher { contract_address: entityFactoryAdrs };
+    let skillentityF= ISkillFactorySafeDispatcher { contract_address: levelsAdrs };
     let levelsDispatcher = ILevelsSafeDispatcher { contract_address: levelsAdrs };
 
     gameDispatcher.setAccountsAdrs(accountsAdrs);
+    entityFactoryDispatcher.setAccountsAdrs(accountsAdrs);
     gameDispatcher.setEntityFactoryAdrs(entityFactoryAdrs);
     gameDispatcher.setLevelsAdrs(levelsAdrs);
     gameDispatcher.setBattleAdrs(battlesAdrs);
@@ -98,7 +162,7 @@ fn EntityFactoryTest(){
     
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
-    gameDispatcher.createAccount();
+    gameDispatcher.createAccount('usernameTest');
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();

@@ -4,8 +4,10 @@ use starknet::ContractAddress;
 trait IGame<TContractState> {
     fn startBattle(ref self: TContractState, heroesIds: Array<u32>, world: u16, level: u16);
     fn playTurn(ref self: TContractState, spellIndex: u8, targetIndex: u32);
+    fn equipRune(ref self: TContractState, runeId: u32, heroId: u32);
     fn mintHero(ref self: TContractState);
-    fn createAccount(ref self: TContractState);
+    fn mintRune(ref self: TContractState);
+    fn createAccount(ref self: TContractState, username: felt252);
     fn setAccountsAdrs(ref self: TContractState, newAccountsAdrs: ContractAddress);
     fn setEntityFactoryAdrs(ref self: TContractState, newEntityFactoryAdrs: ContractAddress);
     fn setLevelsAdrs(ref self: TContractState, newLevelsAdrs: ContractAddress);
@@ -44,19 +46,25 @@ mod Game {
         fn startBattle(ref self: ContractState, heroesIds: Array<u32>, world: u16, level: u16) {
             let caller = get_caller_address();
             let allyHeroes = IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.getHeroes(get_caller_address(), heroesIds);
-            let allyEntities = IEntityFactoryDispatcher { contract_address: self.entityFactoryAdrs.read()}.newEntities(0, allyHeroes, AllyOrEnemy::Ally);
+            let allyEntities = IEntityFactoryDispatcher { contract_address: self.entityFactoryAdrs.read()}.newEntities(get_caller_address(), 0, allyHeroes, AllyOrEnemy::Ally);
             let enemyHeroes = ILevelsDispatcher { contract_address: self.levelsAdrs.read()}.getEnemies(world, level);
-            let enemyEntities = IEntityFactoryDispatcher { contract_address: self.entityFactoryAdrs.read()}.newEntities(allyEntities.len(), enemyHeroes, AllyOrEnemy::Enemy);
+            let enemyEntities = IEntityFactoryDispatcher { contract_address: self.entityFactoryAdrs.read()}.newEntities(get_caller_address(), allyEntities.len(), enemyHeroes, AllyOrEnemy::Enemy);
             IBattlesDispatcher { contract_address: self.battlesAdrs.read()}.newBattle(caller, allyEntities, enemyEntities);
         }
         fn playTurn(ref self: ContractState, spellIndex: u8, targetIndex: u32) {
             IBattlesDispatcher { contract_address: self.battlesAdrs.read()}.playTurn(get_caller_address(), spellIndex, targetIndex);
         }
+        fn equipRune(ref self: ContractState, runeId: u32, heroId: u32) {
+            IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.equipRune(get_caller_address(), runeId, heroId);
+        }
         fn mintHero(ref self: ContractState) {
             IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.mintHero(get_caller_address());
         }
-        fn createAccount(ref self: ContractState) {
-            IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.createAccount(get_caller_address());
+        fn mintRune(ref self: ContractState) {
+            IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.mintRune(get_caller_address());
+        }
+        fn createAccount(ref self: ContractState, username: felt252) {
+            IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.createAccount( username, get_caller_address());
         }
         fn setAccountsAdrs(ref self: ContractState, newAccountsAdrs: ContractAddress) {
             self.accountsAdrs.write(newAccountsAdrs);

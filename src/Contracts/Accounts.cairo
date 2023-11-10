@@ -1,32 +1,44 @@
 use starknet::ContractAddress;
-use game::Components::Hero::Hero;
+use game::Components::Hero::{Hero, Rune::Rune};
+use game::Components::Account::Account;
 
 #[starknet::interface]
 trait IAccounts<TContractState> {
+    fn equipRune(ref self: TContractState, accountAdrs: ContractAddress, runeId: u32, heroId: u32);
     fn mintHero(ref self: TContractState, accountAdrs: ContractAddress);
     fn mintHeroAdmin(ref self: TContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16);
-    fn createAccount(ref self: TContractState, accountAdrs: ContractAddress);
-    fn getHeroes(self: @TContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero>;
+    fn mintRune(ref self: TContractState, accountAdrs: ContractAddress);
+    fn createAccount(ref self: TContractState,  username: felt252, accountAdrs: ContractAddress);
+    fn getAccount(self: @TContractState, accountAdrs: ContractAddress) -> Account;
     fn getHero(self: @TContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero;
+    fn getHeroes(self: @TContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero>;
     fn getAllHeroes(self: @TContractState, accountAdrs: ContractAddress) -> Array<Hero>;
+    fn getRune(self: @TContractState, accountAdrs: ContractAddress, runeId: u32) -> Rune;
+    fn getRunes(self: @TContractState, accountAdrs: ContractAddress, runesIds: Array<u32>) -> Array<Rune>;
+    fn getAllRunes(self: @TContractState, accountAdrs: ContractAddress) -> Array<Rune>;
 }
 
 #[starknet::contract]
 mod Accounts {
-    use game::Components::Hero::HeroTrait;
+    use core::option::OptionTrait;
+use core::box::BoxTrait;
+use game::Components::Hero::HeroTrait;
     use core::starknet::event::EventEmitter;
     use starknet::ContractAddress;
     use starknet::get_caller_address;
 
     use game::Components::Account::AccountTrait;
     use game::Components::{Account, Account::AccountImpl};
-    use game::Components::{Hero, Hero::HeroImpl};
+    use game::Components::{Hero, Hero::HeroImpl, Hero::Rune, Hero::EquippedRunesImpl, Hero::Rune::RuneImpl};
     use game::Libraries::List::{List, ListTrait};
+
+    use debug::PrintTrait;
 
     #[storage]
     struct Storage {
         accounts: LegacyMap<ContractAddress, Account::Account>,
         heroes: LegacyMap<ContractAddress, List<Hero::Hero>>,
+        runes: LegacyMap<ContractAddress, List<Rune::Rune>>,
     }
 
     #[event]
@@ -34,25 +46,56 @@ mod Accounts {
     enum Event {
         NewAccount: NewAccount,
         HeroMinted: HeroMinted,
+        RuneMinted: RuneMinted,
     }
 
     #[derive(Drop, starknet::Event)]
     struct NewAccount {
         owner: ContractAddress,
     }
-
     #[derive(Drop, starknet::Event)]
     struct HeroMinted {
         owner: ContractAddress,
         heroName: felt252,
     }
+    #[derive(Drop, starknet::Event)]
+    struct RuneMinted {
+        owner: ContractAddress,
+        rune: Rune::Rune,
+    }
 
     #[external(v0)]
     impl AccountsImpl of super::IAccounts<ContractState> {
+        fn equipRune(ref self: ContractState, accountAdrs: ContractAddress, runeId: u32, heroId: u32) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut heroesList = self.heroes.read(accountAdrs);
+            // PrintTrait::print(heroesList.len());
+            // PrintTrait::print(heroId);
+            // PrintTrait::print(heroesList.len() > heroId);
+            assert(heroesList.len() > heroId, 'heroId out of range');
+            let mut runesList = self.runes.read(accountAdrs);
+            assert(runesList.len() > runeId, 'runeId out of range');
+            let mut hero = heroesList[heroId];
+            let mut rune = runesList[runeId];
+            hero.equipRune(ref rune);
+            // hero.print();
+            // hero.getRunes().print();
+            rune.print();
+            // heroesList.set(heroId, hero);
+            runesList.set(runeId, rune);
+
+            // let newHeroesList = self.heroes.read(accountAdrs);
+            // let newHero = heroesList[heroId];
+            // newHero.print();
+            // newHero.getRunes().print();
+            let newRuneList = self.runes.read(accountAdrs);
+            let newRune = newRuneList[runeId];
+            newRune.print();
+        }
         fn mintHero(ref self: ContractState, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
             let mut heroesList = self.heroes.read(accountAdrs);
-            let heroName = 'knight';
+            let heroName = 'priest';
             heroesList.append(Hero::new(heroesList.len(), heroName, 1, 1));
             self.emit(HeroMinted { owner: accountAdrs, heroName: heroName });
         }
@@ -62,12 +105,48 @@ mod Accounts {
             heroesList.append(Hero::new(heroesList.len(), name, level, rank));
             self.emit(HeroMinted { owner: accountAdrs, heroName: name });
         }
-
-        fn createAccount(ref self: ContractState, accountAdrs: ContractAddress) {
+        fn mintRune(ref self: ContractState, accountAdrs: ContractAddress) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut runesList = self.runes.read(accountAdrs);
+            runesList.append(Rune::new(runesList.len()));
+            self.emit(RuneMinted { owner: accountAdrs, rune: runesList[runesList.len() - 1] });
+        }
+        fn createAccount(ref self: ContractState, username: felt252, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner != accountAdrs, 'Account already created');
-            let acc = Account::new(accountAdrs);
+            let acc = Account::new(username, accountAdrs);
             self.accounts.write(accountAdrs, acc);
             self.emit(NewAccount { owner: accountAdrs });
+        }
+        fn getAccount(self: @ContractState, accountAdrs: ContractAddress) -> Account::Account {
+            return self.accounts.read(accountAdrs);
+        }
+        fn getRune(self: @ContractState, accountAdrs: ContractAddress, runeId: u32) -> Rune::Rune {
+            let runesList = self.runes.read(accountAdrs);
+            assert(runesList.len() > runeId, 'runeId out of range');
+            return runesList[runeId];
+        }
+        fn getRunes(self: @ContractState, accountAdrs: ContractAddress, runesIds: Array<u32>) -> Array<Rune::Rune> {
+            let mut runes: Array<Rune::Rune> = Default::default();
+            let runesList = self.runes.read(accountAdrs);
+            let mut i: u32 = 0;
+            loop {
+                if i == runesIds.len() {
+                    break;
+                }
+                assert(runesList.len() > *runesIds[i], 'runeId out of range');
+                runes.append(runesList.get(*runesIds[i]).unwrap());
+                i += 1;
+            };
+            return runes;
+        }
+        fn getAllRunes(self: @ContractState, accountAdrs: ContractAddress) -> Array<Rune::Rune> {
+            let runesList = self.runes.read(accountAdrs);
+            return runesList.array();
+        }
+        fn getHero(self: @ContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero::Hero {
+            let heroesList = self.heroes.read(accountAdrs);
+            assert(heroesList.len() > heroId, 'heroId out of range');
+            return heroesList[heroId];
         }
         fn getHeroes(self: @ContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero::Hero> {
             let mut heroes: Array<Hero::Hero> = Default::default();
@@ -77,21 +156,17 @@ mod Accounts {
                 if i == heroesIds.len() {
                     break;
                 }
-                assert(heroesList.len() > *heroesIds[i], 'Hero not found');
+                assert(heroesList.len() > *heroesIds[i], 'heroId out of range');
                 heroes.append(heroesList.get(*heroesIds[i]).unwrap());
                 i += 1;
             };
             return heroes;
         }
-        fn getHero(self: @ContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero::Hero {
-            let heroesList = self.heroes.read(accountAdrs);
-            assert(heroesList.len() > heroId, 'Hero not found');
-            return heroesList[heroId];
-        }
         fn getAllHeroes(self: @ContractState, accountAdrs: ContractAddress) -> Array<Hero::Hero> {
             let heroesList = self.heroes.read(accountAdrs);
             return heroesList.array();
         }
+
     }
 
 }
