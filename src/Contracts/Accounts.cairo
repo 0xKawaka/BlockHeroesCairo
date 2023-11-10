@@ -51,6 +51,7 @@ use game::Components::Hero::HeroTrait;
 
     #[derive(Drop, starknet::Event)]
     struct NewAccount {
+        username: felt252,
         owner: ContractAddress,
     }
     #[derive(Drop, starknet::Event)]
@@ -115,7 +116,7 @@ use game::Components::Hero::HeroTrait;
             assert(self.accounts.read(accountAdrs).owner != accountAdrs, 'Account already created');
             let acc = Account::new(username, accountAdrs);
             self.accounts.write(accountAdrs, acc);
-            self.emit(NewAccount { owner: accountAdrs });
+            self.emit(NewAccount { username: username, owner: accountAdrs });
         }
         fn getAccount(self: @ContractState, accountAdrs: ContractAddress) -> Account::Account {
             return self.accounts.read(accountAdrs);

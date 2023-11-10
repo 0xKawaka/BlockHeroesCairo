@@ -26,9 +26,9 @@ enum RuneRarity {
 
 #[derive(starknet::Store, Copy, Drop, Serde, PrintTrait)]
 enum RuneStatistic {
+    Health,
     Attack,
     Defense,
-    Health,
     Speed,
     // CriticalRate,
     // CriticalDamage,
@@ -64,7 +64,7 @@ fn new(id: u32) -> Rune {
         id: id,
         statistic: statistic,
         isPercent: isPercent,
-        rank: 1,
+        rank: 0,
         rarity: rarity,
         runeType: runeType,
         heroEquipped: Option::None,
@@ -90,19 +90,20 @@ fn getRandomStat(seed: u64) -> RuneStatistic {
     return RuneStatistic::Attack;
 }
 fn getRandomRarity(seed: u64) -> RuneRarity {
-    let rand = rand32(seed, RUNE_RARITY_COUNT);
-    if rand == 0 {
-        return RuneRarity::Common;
-    } else if rand == 1 {
-        return RuneRarity::Uncommon;
-    } else if rand == 2 {
-        return RuneRarity::Rare;
-    } else if rand == 3 {
-        return RuneRarity::Epic;
-    } else if rand == 4 {
-        return RuneRarity::Legendary;
-    }
     return RuneRarity::Common;
+    // let rand = rand32(seed, RUNE_RARITY_COUNT);
+    // if rand == 0 {
+    //     return RuneRarity::Common;
+    // } else if rand == 1 {
+    //     return RuneRarity::Uncommon;
+    // } else if rand == 2 {
+    //     return RuneRarity::Rare;
+    // } else if rand == 3 {
+    //     return RuneRarity::Epic;
+    // } else if rand == 4 {
+    //     return RuneRarity::Legendary;
+    // }
+    // return RuneRarity::Common;
 }
 
 fn getRandomType(seed: u64) ->  RuneType {
@@ -132,16 +133,16 @@ fn getRandomIsPercent(seed: u64) -> bool {
 }
 
 trait RuneTrait {
-    fn computeBonuses(self: Rune,  baseStats: BaseStatistics::BaseStatistics) -> BaseStatistics::BaseStatistics;
+    // fn computeBonuses(self: Rune,  baseStats: BaseStatistics::BaseStatistics) -> BaseStatistics::BaseStatistics;
     fn upgrade(ref self: Rune);
     fn print(self: Rune);
     fn statisticToString(self: Rune)-> felt252;
 }
 
 impl RuneImpl of RuneTrait {
-    fn computeBonuses(self: Rune, baseStats: BaseStatistics::BaseStatistics) -> BaseStatistics::BaseStatistics {
-        return BaseStatistics::new(0, 0, 0, 0, 0, 0);
-    }
+    // fn computeBonuses(self: Rune, baseStats: BaseStatistics::BaseStatistics) -> BaseStatistics::BaseStatistics {
+    //     return BaseStatistics::new(0, 0, 0, 0, 0, 0);
+    // }
     fn upgrade(ref self: Rune) {
         self.rank += 1;
 
@@ -164,9 +165,9 @@ impl RuneImpl of RuneTrait {
     fn statisticToString(self: Rune)-> felt252 {
         let mut statisticStr: felt252 = '';
         match self.statistic {
+            RuneStatistic::Health => statisticStr = 'Health',
             RuneStatistic::Attack => statisticStr = 'Attack',
             RuneStatistic::Defense => statisticStr = 'Defense',
-            RuneStatistic::Health => statisticStr = 'Health',
             RuneStatistic::Speed => statisticStr = 'Speed',
         }
         return statisticStr;

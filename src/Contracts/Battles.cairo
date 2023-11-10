@@ -40,6 +40,43 @@ use core::debug::PrintTrait;
         skillFactoryAdrs: ContractAddress,
     }
 
+    #[event]
+    #[derive(Drop, starknet::Event)]
+    enum Event {
+        NewBattle: NewBattle,
+        PlayingTurn: PlayingTurn,
+        SkillEvent: SkillEvent,
+        HealthOnTurnProcsEvent: HealthOnTurnProcsEvent,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct NewBattle {
+        owner: ContractAddress,
+        allyEntites: Array<Entity>,
+        enemyEntities: Array<Entity>,
+    }
+    #[derive(Drop, starknet::Event)]
+    struct PlayingTurn {
+        owner: ContractAddress,
+        entityId: u32,
+        turnBars: Array<u64>,
+    }
+    #[derive(Drop, starknet::Event)]
+    struct SkillEvent {
+        owner: ContractAddress,
+        entityId: u32,
+        targetId: u32,
+        skillIndex: u8,
+        damages: Array<u64>,
+        heals: Array<u64>,
+    }
+    #[derive(Drop, starknet::Event)]
+    struct HealthOnTurnProcsEvent {
+        owner: ContractAddress,
+        entityId: u32,
+        damages: Array<u64>,
+        heals: Array<u64>,
+    }
 
     #[external(v0)]
     impl BattlesImpl of super::IBattles<ContractState> {
