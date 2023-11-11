@@ -1,3 +1,5 @@
+mod StatisticsWrapper;
+
 use game::Components::Battle::Entity::{Entity, AllyOrEnemy};
 use game::Components::Hero::Hero;
 use starknet::ContractAddress;
@@ -11,7 +13,8 @@ trait IEntityFactory<TContractState> {
 
 #[starknet::contract]
 mod EntityFactory {
-    use game::Components::Hero::HeroTrait;
+    use core::option::OptionTrait;
+use game::Components::Hero::HeroTrait;
 use starknet::ContractAddress;
     use game::Libraries::List::{List, ListTrait};
     use game::Components::Hero::{Hero, Rune::Rune, Rune::RuneImpl, Rune::RuneRarity, Rune::RuneStatistic};
@@ -19,6 +22,7 @@ use starknet::ContractAddress;
     use game::Components::Battle::Entity::{Skill, Skill::SkillImpl, Skill::TargetType, Skill::Damage, Skill::Heal};
     use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
     use game::Components::{BaseStatistics, BaseStatistics::BaseStatisticsImpl};
+    use game::Contracts::EntityFactory::StatisticsWrapper;
     use game::Contracts::Accounts::{IAccountsDispatcher, IAccountsDispatcherTrait};
 
     use debug::PrintTrait;
@@ -57,17 +61,17 @@ use starknet::ContractAddress;
             let baseStatsValues = baseStats.getAllStatistics(hero.level, hero.rank);
             let runesIndex = hero.getRunesIndexArray();
             let runes = IAccountsDispatcher { contract_address: self.accountsAdrs.read()}.getRunes(owner, runesIndex);
-            let bonusStatsValues = self.computeRunesBonuses(runes, baseStatsValues);
+            let runesStatsValues = self.computeRunesBonuses(runes, baseStatsValues);
 
             return Entity::new(
                 index,
                 hero.name,
-                baseStatsValues.health,
-                baseStatsValues.attack,
-                baseStatsValues.defense,
-                baseStatsValues.speed,
-                baseStatsValues.criticalRate,
-                baseStatsValues.criticalDamage,
+                baseStatsValues.health + runesStatsValues.health,
+                baseStatsValues.attack + runesStatsValues.attack,
+                baseStatsValues.defense + runesStatsValues.defense,
+                baseStatsValues.speed + runesStatsValues.speed,
+                baseStatsValues.criticalRate + runesStatsValues.criticalRate,
+                baseStatsValues.criticalDamage + runesStatsValues.criticalDamage,
                 allyOrEnemy,
             );
         }
@@ -78,8 +82,8 @@ use starknet::ContractAddress;
 
     #[generate_trait]
     impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
-        fn computeRunesBonuses(ref self: ContractState, runes: Array<Rune>, baseStats: BaseStatistics::BaseStatistics) -> BaseStatistics::BaseStatistics {
-            let mut totalBonusStats = BaseStatistics::new(0, 0, 0, 0, 0, 0);
+        fn computeRunesBonuses(ref self: ContractState, runes: Array<Rune>, baseStats: BaseStatistics::BaseStatistics) -> StatisticsWrapper::StatisticsWrapper {
+            let mut runesTotalBonusStats = StatisticsWrapper::new(0, 0, 0, 0, 0, 0);
             let mut i: u32 = 0;
             loop {
                 if i == runes.len() {
@@ -88,13 +92,49 @@ use starknet::ContractAddress;
                 let rune = *runes[i];
                 let runeStatWithoutRank = self.runesStatsTable.read((rune.statistic, rune.rarity, rune.isPercent));
                 let runeStat = runeStatWithoutRank + ((runeStatWithoutRank * rune.rank) / 10);
-                self.matchAndAddStat(ref totalBonusStats, rune.statistic, runeStat.into());
+                self.matchAndAddStat(ref runesTotalBonusStats, rune.statistic, runeStat.into(), rune.isPercent, baseStats);
+                if (rune.rank > 3) {
+                    let bonusRank4 = rune.rank4Bonus.unwrap();
+                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank4.statistic, rune.rarity, bonusRank4.isPercent));
+                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank4.statistic, runeBonusStat.into(), bonusRank4.isPercent, baseStats);
+                }
+                if (rune.rank > 7) {
+                    let bonusRank8 = rune.rank8Bonus.unwrap();
+                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank8.statistic, rune.rarity, bonusRank8.isPercent));
+                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank8.statistic, runeBonusStat.into(), bonusRank8.isPercent, baseStats);
+                }
+                if (rune.rank > 11) {
+                    let bonusRank12 = rune.rank12Bonus.unwrap();
+                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank12.statistic, rune.rarity, bonusRank12.isPercent));
+                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank12.statistic, runeBonusStat.into(), bonusRank12.isPercent, baseStats);
+                }
+                if (rune.rank > 15) {
+                    let bonusRank16 = rune.rank16Bonus.unwrap();
+                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank16.statistic, rune.rarity, bonusRank16.isPercent));
+                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank16.statistic, runeBonusStat.into(), bonusRank16.isPercent, baseStats);
+                }
                 i += 1;
             };
-            return totalBonusStats;
+            return runesTotalBonusStats;
         }
-        fn matchAndAddStat(ref self: ContractState, ref baseStats: BaseStatistics::BaseStatistics, statistic: RuneStatistic, bonusStat: u64) {
-            
+        fn matchAndAddStat(ref self: ContractState, ref runesTotalBonusStats: StatisticsWrapper::StatisticsWrapper, statType: RuneStatistic, bonusStat: u64, isPercent: bool, baseStats: BaseStatistics::BaseStatistics) {
+            if(isPercent) {
+                match statType {
+                    RuneStatistic::Health => runesTotalBonusStats.health += (baseStats.health * bonusStat) / 100,
+                    RuneStatistic::Attack => runesTotalBonusStats.attack += (baseStats.attack * bonusStat) / 100,
+                    RuneStatistic::Defense => runesTotalBonusStats.defense += (baseStats.defense * bonusStat) / 100,
+                    RuneStatistic::Speed => runesTotalBonusStats.speed += (baseStats.speed * bonusStat) / 100,
+                }
+            }
+            else {
+                match statType {
+                    RuneStatistic::Health => runesTotalBonusStats.health += bonusStat,
+                    RuneStatistic::Attack => runesTotalBonusStats.attack += bonusStat,
+                    RuneStatistic::Defense => runesTotalBonusStats.defense += bonusStat,
+                    RuneStatistic::Speed => runesTotalBonusStats.speed += bonusStat,
+                }
+            }
+
         }
 
         fn initBaseStatisticsDict(ref self: ContractState) {
