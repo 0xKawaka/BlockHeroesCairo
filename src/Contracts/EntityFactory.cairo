@@ -16,8 +16,8 @@ trait IEntityFactory<TContractState> {
 #[starknet::contract]
 mod EntityFactory {
     use core::option::OptionTrait;
-use game::Components::Hero::HeroTrait;
-use starknet::ContractAddress;
+    use game::Components::Hero::HeroTrait;
+    use starknet::ContractAddress;
     use game::Libraries::List::{List, ListTrait};
     use game::Components::Hero::{Hero, Rune::Rune, Rune::RuneImpl, Rune::RuneRarity, Rune::RuneStatistic};
     use game::Components::Battle::{Entity, Entity::EntityImpl, Entity::EntityTrait, Entity::AllyOrEnemy, Entity::Cooldowns::CooldownsTrait, Entity::SkillSet};
@@ -30,17 +30,13 @@ use starknet::ContractAddress;
     use debug::PrintTrait;
 
     impl RuneStatisticRarityIsPercentLegacyHash of hash::LegacyHash::<(RuneStatistic, RuneRarity, bool)> {
-    fn hash(state: felt252, value: (RuneStatistic, RuneRarity, bool)) -> felt252 {
-        let mut buf: Array<felt252> = array![];
-        value.serialize(ref buf);
-
-        // Poseidon is used here on the whole span to have a unique
-        // key based on the content. Several other options are available here.
-        let k = poseidon::poseidon_hash_span(buf.span());
-        hash::LegacyHash::hash(state, k)
+        fn hash(state: felt252, value: (RuneStatistic, RuneRarity, bool)) -> felt252 {
+            let mut buf: Array<felt252> = array![];
+            value.serialize(ref buf);
+            let k = poseidon::poseidon_hash_span(buf.span());
+            hash::LegacyHash::hash(state, k)
+        }
     }
-}
-
 
     #[storage]
     struct Storage {
@@ -100,37 +96,37 @@ use starknet::ContractAddress;
     impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
         fn computeRunesBonuses(ref self: ContractState, runes: Array<Rune>, baseStats: BaseStatistics::BaseStatistics) -> StatisticsWrapper::StatisticsWrapper {
             let mut runesTotalBonusStats = StatisticsWrapper::new(0, 0, 0, 0, 0, 0);
-            // let mut i: u32 = 0;
-            // loop {
-            //     if i == runes.len() {
-            //         break;
-            //     }
-            //     let rune = *runes[i];
-            //     let runeStatWithoutRank = self.runesStatsTable.read((rune.statistic, rune.rarity, rune.isPercent));
-            //     let runeStat = runeStatWithoutRank + ((runeStatWithoutRank * rune.rank) / 10);
-            //     self.matchAndAddStat(ref runesTotalBonusStats, rune.statistic, runeStat.into(), rune.isPercent, baseStats);
-            //     if (rune.rank > 3) {
-            //         let bonusRank4 = rune.rank4Bonus.unwrap();
-            //         let runeBonusStat = self.runesBonusStatsTable.read((bonusRank4.statistic, rune.rarity, bonusRank4.isPercent));
-            //         self.matchAndAddStat(ref runesTotalBonusStats, bonusRank4.statistic, runeBonusStat.into(), bonusRank4.isPercent, baseStats);
-            //     }
-            //     if (rune.rank > 7) {
-            //         let bonusRank8 = rune.rank8Bonus.unwrap();
-            //         let runeBonusStat = self.runesBonusStatsTable.read((bonusRank8.statistic, rune.rarity, bonusRank8.isPercent));
-            //         self.matchAndAddStat(ref runesTotalBonusStats, bonusRank8.statistic, runeBonusStat.into(), bonusRank8.isPercent, baseStats);
-            //     }
-            //     if (rune.rank > 11) {
-            //         let bonusRank12 = rune.rank12Bonus.unwrap();
-            //         let runeBonusStat = self.runesBonusStatsTable.read((bonusRank12.statistic, rune.rarity, bonusRank12.isPercent));
-            //         self.matchAndAddStat(ref runesTotalBonusStats, bonusRank12.statistic, runeBonusStat.into(), bonusRank12.isPercent, baseStats);
-            //     }
-            //     if (rune.rank > 15) {
-            //         let bonusRank16 = rune.rank16Bonus.unwrap();
-            //         let runeBonusStat = self.runesBonusStatsTable.read((bonusRank16.statistic, rune.rarity, bonusRank16.isPercent));
-            //         self.matchAndAddStat(ref runesTotalBonusStats, bonusRank16.statistic, runeBonusStat.into(), bonusRank16.isPercent, baseStats);
-            //     }
-            //     i += 1;
-            // };
+            let mut i: u32 = 0;
+            loop {
+                if i == runes.len() {
+                    break;
+                }
+                let rune = *runes[i];
+                let runeStatWithoutRank = self.runesStatsTable.read((rune.statistic, rune.rarity, rune.isPercent));
+                let runeStat = runeStatWithoutRank + ((runeStatWithoutRank * rune.rank) / 10);
+                self.matchAndAddStat(ref runesTotalBonusStats, rune.statistic, runeStat.into(), rune.isPercent, baseStats);
+                if (rune.rank > 3) {
+                    let bonusRank4 = rune.rank4Bonus.unwrap();
+                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank4.statistic, rune.rarity, bonusRank4.isPercent));
+                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank4.statistic, runeBonusStat.into(), bonusRank4.isPercent, baseStats);
+                }
+                if (rune.rank > 7) {
+                    let bonusRank8 = rune.rank8Bonus.unwrap();
+                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank8.statistic, rune.rarity, bonusRank8.isPercent));
+                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank8.statistic, runeBonusStat.into(), bonusRank8.isPercent, baseStats);
+                }
+                if (rune.rank > 11) {
+                    let bonusRank12 = rune.rank12Bonus.unwrap();
+                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank12.statistic, rune.rarity, bonusRank12.isPercent));
+                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank12.statistic, runeBonusStat.into(), bonusRank12.isPercent, baseStats);
+                }
+                if (rune.rank > 15) {
+                    let bonusRank16 = rune.rank16Bonus.unwrap();
+                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank16.statistic, rune.rarity, bonusRank16.isPercent));
+                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank16.statistic, runeBonusStat.into(), bonusRank16.isPercent, baseStats);
+                }
+                i += 1;
+            };
             return runesTotalBonusStats;
         }
         fn matchAndAddStat(ref self: ContractState, ref runesTotalBonusStats: StatisticsWrapper::StatisticsWrapper, statType: RuneStatistic, bonusStat: u64, isPercent: bool, baseStats: BaseStatistics::BaseStatistics) {
