@@ -17,7 +17,7 @@ mod EntityFactory {
 use game::Components::Hero::HeroTrait;
 use starknet::ContractAddress;
     use game::Libraries::List::{List, ListTrait};
-    use game::Components::Hero::{Hero, Rune::Rune, Rune::RuneImpl, Rune::RuneRarity, Rune::RuneStatistic};
+    use game::Components::Hero::{Hero, Rune::Rune, Rune::RuneImpl, Rune::RuneRarity, Rune::RuneStatistic, Rune::RuneRarityLegacyHash, Rune::RuneStatisticLegacyHash};
     use game::Components::Battle::{Entity, Entity::EntityImpl, Entity::EntityTrait, Entity::AllyOrEnemy, Entity::Cooldowns::CooldownsTrait, Entity::SkillSet};
     use game::Components::Battle::Entity::{Skill, Skill::SkillImpl, Skill::TargetType, Skill::Damage, Skill::Heal};
     use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
@@ -31,8 +31,8 @@ use starknet::ContractAddress;
     #[storage]
     struct Storage {
         baseStatistics: LegacyMap<felt252, BaseStatistics::BaseStatistics>,
-        runesStatsTable: LegacyMap<(RuneStatistic, RuneRarity, bool), u32>,
-        runesBonusStatsTable: LegacyMap<(RuneStatistic, RuneRarity, bool), u32>,
+        // runesStatsTable: LegacyMap<(RuneStatistic, RuneRarity, bool), u32>,
+        // runesBonusStatsTable: LegacyMap<(RuneStatistic, RuneRarity, bool), u32>,
         accountsAdrs: ContractAddress,
     }
 
@@ -84,37 +84,37 @@ use starknet::ContractAddress;
     impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
         fn computeRunesBonuses(ref self: ContractState, runes: Array<Rune>, baseStats: BaseStatistics::BaseStatistics) -> StatisticsWrapper::StatisticsWrapper {
             let mut runesTotalBonusStats = StatisticsWrapper::new(0, 0, 0, 0, 0, 0);
-            let mut i: u32 = 0;
-            loop {
-                if i == runes.len() {
-                    break;
-                }
-                let rune = *runes[i];
-                let runeStatWithoutRank = self.runesStatsTable.read((rune.statistic, rune.rarity, rune.isPercent));
-                let runeStat = runeStatWithoutRank + ((runeStatWithoutRank * rune.rank) / 10);
-                self.matchAndAddStat(ref runesTotalBonusStats, rune.statistic, runeStat.into(), rune.isPercent, baseStats);
-                if (rune.rank > 3) {
-                    let bonusRank4 = rune.rank4Bonus.unwrap();
-                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank4.statistic, rune.rarity, bonusRank4.isPercent));
-                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank4.statistic, runeBonusStat.into(), bonusRank4.isPercent, baseStats);
-                }
-                if (rune.rank > 7) {
-                    let bonusRank8 = rune.rank8Bonus.unwrap();
-                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank8.statistic, rune.rarity, bonusRank8.isPercent));
-                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank8.statistic, runeBonusStat.into(), bonusRank8.isPercent, baseStats);
-                }
-                if (rune.rank > 11) {
-                    let bonusRank12 = rune.rank12Bonus.unwrap();
-                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank12.statistic, rune.rarity, bonusRank12.isPercent));
-                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank12.statistic, runeBonusStat.into(), bonusRank12.isPercent, baseStats);
-                }
-                if (rune.rank > 15) {
-                    let bonusRank16 = rune.rank16Bonus.unwrap();
-                    let runeBonusStat = self.runesBonusStatsTable.read((bonusRank16.statistic, rune.rarity, bonusRank16.isPercent));
-                    self.matchAndAddStat(ref runesTotalBonusStats, bonusRank16.statistic, runeBonusStat.into(), bonusRank16.isPercent, baseStats);
-                }
-                i += 1;
-            };
+            // let mut i: u32 = 0;
+            // loop {
+            //     if i == runes.len() {
+            //         break;
+            //     }
+            //     let rune = *runes[i];
+            //     let runeStatWithoutRank = self.runesStatsTable.read((rune.statistic, rune.rarity, rune.isPercent));
+            //     let runeStat = runeStatWithoutRank + ((runeStatWithoutRank * rune.rank) / 10);
+            //     self.matchAndAddStat(ref runesTotalBonusStats, rune.statistic, runeStat.into(), rune.isPercent, baseStats);
+            //     if (rune.rank > 3) {
+            //         let bonusRank4 = rune.rank4Bonus.unwrap();
+            //         let runeBonusStat = self.runesBonusStatsTable.read((bonusRank4.statistic, rune.rarity, bonusRank4.isPercent));
+            //         self.matchAndAddStat(ref runesTotalBonusStats, bonusRank4.statistic, runeBonusStat.into(), bonusRank4.isPercent, baseStats);
+            //     }
+            //     if (rune.rank > 7) {
+            //         let bonusRank8 = rune.rank8Bonus.unwrap();
+            //         let runeBonusStat = self.runesBonusStatsTable.read((bonusRank8.statistic, rune.rarity, bonusRank8.isPercent));
+            //         self.matchAndAddStat(ref runesTotalBonusStats, bonusRank8.statistic, runeBonusStat.into(), bonusRank8.isPercent, baseStats);
+            //     }
+            //     if (rune.rank > 11) {
+            //         let bonusRank12 = rune.rank12Bonus.unwrap();
+            //         let runeBonusStat = self.runesBonusStatsTable.read((bonusRank12.statistic, rune.rarity, bonusRank12.isPercent));
+            //         self.matchAndAddStat(ref runesTotalBonusStats, bonusRank12.statistic, runeBonusStat.into(), bonusRank12.isPercent, baseStats);
+            //     }
+            //     if (rune.rank > 15) {
+            //         let bonusRank16 = rune.rank16Bonus.unwrap();
+            //         let runeBonusStat = self.runesBonusStatsTable.read((bonusRank16.statistic, rune.rarity, bonusRank16.isPercent));
+            //         self.matchAndAddStat(ref runesTotalBonusStats, bonusRank16.statistic, runeBonusStat.into(), bonusRank16.isPercent, baseStats);
+            //     }
+            //     i += 1;
+            // };
             return runesTotalBonusStats;
         }
         fn matchAndAddStat(ref self: ContractState, ref runesTotalBonusStats: StatisticsWrapper::StatisticsWrapper, statType: RuneStatistic, bonusStat: u64, isPercent: bool, baseStats: BaseStatistics::BaseStatistics) {
@@ -134,7 +134,6 @@ use starknet::ContractAddress;
                     RuneStatistic::Speed => runesTotalBonusStats.speed += bonusStat,
                 }
             }
-
         }
 
         fn initBaseStatisticsDict(ref self: ContractState) {
@@ -143,28 +142,28 @@ use starknet::ContractAddress;
             self.baseStatistics.write('priest', BaseStatistics::new(1500, 200, 100, 160, 10, 100));
             self.baseStatistics.write('hunter', BaseStatistics::new(1400, 100, 100, 170, 10, 200));
         }
-        fn initRunesTable(ref self: ContractState) {
-            self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 300);
-            self.runesStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, false), 30);
-            self.runesStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, false), 30);
-            self.runesStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, false), 20);
+        // fn initRunesTable(ref self: ContractState) {
+        //     self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 300);
+        //     self.runesStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, false), 30);
+        //     self.runesStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, false), 30);
+        //     self.runesStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, false), 20);
 
-            self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, true), 10);
-            self.runesStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, true), 10);
-            self.runesStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, true), 10);
-            self.runesStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, true), 10);
-        }
-        fn initBonusRunesTable(ref self: ContractState) {
-            self.runesBonusStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 50);
-            self.runesBonusStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, false), 5);
-            self.runesBonusStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, false), 5);
-            self.runesBonusStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, false), 3);
+        //     self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, true), 10);
+        //     self.runesStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, true), 10);
+        //     self.runesStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, true), 10);
+        //     self.runesStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, true), 10);
+        // }
+        // fn initBonusRunesTable(ref self: ContractState) {
+        //     self.runesBonusStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 50);
+        //     self.runesBonusStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, false), 5);
+        //     self.runesBonusStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, false), 5);
+        //     self.runesBonusStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, false), 3);
 
-            self.runesBonusStatsTable.write((RuneStatistic::Health, RuneRarity::Common, true), 2);
-            self.runesBonusStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, true), 2);
-            self.runesBonusStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, true), 2);
-            self.runesBonusStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, true), 2);
-        }
+        //     self.runesBonusStatsTable.write((RuneStatistic::Health, RuneRarity::Common, true), 2);
+        //     self.runesBonusStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, true), 2);
+        //     self.runesBonusStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, true), 2);
+        //     self.runesBonusStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, true), 2);
+        // }
 
     }
 

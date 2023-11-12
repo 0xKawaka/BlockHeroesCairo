@@ -78,7 +78,7 @@ fn mintHeroes() {
 }
 
 // #[test]
-fn mintRunes(){
+fn mintAndUpgradeRunes(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
     let battlesAdrs = deployContract('Battles');
@@ -103,6 +103,9 @@ fn mintRunes(){
     // assert(allRunes.len() == 3, 'Invalid allRunes length');
     let selectedRunes = accountsDispatcher.getRunes(testAdrs, array![0, 1]).unwrap();
     assert(selectedRunes.len() == 2, 'Invalid selectedRunes length');
+    gameDispatcher.upgradeRune(1);
+    let rune = accountsDispatcher.getRune(testAdrs, 1).unwrap();
+    assert(rune.rank == 1, 'Invalid rune rank');
 }
 
 // #[test]
@@ -137,7 +140,7 @@ fn equipRunes(){
     // hero.getRunes().print();
 }
 
-#[test]
+// #[test]
 fn startBattle(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');

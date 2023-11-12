@@ -5,6 +5,7 @@ use game::Components::Account::Account;
 #[starknet::interface]
 trait IAccounts<TContractState> {
     fn equipRune(ref self: TContractState, accountAdrs: ContractAddress, runeId: u32, heroId: u32);
+    fn upgradeRune(ref self: TContractState, accountAdrs: ContractAddress, runeId: u32);
     fn mintHero(ref self: TContractState, accountAdrs: ContractAddress);
     fn mintHeroAdmin(ref self: TContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16);
     fn mintRune(ref self: TContractState, accountAdrs: ContractAddress);
@@ -92,6 +93,14 @@ use game::Components::Hero::HeroTrait;
             let newRuneList = self.runes.read(accountAdrs);
             let newRune = newRuneList[runeId];
             newRune.print();
+        }
+        fn upgradeRune(ref self: ContractState, accountAdrs: ContractAddress, runeId: u32) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut runesList = self.runes.read(accountAdrs);
+            assert(runesList.len() > runeId, 'runeId out of range');
+            let mut rune = runesList[runeId];
+            rune.upgrade();
+            runesList.set(runeId, rune);
         }
         fn mintHero(ref self: ContractState, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
