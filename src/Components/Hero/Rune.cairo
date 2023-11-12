@@ -24,19 +24,6 @@ enum RuneRarity {
     Legendary,
 }
 
-impl RuneRarityLegacyHash of hash::LegacyHash::<RuneRarity> {
-    fn hash(state: felt252, value: RuneRarity) -> felt252 {
-        let mut buf: Array<felt252> = array![];
-        value.serialize(ref buf);
-
-        // Poseidon is used here on the whole span to have a unique
-        // key based on the content. Several other options are available here.
-        let k = poseidon::poseidon_hash_span(buf.span());
-        hash::LegacyHash::hash(state, k)
-    }
-}
-
-
 #[derive(starknet::Store, Copy, Drop, Serde, PrintTrait, hash::LegacyHash)]
 enum RuneStatistic {
     Health,
@@ -47,17 +34,7 @@ enum RuneStatistic {
     // CriticalDamage,
 }
 
-impl RuneStatisticLegacyHash of hash::LegacyHash::<RuneStatistic> {
-    fn hash(state: felt252, value: RuneStatistic) -> felt252 {
-        let mut buf: Array<felt252> = array![];
-        value.serialize(ref buf);
 
-        // Poseidon is used here on the whole span to have a unique
-        // key based on the content. Several other options are available here.
-        let k = poseidon::poseidon_hash_span(buf.span());
-        hash::LegacyHash::hash(state, k)
-    }
-}
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct Rune {

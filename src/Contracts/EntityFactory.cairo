@@ -11,13 +11,15 @@ trait IEntityFactory<TContractState> {
     fn setAccountsAdrs(ref self: TContractState, accountsAdrs: ContractAddress);
 }
 
+
+
 #[starknet::contract]
 mod EntityFactory {
     use core::option::OptionTrait;
 use game::Components::Hero::HeroTrait;
 use starknet::ContractAddress;
     use game::Libraries::List::{List, ListTrait};
-    use game::Components::Hero::{Hero, Rune::Rune, Rune::RuneImpl, Rune::RuneRarity, Rune::RuneStatistic, Rune::RuneRarityLegacyHash, Rune::RuneStatisticLegacyHash};
+    use game::Components::Hero::{Hero, Rune::Rune, Rune::RuneImpl, Rune::RuneRarity, Rune::RuneStatistic};
     use game::Components::Battle::{Entity, Entity::EntityImpl, Entity::EntityTrait, Entity::AllyOrEnemy, Entity::Cooldowns::CooldownsTrait, Entity::SkillSet};
     use game::Components::Battle::Entity::{Skill, Skill::SkillImpl, Skill::TargetType, Skill::Damage, Skill::Heal};
     use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
@@ -27,18 +29,32 @@ use starknet::ContractAddress;
 
     use debug::PrintTrait;
 
+    impl RuneStatisticRarityIsPercentLegacyHash of hash::LegacyHash::<(RuneStatistic, RuneRarity, bool)> {
+    fn hash(state: felt252, value: (RuneStatistic, RuneRarity, bool)) -> felt252 {
+        let mut buf: Array<felt252> = array![];
+        value.serialize(ref buf);
+
+        // Poseidon is used here on the whole span to have a unique
+        // key based on the content. Several other options are available here.
+        let k = poseidon::poseidon_hash_span(buf.span());
+        hash::LegacyHash::hash(state, k)
+    }
+}
+
 
     #[storage]
     struct Storage {
         baseStatistics: LegacyMap<felt252, BaseStatistics::BaseStatistics>,
-        // runesStatsTable: LegacyMap<(RuneStatistic, RuneRarity, bool), u32>,
-        // runesBonusStatsTable: LegacyMap<(RuneStatistic, RuneRarity, bool), u32>,
+        runesStatsTable: LegacyMap<(RuneStatistic, RuneRarity, bool), u32>,
+        runesBonusStatsTable: LegacyMap<(RuneStatistic, RuneRarity, bool), u32>,
         accountsAdrs: ContractAddress,
     }
 
     #[constructor]
     fn constructor(ref self: ContractState) {
         self.initBaseStatisticsDict();
+        self.initRunesTable();
+        self.initBonusRunesTable();
     }
 
     #[external(v0)]
@@ -142,28 +158,28 @@ use starknet::ContractAddress;
             self.baseStatistics.write('priest', BaseStatistics::new(1500, 200, 100, 160, 10, 100));
             self.baseStatistics.write('hunter', BaseStatistics::new(1400, 100, 100, 170, 10, 200));
         }
-        // fn initRunesTable(ref self: ContractState) {
-        //     self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 300);
-        //     self.runesStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, false), 30);
-        //     self.runesStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, false), 30);
-        //     self.runesStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, false), 20);
+        fn initRunesTable(ref self: ContractState) {
+            self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 300);
+            self.runesStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, false), 30);
+            self.runesStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, false), 30);
+            self.runesStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, false), 20);
 
-        //     self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, true), 10);
-        //     self.runesStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, true), 10);
-        //     self.runesStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, true), 10);
-        //     self.runesStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, true), 10);
-        // }
-        // fn initBonusRunesTable(ref self: ContractState) {
-        //     self.runesBonusStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 50);
-        //     self.runesBonusStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, false), 5);
-        //     self.runesBonusStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, false), 5);
-        //     self.runesBonusStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, false), 3);
+            self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, true), 10);
+            self.runesStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, true), 10);
+            self.runesStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, true), 10);
+            self.runesStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, true), 10);
+        }
+        fn initBonusRunesTable(ref self: ContractState) {
+            self.runesBonusStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 50);
+            self.runesBonusStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, false), 5);
+            self.runesBonusStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, false), 5);
+            self.runesBonusStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, false), 3);
 
-        //     self.runesBonusStatsTable.write((RuneStatistic::Health, RuneRarity::Common, true), 2);
-        //     self.runesBonusStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, true), 2);
-        //     self.runesBonusStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, true), 2);
-        //     self.runesBonusStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, true), 2);
-        // }
+            self.runesBonusStatsTable.write((RuneStatistic::Health, RuneRarity::Common, true), 2);
+            self.runesBonusStatsTable.write((RuneStatistic::Attack, RuneRarity::Common, true), 2);
+            self.runesBonusStatsTable.write((RuneStatistic::Defense, RuneRarity::Common, true), 2);
+            self.runesBonusStatsTable.write((RuneStatistic::Speed, RuneRarity::Common, true), 2);
+        }
 
     }
 
