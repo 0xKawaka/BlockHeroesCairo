@@ -24,6 +24,7 @@ fn new(value: u64, target: bool, aoe: bool, self: bool, damageType: DamageType) 
 
 trait DamageTrait {
     fn apply(self: Damage, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn computeDamage(self: Damage, ref caster: Entity, ref target: Entity) -> u64;
 }
 
 impl DamageImpl of DamageTrait {
@@ -40,30 +41,32 @@ impl DamageImpl of DamageTrait {
                     break;
                 }
                 let mut enemy = *enemies[i];
-                // DamageType::Flat => {
-                //     let damage = self.value * (caster.getAttack() / enemy.getDefense());
-                //     enemy.takeDamage(damage);
-                // },
-                // DamageType::Percent => {
-                //     let damage = self.value * caster.getMaxHealth() / 100;
-                //     enemy.takeDamage(damage);
-                // },
-                let damage = self.value * (caster.getAttack() / enemy.getDefense());
+                let damage = self.computeDamage(ref caster, ref enemy);
                 enemy.takeDamage(damage);
                 battle.entities.set(enemy.getIndex(), enemy);
                 i += 1;
             }
         } else {
             if (self.self) {
-                let damage = self.value * (caster.getAttack() / caster.getDefense());
+                let damage = self.computeDamage(ref caster, ref caster);
                 caster.takeDamage(damage);
-                battle.entities.set(caster.index, caster);
+                battle.entities.set(caster.getIndex(), caster);
             }
             if (self.target) {
-                let damage = self.value * (caster.getAttack() / target.getDefense());
+                let damage = self.computeDamage(ref caster, ref target);
                 target.takeDamage(damage);
-                battle.entities.set(target.index, target);
+                battle.entities.set(target.getIndex(), target);
             }
+        }
+    }
+    fn computeDamage(self: Damage, ref caster: Entity, ref target: Entity) -> u64 {
+        match self.damageType {
+            DamageType::Flat => {
+                return self.value * (caster.getAttack() / target.getDefense());
+            },
+            DamageType::Percent => {
+                return self.value * target.getMaxHealth() / 100;
+            },
         }
     }
 }

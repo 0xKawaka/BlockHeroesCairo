@@ -7,6 +7,21 @@ use snforge_std::{declare, ContractClassTrait};
 
 use starknet::get_caller_address;
 
+use game::Contracts::Game::IGameDispatcher;
+use game::Contracts::Game::IGameDispatcherTrait;
+use game::Contracts::Accounts::IAccountsDispatcher;
+use game::Contracts::Accounts::IAccountsDispatcherTrait;
+use game::Contracts::Battles::IBattlesDispatcher;
+use game::Contracts::Battles::IBattlesDispatcherTrait;
+use game::Contracts::EntityFactory::IEntityFactoryDispatcher;
+use game::Contracts::EntityFactory::IEntityFactoryDispatcherTrait;
+use game::Contracts::Levels::ILevelsDispatcher;
+use game::Contracts::Levels::ILevelsDispatcherTrait;
+use game::Contracts::SkillFactory::ISkillFactoryDispatcher;
+use game::Contracts::SkillFactory::ISkillFactoryDispatcherTrait;
+use game::Contracts::EventEmitter::IEventEmitterDispatcher;
+use game::Contracts::EventEmitter::IEventEmitterDispatcherTrait;
+
 use game::Contracts::Game::IGameSafeDispatcher;
 use game::Contracts::Game::IGameSafeDispatcherTrait;
 use game::Contracts::Accounts::IAccountsSafeDispatcher;
@@ -21,6 +36,7 @@ use game::Contracts::SkillFactory::ISkillFactorySafeDispatcher;
 use game::Contracts::SkillFactory::ISkillFactorySafeDispatcherTrait;
 use game::Contracts::EventEmitter::IEventEmitterSafeDispatcher;
 use game::Contracts::EventEmitter::IEventEmitterSafeDispatcherTrait;
+
 use game::Components::Hero::{Hero, HeroImpl};
 use game::Components::Hero::EquippedRunes::{EquippedRunes, EquippedRunesImpl};
 
@@ -35,21 +51,18 @@ fn deployContract(name: felt252) -> ContractAddress {
 fn addHeroes() {
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
-    // let battlesAdrs = deployContract('Battles');
-    // let factoryAdrs = deployContract('EntityFactory');
 
-    let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
-    let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
-    // let battlesDispatcher = IBattlesSafeDispatcher { contract_address: battlesAdrs };
-    // let entityF= IEntityFactorySafeDispatcher { contract_address: factoryAdrs };
+    let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
+
     gameDispatcher.setIAccountsDispatch(accountsAdrs);
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
     gameDispatcher.createAccount('usernameTest');
     accountsDispatcher.mintHeroAdmin(testAdrs, 'priest', 10, 1);
     accountsDispatcher.mintHeroAdmin(testAdrs, 'knight', 1, 2);
-    let hero0 = accountsDispatcher.getHero(testAdrs, 0).unwrap();
-    let hero1 = accountsDispatcher.getHero(testAdrs, 1).unwrap();
+    let hero0 = accountsDispatcher.getHero(testAdrs, 0);
+    let hero1 = accountsDispatcher.getHero(testAdrs, 1);
     assert(hero0.name == 'priest' && hero0.level == 10 &&  hero0.rank == 1, 'Invalid hero');
     assert(hero1.name == 'knight', 'Invalid hero');
 }
@@ -60,8 +73,8 @@ fn mintHeroes() {
     let accountsAdrs = deployContract('Accounts');
     let eventEmitterAdrs = deployContract('EventEmitter');
 
-    let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
-    let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
+    let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
 
     gameDispatcher.setIAccountsDispatch(accountsAdrs);
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
@@ -69,13 +82,13 @@ fn mintHeroes() {
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
 
-    let gameAccountsAdrs = gameDispatcher.getAccountsAdrs().unwrap();
+    let gameAccountsAdrs = gameDispatcher.getAccountsAdrs();
     assert(gameAccountsAdrs == accountsAdrs, 'Invalid accounts address');
     gameDispatcher.createAccount('usernameTest');
-    let accountTest =  accountsDispatcher.getAccount(testAdrs).unwrap();
+    let accountTest =  accountsDispatcher.getAccount(testAdrs);
     assert(accountTest.username == 'usernameTest', 'Invalid username');
     gameDispatcher.mintHero();
-    let hero = accountsDispatcher.getHero(testAdrs, 0).unwrap();
+    let hero = accountsDispatcher.getHero(testAdrs, 0);
     assert(hero.name != 0, 'Hero not minted');
 }
 
@@ -85,8 +98,8 @@ fn mintAndUpgradeRunes(){
     let accountsAdrs = deployContract('Accounts');
     let eventEmitterAdrs = deployContract('EventEmitter');
 
-    let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
-    let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
+    let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
 
     gameDispatcher.setIAccountsDispatch(accountsAdrs);
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
@@ -110,7 +123,7 @@ fn mintAndUpgradeRunes(){
     gameDispatcher.upgradeRune(1);
     gameDispatcher.upgradeRune(1);
     gameDispatcher.upgradeRune(1);
-    let rune = accountsDispatcher.getRune(testAdrs, 1).unwrap();
+    let rune = accountsDispatcher.getRune(testAdrs, 1);
     assert(rune.rank == 4, 'Invalid rune rank');
 }
 
@@ -124,8 +137,8 @@ fn equipRunes(){
     let levelsAdrs = deployContract('Levels');
     let eventEmitterAdrs = deployContract('EventEmitter');
 
-    let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
-    let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
+    let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
 
     gameDispatcher.setIAccountsDispatch(accountsAdrs);
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
@@ -148,7 +161,7 @@ fn equipRunes(){
     // hero.getRunes().print();
 }
 
-#[test]
+// #[test]
 fn startBattle(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -158,12 +171,12 @@ fn startBattle(){
     let levelsAdrs = deployContract('Levels');
     let eventEmitterAdrs = deployContract('EventEmitter');
 
-    let gameDispatcher = IGameSafeDispatcher { contract_address: gameAdrs };
-    let accountsDispatcher = IAccountsSafeDispatcher { contract_address: accountsAdrs };
-    let battlesDispatcher = IBattlesSafeDispatcher { contract_address: battlesAdrs };
-    let entityFactoryDispatcher = IEntityFactorySafeDispatcher { contract_address: entityFactoryAdrs };
-    let skillentityF= ISkillFactorySafeDispatcher { contract_address: levelsAdrs };
-    let levelsDispatcher = ILevelsSafeDispatcher { contract_address: levelsAdrs };
+    let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
+    let battlesDispatcher = IBattlesDispatcher { contract_address: battlesAdrs };
+    let entityFactoryDispatcher = IEntityFactoryDispatcher { contract_address: entityFactoryAdrs };
+    let skillentityF= ISkillFactoryDispatcher { contract_address: levelsAdrs };
+    let levelsDispatcher = ILevelsDispatcher { contract_address: levelsAdrs };
 
     gameDispatcher.setIAccountsDispatch(accountsAdrs);
     entityFactoryDispatcher.setAccountsAdrs(accountsAdrs);
@@ -182,5 +195,42 @@ fn startBattle(){
     gameDispatcher.mintHero();
     let heroIds: Array<u32> = array![1, 2];
     gameDispatcher.startBattle(heroIds, 0, 1);
-    // gameDispatcher.playTurn(1, 2);
+}
+
+#[test]
+fn battle(){
+    let gameAdrs = deployContract('Game');
+    let accountsAdrs = deployContract('Accounts');
+    let battlesAdrs = deployContract('Battles');
+    let entityFactoryAdrs = deployContract('EntityFactory');
+    let skillFactoryAdrs = deployContract('SkillFactory');
+    let levelsAdrs = deployContract('Levels');
+    let eventEmitterAdrs = deployContract('EventEmitter');
+
+    let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
+    let battlesDispatcher = IBattlesDispatcher { contract_address: battlesAdrs };
+    let entityFactoryDispatcher = IEntityFactoryDispatcher { contract_address: entityFactoryAdrs };
+    let skillentityF= ISkillFactoryDispatcher { contract_address: levelsAdrs };
+    let levelsDispatcher = ILevelsDispatcher { contract_address: levelsAdrs };
+
+    gameDispatcher.setIAccountsDispatch(accountsAdrs);
+    entityFactoryDispatcher.setAccountsAdrs(accountsAdrs);
+    gameDispatcher.setIEntityFactoryDispatch(entityFactoryAdrs);
+    gameDispatcher.setILevelsDispatch(levelsAdrs);
+    gameDispatcher.setIBattlesDispatch(battlesAdrs);
+    battlesDispatcher.setISkillFactoryDispatch(skillFactoryAdrs);
+    battlesDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+    accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+    
+    let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
+    snforge_std::start_prank(gameAdrs, testAdrs);
+    gameDispatcher.createAccount('usernameTest');
+    gameDispatcher.mintHero();
+    gameDispatcher.mintHero();
+    gameDispatcher.mintHero();
+    let heroIds: Array<u32> = array![1, 2];
+    gameDispatcher.startBattle(heroIds, 0, 1);
+    // gameDispatcher.playTurn(2, 1);
+    gameDispatcher.playTurn(0, 2);
 }

@@ -63,7 +63,16 @@ impl SkillImpl of SkillTrait {
         self.castOnTarget(skillIndex, ref caster, ref target, ref battle);
     }
     fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+        match self.targetType {
+            TargetType::Ally => {
+                assert(battle.isAllyOf(caster.getIndex(),  target.getIndex()), 'Target should be ally');
+            },
+            TargetType::Enemy => {
+                assert(!battle.isAllyOf(caster.getIndex(),  target.getIndex()), 'Target should be enemy');
+            },
+        }
         PrintTrait::print('caster:');
+        PrintTrait::print(caster.name);
         PrintTrait::print(caster.getIndex());
         PrintTrait::print(self.name);
         PrintTrait::print('target:');

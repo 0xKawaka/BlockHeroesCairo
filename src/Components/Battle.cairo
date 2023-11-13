@@ -48,7 +48,7 @@ fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities:
 
 trait BattleTrait {
     fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
-    fn playTurn(ref self: Battle, spellIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher);
+    fn playTurn(ref self: Battle, skillIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity);
     fn loopUntilNextTurn(ref self: Battle);
     fn updateTurnBarsSpeed(ref self: Battle);
@@ -58,6 +58,7 @@ trait BattleTrait {
     fn waitForPlayerAction(ref self: Battle);
     fn checkBattleOver(ref self: Battle) -> bool;
     fn isAlly(ref self: Battle, entityIndex: u32) -> bool;
+    fn isAllyOf(ref self: Battle, entityIndex: u32, isAllyIndex: u32) -> bool;
     fn getAlliesOf(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
     fn getEnemiesOf(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
     fn getAllAllies(ref self: Battle) -> Array<Entity::Entity>;
@@ -75,25 +76,24 @@ impl BattleImpl of BattleTrait {
     fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         let mut i: u32 = 0;
         loop {
+            // PrintTrait::print('self.isWaitingForPlayerAction');
+            // self.isWaitingForPlayerAction.print();
             if (self.isBattleOver || self.isWaitingForPlayerAction) {
                 break;
             }
             self.loopUntilNextTurn();
             let mut entity = self.getEntityHighestTurn();
+            // entity.print();
             self.processHealthOnTurnProcs(ref entity);
             entity.playTurn(ref self);
             i += 1;
         };
     }
-    fn playTurn(ref self: Battle, spellIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher) {
+    fn playTurn(ref self: Battle, skillIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher) {
         assert(!self.isBattleOver, 'Battle is over');
         assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
-        assert(!self.isAlly(targetIndex), 'Target is not an enemy');
-        let mut target = self.getEntityByIndex(targetIndex);
-        assert(!target.isDead(), 'Target is dead');
         let mut entity = self.getEntityHighestTurn();
-        assert(!entity.cooldowns.isOnCooldown(spellIndex), 'Spell is on cooldown');
-        entity.playTurnPlayer(spellIndex, ref target, ref self);
+        entity.playTurnPlayer(skillIndex, targetIndex, ref self);
         let mut target = self.getEntityByIndex(targetIndex);
         PrintTrait::print('Target health after:');
         target.getHealth().print();
@@ -236,6 +236,12 @@ impl BattleImpl of BattleTrait {
     }
     fn isAlly(ref self: Battle, entityIndex: u32) -> bool {
         return ArrayHelper::includes(@self.alliesIndexes, @entityIndex);
+    }
+    fn isAllyOf(ref self: Battle, entityIndex: u32, isAllyIndex: u32) -> bool {
+        if (self.isAlly(entityIndex)) {
+            return self.isAlly(isAllyIndex);
+        }
+        return !self.isAlly(isAllyIndex);
     }
     fn getAlliesOf(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity> {
         if (self.isAlly(entityIndex)) {

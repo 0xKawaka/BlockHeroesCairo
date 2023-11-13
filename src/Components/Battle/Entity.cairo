@@ -58,7 +58,7 @@ fn new(index: u32, name: felt252, health: u64, attack: u64, defense: u64, speed:
 
 trait EntityTrait {
     fn playTurn(ref self: Entity, ref battle: Battle);
-    fn playTurnPlayer(ref self: Entity, skillIndex: u8, ref target: Entity, ref battle: Battle);
+    fn playTurnPlayer(ref self: Entity, skillIndex: u8, targetIndex: u32, ref battle: Battle);
     fn endTurn(ref self: Entity, ref battle: Battle);
     fn die(ref self: Entity, ref battle: Battle);
     fn pickSkill(ref self: Entity) -> u8;
@@ -101,6 +101,8 @@ impl EntityImpl of EntityTrait {
             match self.allyOrEnemy {
                 AllyOrEnemy::Ally => {
                     battle.waitForPlayerAction();
+                    self.name.print();
+                    self.index.print();
                     battle.entities.set(self.getIndex(), self);
                 },
                 AllyOrEnemy::Enemy => {
@@ -109,12 +111,15 @@ impl EntityImpl of EntityTrait {
                     let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
                     skill.cast(skillIndex, ref self, ref battle);
                     self.endTurn(ref battle);
+                    PrintTrait::print(*self.getTurnBar().turnbar);
                 },
             }
         }
     }
-    fn playTurnPlayer(ref self: Entity, skillIndex: u8, ref target: Entity, ref battle: Battle) {
-        let skillIndex = self.pickSkill();
+    fn playTurnPlayer(ref self: Entity, skillIndex: u8, targetIndex: u32, ref battle: Battle) {
+        let mut target = battle.getEntityByIndex(targetIndex);
+        assert(!target.isDead(), 'Target is dead');
+        assert(!self.cooldowns.isOnCooldown(skillIndex), 'Skill is on cooldown');
         let skillSet = battle.skillSets.get(self.index).unwrap().unbox();
         let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
         skill.castOnTarget(skillIndex, ref self, ref target, ref battle);
@@ -179,6 +184,8 @@ impl EntityImpl of EntityTrait {
         self.statistics.health -= i64Impl::new(damage, false);
     }
     fn takeHeal(ref self: Entity, heal: u64) {
+        PrintTrait::print('takeHeal');
+        heal.print();
         self.statistics.health += i64Impl::new(heal, false);
     }
     fn incrementTurnbar(ref self: Entity) {

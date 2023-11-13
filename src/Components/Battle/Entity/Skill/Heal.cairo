@@ -24,6 +24,7 @@ fn new(value: u64, target: bool, aoe: bool, self: bool, healType: HealType) -> H
 
 trait HealTrait {
     fn apply(self: Heal, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn computeHeal(self: Heal, ref caster: Entity, ref target: Entity) -> u64;
 }
 
 impl HealImpl of HealTrait {
@@ -40,23 +41,32 @@ impl HealImpl of HealTrait {
                     break;
                 }
                 let mut ally = *allies[i];
-                let heal = (self.value * ally.getMaxHealth()) / 100;
+                let heal = self.computeHeal(ref caster, ref ally);
                 ally.takeHeal(heal);
                 battle.entities.set(ally.index, ally);
                 i += 1;
             }
         } else {
             if (self.self) {
-                let heal = (self.value * caster.getMaxHealth()) / 100;
+                let heal = self.computeHeal(ref caster, ref caster);
                 caster.takeHeal(heal);
                 battle.entities.set(caster.index, caster);
             }
             if (self.target) {
-                let heal = (self.value * target.getMaxHealth()) / 100;
+                let heal = self.computeHeal(ref caster, ref target);
                 target.takeHeal(heal);
                 battle.entities.set(target.index, target);
             }
         }
-
+    }
+    fn computeHeal(self: Heal, ref caster: Entity, ref target: Entity) -> u64 {
+        match self.healType {
+            HealType::Flat => {
+                return self.value;
+            },
+            HealType::Percent => {
+                return self.value * target.getMaxHealth() / 100;
+            },
+        }
     }
 }
