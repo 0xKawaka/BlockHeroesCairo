@@ -1,7 +1,7 @@
 mod Entity;
 
 use game::Components::Hero::Hero;
-use Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
+use Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl, DamageOrHealEnum};
 use Entity::TurnBar::{TurnBarTrait, TurnBarImpl};
 use Entity::{EntityImpl, EntityTrait, AllyOrEnemy, Cooldowns::CooldownsTrait, Skill::Skill};
 use game::Libraries::NullableVector::{NullableVector, NullableVectorImpl, VecTrait};
@@ -9,6 +9,8 @@ use game::Libraries::Vector::{Vector, VectorImpl};
 use game::Libraries::ArrayHelper;
 use game::Libraries::SignedIntegers::{i64::i64Impl};
 use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
+
+use starknet::ContractAddress;
 
 use core::box::BoxTrait;
 use core::option::OptionTrait;
@@ -28,9 +30,10 @@ struct Battle {
     skillSets : Array<Array<Skill>>,
     isBattleOver: bool,
     isWaitingForPlayerAction: bool,
+    owner: ContractAddress,
 }
 
-fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities: Array<u32>, turnTimeline: Array<u32>, allies: Array<u32>, enemies: Array<u32>, healthOnTurnProcs: Array<HealthOnTurnProc>, skillSets : Array<Array<Skill>>, isBattleOver: bool, isWaitingForPlayerAction: bool) -> Battle {
+fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities: Array<u32>, turnTimeline: Array<u32>, allies: Array<u32>, enemies: Array<u32>, healthOnTurnProcs: Array<HealthOnTurnProc>, skillSets : Array<Array<Skill>>, isBattleOver: bool, isWaitingForPlayerAction: bool, owner: ContractAddress) -> Battle {
     let mut battle = Battle {
         entities: NullableVectorImpl::newFromArray(entities),
         aliveEntities: VectorImpl::newFromArray(aliveEntities),
@@ -42,6 +45,7 @@ fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities:
         skillSets : skillSets,
         isBattleOver: isBattleOver,
         isWaitingForPlayerAction: isWaitingForPlayerAction,
+        owner: owner,
     };
     return battle;
 }
@@ -49,7 +53,7 @@ fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities:
 trait BattleTrait {
     fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn playTurn(ref self: Battle, skillIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher);
-    fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity);
+    fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn loopUntilNextTurn(ref self: Battle);
     fn updateTurnBarsSpeed(ref self: Battle);
     fn incrementTurnBars(ref self: Battle);
@@ -67,6 +71,7 @@ trait BattleTrait {
     fn getAllEnemiesButIndex(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
     fn getHealthOnTurnProcsEntity(ref self: Battle, entityIndex: u32) -> Array<HealthOnTurnProc>;
     fn getEntityByIndex(ref self: Battle, entityIndex: u32) -> Entity::Entity;
+    fn getOwner(self: Battle) -> ContractAddress;
     fn printAllEntities(ref self: Battle);
     fn printTurnTimeline(ref self: Battle);
     fn print(ref self: Battle);
@@ -84,8 +89,8 @@ impl BattleImpl of BattleTrait {
             self.loopUntilNextTurn();
             let mut entity = self.getEntityHighestTurn();
             // entity.print();
-            self.processHealthOnTurnProcs(ref entity);
-            entity.playTurn(ref self);
+            self.processHealthOnTurnProcs(ref entity, IEventEmitterDispatch);
+            entity.playTurn(ref self, IEventEmitterDispatch);
             i += 1;
         };
     }
@@ -93,7 +98,7 @@ impl BattleImpl of BattleTrait {
         assert(!self.isBattleOver, 'Battle is over');
         assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
         let mut entity = self.getEntityHighestTurn();
-        entity.playTurnPlayer(skillIndex, targetIndex, ref self);
+        entity.playTurnPlayer(skillIndex, targetIndex, ref self, IEventEmitterDispatch);
         let mut target = self.getEntityByIndex(targetIndex);
         PrintTrait::print('Target health after:');
         target.getHealth().print();
@@ -101,10 +106,12 @@ impl BattleImpl of BattleTrait {
         self.isWaitingForPlayerAction = false;
         self.battleLoop(IEventEmitterDispatch);
     }
-    fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity) {
+    fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity, IEventEmitterDispatch: IEventEmitterDispatcher) {
         if(self.healthOnTurnProcs.len() == 0) {
             return;
         }
+        let mut damageArray: Array<u64> = Default::default();
+        let mut healArray: Array<u64> = Default::default();
         let mut i: u32 = 0;
         loop {
             if (i >= self.healthOnTurnProcs.len()) {
@@ -112,7 +119,12 @@ impl BattleImpl of BattleTrait {
             }
             let mut onTurnProc = self.healthOnTurnProcs.getValue(i);
             if (onTurnProc.getEntityIndex() == entity.getIndex()) {
-                onTurnProc.proc(ref entity);
+                let damageOrHealVal = onTurnProc.proc(ref entity);
+                match onTurnProc.damageOrHeal {
+                    DamageOrHealEnum::Damage => damageArray.append(damageOrHealVal),
+                    DamageOrHealEnum::Heal => healArray.append(damageOrHealVal),
+                }
+                
                 if(onTurnProc.isExpired()) {
                     self.healthOnTurnProcs.remove(i);
                     i = i - 1;
@@ -123,6 +135,7 @@ impl BattleImpl of BattleTrait {
             }
             i = i + 1;
         };
+        IEventEmitterDispatch.healthOnTurnProcs(self.owner, entity.getIndex(), damageArray, healArray);
         // self.entities.set(entity.getIndex(), entity);
     }
     fn loopUntilNextTurn(ref self: Battle) {
@@ -352,6 +365,9 @@ impl BattleImpl of BattleTrait {
     }
     fn getEntityByIndex(ref self: Battle, entityIndex: u32) -> Entity::Entity {
         return self.entities.getValue(entityIndex);
+    }
+    fn getOwner(self: Battle) -> ContractAddress {
+        return self.owner;
     }
     fn printTurnTimeline(ref self: Battle) {
         let mut i: u32 = 0;

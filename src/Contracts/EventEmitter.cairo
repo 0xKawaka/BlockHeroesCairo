@@ -6,8 +6,9 @@ use game::Components::Hero::{Rune};
 trait IEventEmitter<TContractState> {
     fn newBattle(ref self: TContractState, owner: ContractAddress, allies: Span<Entity>, enemies: Span<Entity>);
     fn playingTurn(ref self: TContractState, owner: ContractAddress, entityId: u32, turnBars: Array<u64>);
-    fn skillEvent(ref self: TContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<u64>, heals: Array<u64>);
-    fn healthOnTurnProcsEvent(ref self: TContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>);
+    fn skill(ref self: TContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damagesById: Array<(u32, u64)>, healsById: Array<(u32, u64)>);
+    fn healthOnTurnProcs(ref self: TContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>);
+    fn death(ref self: TContractState, owner: ContractAddress, entityId: u32);
     fn newAccount(ref self: TContractState, owner: ContractAddress, username: felt252);
     fn heroMinted(ref self: TContractState, owner: ContractAddress, heroName: felt252);
     fn runeMinted(ref self: TContractState, owner: ContractAddress, rune: Rune::Rune);
@@ -28,8 +29,10 @@ mod EventEmitter {
     enum Event {
         NewBattle: NewBattle,
         PlayingTurn: PlayingTurn,
-        SkillEvent: SkillEvent,
-        HealthOnTurnProcsEvent: HealthOnTurnProcsEvent,
+        Skill: Skill,
+        // Buff: Buff,
+        HealthOnTurnProcs: HealthOnTurnProcs,
+        Death: Death,
 
         NewAccount: NewAccount,
         HeroMinted: HeroMinted,
@@ -49,22 +52,31 @@ mod EventEmitter {
         turnBars: Array<u64>,
     }
     #[derive(Drop, starknet::Event)]
-    struct SkillEvent {
+    struct Skill {
         owner: ContractAddress,
         casterId: u32,
         targetId: u32,
         skillIndex: u8,
-        damages: Array<u64>,
-        heals: Array<u64>,
+        damagesById: Array<(u32, u64)>,
+        healsById: Array<(u32, u64)>,
     }
+    // #[derive(Drop, starknet::Event)]
+    // struct BuffStartTurn {
+    //     owner: ContractAddress,
+    //     entityId: u32,
+    // }
     #[derive(Drop, starknet::Event)]
-    struct HealthOnTurnProcsEvent {
+    struct HealthOnTurnProcs {
         owner: ContractAddress,
         entityId: u32,
         damages: Array<u64>,
         heals: Array<u64>,
     }
-
+    #[derive(Drop, starknet::Event)]
+    struct Death {
+        owner: ContractAddress,
+        entityId: u32,
+    }
     #[derive(Drop, starknet::Event)]
     struct NewAccount {
         owner: ContractAddress,
@@ -100,23 +112,30 @@ mod EventEmitter {
             });
         }
 
-        fn skillEvent(ref self: ContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<u64>, heals: Array<u64>) {
-            self.emit(SkillEvent {
+        fn skill(ref self: ContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damagesById: Array<(u32, u64)>, healsById: Array<(u32, u64)>) {
+            self.emit(Skill {
                 owner: owner,
                 casterId: casterId,
                 targetId: targetId,
                 skillIndex: skillIndex,
+                damagesById: damagesById,
+                healsById: healsById,
+            });
+        }
+
+        fn healthOnTurnProcs(ref self: ContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>) {
+            self.emit(HealthOnTurnProcs {
+                owner: owner,
+                entityId: entityId,
                 damages: damages,
                 heals: heals,
             });
         }
 
-        fn healthOnTurnProcsEvent(ref self: ContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>) {
-            self.emit(HealthOnTurnProcsEvent {
+        fn death(ref self: ContractState, owner: ContractAddress, entityId: u32) {
+            self.emit(Death {
                 owner: owner,
                 entityId: entityId,
-                damages: damages,
-                heals: heals,
             });
         }
 

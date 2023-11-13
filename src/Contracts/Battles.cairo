@@ -154,7 +154,7 @@ mod Battles {
             };
             let skillSets = self.ISkillFactoryDispatch.read().getSkillSets(entitiesNames);
 
-            let battle = Battle::new(entities, aliveEntities, deadEntities, turnTimeline, allies, enemies, healthOnTurnProcs, skillSets, self.isBattleOver.read(owner), self.isWaitingForPlayerAction.read(owner));
+            let battle = Battle::new(entities, aliveEntities, deadEntities, turnTimeline, allies, enemies, healthOnTurnProcs, skillSets, self.isBattleOver.read(owner), self.isWaitingForPlayerAction.read(owner), owner);
             return battle;
         }
         fn getHealthOnTurnProcs(ref self: ContractState, owner: ContractAddress) -> Array<HealthOnTurnProc> {

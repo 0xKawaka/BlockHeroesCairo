@@ -68,18 +68,18 @@ use core::array::ArrayTrait;
     #[generate_trait]
     impl InternalSkillFactoryImpl of InternalSkillFactoryTrait {
         fn initSkills(ref self: ContractState) {
-            self.skills.write('Attack Knight', SkillWithoutBuffs::new('Attack Knight', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
-            self.skills.write('Fire Swing', SkillWithoutBuffs::new('Fire Swing', 1, Damage::new(20, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
-            self.skills.write('Fire Strike', SkillWithoutBuffs::new('Fire Strike', 1, Damage::new(20, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
-            self.skills.write('Attack Priest', SkillWithoutBuffs::new('Attack Priest', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
+            self.skills.write('Attack Knight', SkillWithoutBuffs::new('Attack Knight', 1, Damage::new(100, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
+            self.skills.write('Fire Swing', SkillWithoutBuffs::new('Fire Swing', 1, Damage::new(200, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
+            self.skills.write('Fire Strike', SkillWithoutBuffs::new('Fire Strike', 1, Damage::new(200, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
+            self.skills.write('Attack Priest', SkillWithoutBuffs::new('Attack Priest', 1, Damage::new(100, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
             self.skills.write('Water Heal', SkillWithoutBuffs::new('Water Heal', 3, Damage::new(0, false, false, false, Damage::DamageType::Flat), Skill::Heal::new(10, false, true, false, Heal::HealType::Percent), TargetType::Ally, 1));
             self.skills.write('Water Shield', SkillWithoutBuffs::new('Water Shield', 2, Damage::new(0, false, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Ally, 1));
-            self.skills.write('Attack Hunter', SkillWithoutBuffs::new('Attack Hunter', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
+            self.skills.write('Attack Hunter', SkillWithoutBuffs::new('Attack Hunter', 1, Damage::new(100, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
             self.skills.write('Arrows Rain', SkillWithoutBuffs::new('Arrows Rain', 1, Damage::new(0, false, true, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
             self.skills.write('Forest Senses', SkillWithoutBuffs::new('Forest Senses', 1, Damage::new(0, false, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Ally, 1));
-            self.skills.write('Attack Assassin', SkillWithoutBuffs::new('Attack Assassin', 1, Damage::new(10, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
-            self.skills.write('Sand Strike', SkillWithoutBuffs::new('Sand Strike', 1, Damage::new(20, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
-            self.skills.write('Sandstorm', SkillWithoutBuffs::new('Sandstorm', 1, Damage::new(10, false, true, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
+            self.skills.write('Attack Assassin', SkillWithoutBuffs::new('Attack Assassin', 1, Damage::new(100, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
+            self.skills.write('Sand Strike', SkillWithoutBuffs::new('Sand Strike', 1, Damage::new(200, true, false, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
+            self.skills.write('Sandstorm', SkillWithoutBuffs::new('Sandstorm', 1, Damage::new(100, false, true, false, Damage::DamageType::Flat), Skill::Heal::new(0, false, false, false, Heal::HealType::Percent), TargetType::Enemy, 1));
         }
         fn initSkillsBuffs(ref self: ContractState) {
             let mut FireSwingBuffs = self.skillsBuffs.read('Fire Swing');

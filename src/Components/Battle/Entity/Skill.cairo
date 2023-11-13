@@ -9,6 +9,7 @@ use game::Components::Battle::Entity::Skill::Heal::{HealImpl};
 use game::Components::Battle::Entity::{Entity, EntityTrait};
 use game::Components::Battle::{Battle, BattleImpl};
 use game::Libraries::Random::rand32;
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
 use starknet::get_block_timestamp;
 
 use debug::PrintTrait;
@@ -48,21 +49,21 @@ fn new(
 }
 
 trait SkillTrait {
-    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle);
-    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
+    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
+    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<(u32, u64)>;
+    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<(u32, u64)> ;
     fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity;
     fn print(self: @Skill);
 }
 
 impl SkillImpl of SkillTrait {
-    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle) {
+    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         let mut target = self.pickTarget(caster, ref battle);
-        self.castOnTarget(skillIndex, ref caster, ref target, ref battle);
+        self.castOnTarget(skillIndex, ref caster, ref target, ref battle, IEventEmitterDispatch);
     }
-    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle) {
+    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         match self.targetType {
             TargetType::Ally => {
                 assert(battle.isAllyOf(caster.getIndex(),  target.getIndex()), 'Target should be ally');
@@ -77,10 +78,11 @@ impl SkillImpl of SkillTrait {
         PrintTrait::print(self.name);
         PrintTrait::print('target:');
         PrintTrait::print(target.getIndex());
-        self.applyDamage(ref caster, ref target, ref battle);
-        self.applyHeal(ref caster, ref target, ref battle);
+        let damageByIdArray = self.applyDamage(ref caster, ref target, ref battle);
+        let healByIdArray = self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
         caster.setOnCooldown(self.cooldown, skillIndex);
+        IEventEmitterDispatch.skill(battle.owner, caster.getIndex(), target.getIndex(), skillIndex, damageByIdArray, healByIdArray);
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         let  mut i: u32 = 0;
@@ -93,12 +95,12 @@ impl SkillImpl of SkillTrait {
             i += 1;
         }
     }
-    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
-        self.damage.apply(ref caster, ref target, ref battle);
+    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<(u32, u64)> {
+        return self.damage.apply(ref caster, ref target, ref battle);
         // ADD CRIT LATER
     }
-    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
-        self.heal.apply(ref caster, ref target, ref battle);
+    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<(u32, u64)> {
+        return self.heal.apply(ref caster, ref target, ref battle);
     }
     fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity {
         let mut seed = get_block_timestamp() + 22;

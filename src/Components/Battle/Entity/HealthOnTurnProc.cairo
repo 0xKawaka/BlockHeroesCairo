@@ -27,19 +27,21 @@ fn new(entityIndex: u32, value: u64, duration: u8, damageOrHeal: DamageOrHealEnu
 }
 
 trait HealthOnTurnProcTrait {
-    fn proc(ref self: HealthOnTurnProc, ref entity: Entity);
+    fn proc(ref self: HealthOnTurnProc, ref entity: Entity) -> u64;
     fn isExpired(ref self: HealthOnTurnProc) -> bool;
     fn reduceDuration(ref self: HealthOnTurnProc);
     fn getEntityIndex(self: HealthOnTurnProc) -> u32;
 }
 
 impl HealthOnTurnProcImpl of HealthOnTurnProcTrait {
-    fn proc(ref self: HealthOnTurnProc, ref entity: Entity) {
+    fn proc(ref self: HealthOnTurnProc, ref entity: Entity) -> u64 {
         self.reduceDuration();
+        let damageOrHealValue = (self.value.into() * entity.getMaxHealth()) / 100;
         match self.damageOrHeal {
-            DamageOrHealEnum::Damage => entity.takeDamage((self.value.into() * entity.getMaxHealth()) / 100),
-            DamageOrHealEnum::Heal => entity.takeHeal((self.value.into() * entity.getMaxHealth()) / 100),
+            DamageOrHealEnum::Damage => entity.takeDamage(damageOrHealValue),
+            DamageOrHealEnum::Heal => entity.takeHeal(damageOrHealValue),
         }
+        return damageOrHealValue;
     }
     fn isExpired(ref self: HealthOnTurnProc) -> bool {
         self.duration == 0

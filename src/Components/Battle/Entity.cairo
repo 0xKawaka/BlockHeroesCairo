@@ -22,10 +22,12 @@ use game::Libraries::NullableVector::{VecTrait, NullableVector};
 use game::Libraries::SignedIntegers::{i64::i64, i64::i64Impl};
 use game::Libraries::Random::{rand8};
 use game::Libraries::List::{List, ListTrait};
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
 use core::box::BoxTrait;
 use core::traits::Into;
 use debug::PrintTrait;
 use starknet::get_block_timestamp;
+
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 enum AllyOrEnemy {
@@ -57,10 +59,10 @@ fn new(index: u32, name: felt252, health: u64, attack: u64, defense: u64, speed:
 }
 
 trait EntityTrait {
-    fn playTurn(ref self: Entity, ref battle: Battle);
-    fn playTurnPlayer(ref self: Entity, skillIndex: u8, targetIndex: u32, ref battle: Battle);
+    fn playTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
+    fn playTurnPlayer(ref self: Entity, skillIndex: u8, targetIndex: u32, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn endTurn(ref self: Entity, ref battle: Battle);
-    fn die(ref self: Entity, ref battle: Battle);
+    fn die(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn pickSkill(ref self: Entity) -> u8;
     fn takeDamage(ref self: Entity, damage: u64);
     fn takeHeal(ref self: Entity, heal: u64);
@@ -88,9 +90,9 @@ trait EntityTrait {
 }
 
 impl EntityImpl of EntityTrait {
-    fn playTurn(ref self: Entity, ref battle: Battle) {
+    fn playTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         if(self.isDead()) {
-            self.die(ref battle);
+            self.die(ref battle, IEventEmitterDispatch);
             return;
         }
         if(self.isStunned()){
@@ -109,20 +111,20 @@ impl EntityImpl of EntityTrait {
                     let skillIndex = self.pickSkill();
                     let skillSet = battle.skillSets.get(self.index).unwrap().unbox();
                     let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
-                    skill.cast(skillIndex, ref self, ref battle);
+                    skill.cast(skillIndex, ref self, ref battle, IEventEmitterDispatch);
                     self.endTurn(ref battle);
                     PrintTrait::print(*self.getTurnBar().turnbar);
                 },
             }
         }
     }
-    fn playTurnPlayer(ref self: Entity, skillIndex: u8, targetIndex: u32, ref battle: Battle) {
+    fn playTurnPlayer(ref self: Entity, skillIndex: u8, targetIndex: u32, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         let mut target = battle.getEntityByIndex(targetIndex);
         assert(!target.isDead(), 'Target is dead');
         assert(!self.cooldowns.isOnCooldown(skillIndex), 'Skill is on cooldown');
         let skillSet = battle.skillSets.get(self.index).unwrap().unbox();
         let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
-        skill.castOnTarget(skillIndex, ref self, ref target, ref battle);
+        skill.castOnTarget(skillIndex, ref self, ref target, ref battle, IEventEmitterDispatch);
         self.endTurn(ref battle);
     }
     fn endTurn(ref self: Entity, ref battle: Battle) {
@@ -131,7 +133,8 @@ impl EntityImpl of EntityTrait {
         self.cooldowns.reduceCooldowns();
         battle.entities.set(self.getIndex(), self);
     }
-    fn die(ref self: Entity, ref battle: Battle) {
+    fn die(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
+        IEventEmitterDispatch.death(battle.owner, self.getIndex());
         battle.deadEntities.append(self.getIndex());
         if(battle.checkBattleOver()) {
             return;
