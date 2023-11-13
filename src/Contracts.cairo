@@ -4,3 +4,4 @@ mod Battles;
 mod EntityFactory;
 mod SkillFactory;
 mod Levels;
+mod EventEmitter;

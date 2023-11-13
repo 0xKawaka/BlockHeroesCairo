@@ -1,6 +1,7 @@
 use starknet::ContractAddress;
 use game::Components::Hero::{Hero, Rune::Rune};
 use game::Components::Account::Account;
+use game::Contracts::EventEmitter::IEventEmitterDispatcher;
 
 #[starknet::interface]
 trait IAccounts<TContractState> {
@@ -10,6 +11,7 @@ trait IAccounts<TContractState> {
     fn mintHeroAdmin(ref self: TContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16);
     fn mintRune(ref self: TContractState, accountAdrs: ContractAddress);
     fn createAccount(ref self: TContractState,  username: felt252, accountAdrs: ContractAddress);
+    fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
     fn getAccount(self: @TContractState, accountAdrs: ContractAddress) -> Account;
     fn getHero(self: @TContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero;
     fn getHeroes(self: @TContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero>;
@@ -32,6 +34,7 @@ use game::Components::Hero::HeroTrait;
     use game::Components::{Account, Account::AccountImpl};
     use game::Components::{Hero, Hero::HeroImpl, Hero::Rune, Hero::EquippedRunesImpl, Hero::Rune::RuneImpl};
     use game::Libraries::List::{List, ListTrait};
+    use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
 
     use debug::PrintTrait;
 
@@ -40,30 +43,7 @@ use game::Components::Hero::HeroTrait;
         accounts: LegacyMap<ContractAddress, Account::Account>,
         heroes: LegacyMap<ContractAddress, List<Hero::Hero>>,
         runes: LegacyMap<ContractAddress, List<Rune::Rune>>,
-    }
-
-    #[event]
-    #[derive(Drop, starknet::Event)]
-    enum Event {
-        NewAccount: NewAccount,
-        HeroMinted: HeroMinted,
-        RuneMinted: RuneMinted,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct NewAccount {
-        username: felt252,
-        owner: ContractAddress,
-    }
-    #[derive(Drop, starknet::Event)]
-    struct HeroMinted {
-        owner: ContractAddress,
-        heroName: felt252,
-    }
-    #[derive(Drop, starknet::Event)]
-    struct RuneMinted {
-        owner: ContractAddress,
-        rune: Rune::Rune,
+        IEventEmitterDispatch: IEventEmitterDispatcher,
     }
 
     #[external(v0)]
@@ -107,25 +87,28 @@ use game::Components::Hero::HeroTrait;
             let mut heroesList = self.heroes.read(accountAdrs);
             let heroName = 'priest';
             heroesList.append(Hero::new(heroesList.len(), heroName, 1, 1));
-            self.emit(HeroMinted { owner: accountAdrs, heroName: heroName });
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroName);
         }
         fn mintHeroAdmin(ref self: ContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
             let mut heroesList = self.heroes.read(accountAdrs);
             heroesList.append(Hero::new(heroesList.len(), name, level, rank));
-            self.emit(HeroMinted { owner: accountAdrs, heroName: name });
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, name);
         }
         fn mintRune(ref self: ContractState, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
             let mut runesList = self.runes.read(accountAdrs);
             runesList.append(Rune::new(runesList.len()));
-            self.emit(RuneMinted { owner: accountAdrs, rune: runesList[runesList.len() - 1] });
+            self.IEventEmitterDispatch.read().runeMinted(accountAdrs, runesList[runesList.len() - 1]);
         }
         fn createAccount(ref self: ContractState, username: felt252, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner != accountAdrs, 'Account already created');
             let acc = Account::new(username, accountAdrs);
             self.accounts.write(accountAdrs, acc);
-            self.emit(NewAccount { username: username, owner: accountAdrs });
+            self.IEventEmitterDispatch.read().newAccount(accountAdrs, username);
+        }
+        fn setIEventEmitterDispatch(ref self: ContractState, eventEmitterAdrs: ContractAddress) {
+            self.IEventEmitterDispatch.write(IEventEmitterDispatcher { contract_address: eventEmitterAdrs });
         }
         fn getAccount(self: @ContractState, accountAdrs: ContractAddress) -> Account::Account {
             return self.accounts.read(accountAdrs);
@@ -176,7 +159,6 @@ use game::Components::Hero::HeroTrait;
             let heroesList = self.heroes.read(accountAdrs);
             return heroesList.array();
         }
-
     }
 
 }

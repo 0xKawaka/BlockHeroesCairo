@@ -8,6 +8,7 @@ use game::Libraries::NullableVector::{NullableVector, NullableVectorImpl, VecTra
 use game::Libraries::Vector::{Vector, VectorImpl};
 use game::Libraries::ArrayHelper;
 use game::Libraries::SignedIntegers::{i64::i64Impl};
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
 
 use core::box::BoxTrait;
 use core::option::OptionTrait;
@@ -46,8 +47,8 @@ fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities:
 }
 
 trait BattleTrait {
-    fn battleLoop(ref self: Battle);
-    fn playTurn(ref self: Battle, spellIndex: u8, targetIndex: u32);
+    fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
+    fn playTurn(ref self: Battle, spellIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity);
     fn loopUntilNextTurn(ref self: Battle);
     fn updateTurnBarsSpeed(ref self: Battle);
@@ -71,7 +72,7 @@ trait BattleTrait {
 }
 
 impl BattleImpl of BattleTrait {
-    fn battleLoop(ref self: Battle) {
+    fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         let mut i: u32 = 0;
         loop {
             if (self.isBattleOver || self.isWaitingForPlayerAction) {
@@ -84,7 +85,7 @@ impl BattleImpl of BattleTrait {
             i += 1;
         };
     }
-    fn playTurn(ref self: Battle, spellIndex: u8, targetIndex: u32) {
+    fn playTurn(ref self: Battle, spellIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher) {
         assert(!self.isBattleOver, 'Battle is over');
         assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
         assert(!self.isAlly(targetIndex), 'Target is not an enemy');
@@ -98,7 +99,7 @@ impl BattleImpl of BattleTrait {
         target.getHealth().print();
         // target.isStunned().print();
         self.isWaitingForPlayerAction = false;
-        self.battleLoop();
+        self.battleLoop(IEventEmitterDispatch);
     }
     fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity) {
         if(self.healthOnTurnProcs.len() == 0) {

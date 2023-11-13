@@ -5,16 +5,17 @@ use game::Components::Battle::Entity::Entity;
 trait IBattles<TContractState> {
     fn newBattle(ref self: TContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>);
     fn playTurn(ref self: TContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32);
-    fn setSkillFactoryAdrs(ref self: TContractState, skillFactoryAdrs: ContractAddress);
+    fn setISkillFactoryDispatch(ref self: TContractState, skillFactoryAdrs: ContractAddress);
+    fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
 }
 
 #[starknet::contract]
 mod Battles {
     use game::Components::Battle::Entity::Skill::SkillTrait;
-use core::box::BoxTrait;
-use core::option::OptionTrait;
-use core::array::ArrayTrait;
-use core::debug::PrintTrait;
+    use core::box::BoxTrait;
+    use core::option::OptionTrait;
+    use core::array::ArrayTrait;
+    use core::debug::PrintTrait;
     use starknet::ContractAddress;
 
     use game::Libraries::List::{List, ListTrait};
@@ -24,6 +25,7 @@ use core::debug::PrintTrait;
     use game::Components::Battle::Entity::{TurnBar::TurnBarImpl};
     use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
     use game::Contracts::SkillFactory::{ISkillFactoryDispatcher, ISkillFactoryDispatcherTrait};
+    use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
 
     #[storage]
     struct Storage {
@@ -37,62 +39,32 @@ use core::debug::PrintTrait;
         isBattleOver: LegacyMap<ContractAddress, bool>,
         isWaitingForPlayerAction: LegacyMap<ContractAddress, bool>,
 
-        skillFactoryAdrs: ContractAddress,
-    }
-
-    #[event]
-    #[derive(Drop, starknet::Event)]
-    enum Event {
-        NewBattle: NewBattle,
-        PlayingTurn: PlayingTurn,
-        SkillEvent: SkillEvent,
-        HealthOnTurnProcsEvent: HealthOnTurnProcsEvent,
-    }
-
-    #[derive(Drop, starknet::Event)]
-    struct NewBattle {
-        owner: ContractAddress,
-        allyEntites: Array<Entity>,
-        enemyEntities: Array<Entity>,
-    }
-    #[derive(Drop, starknet::Event)]
-    struct PlayingTurn {
-        owner: ContractAddress,
-        entityId: u32,
-        turnBars: Array<u64>,
-    }
-    #[derive(Drop, starknet::Event)]
-    struct SkillEvent {
-        owner: ContractAddress,
-        entityId: u32,
-        targetId: u32,
-        skillIndex: u8,
-        damages: Array<u64>,
-        heals: Array<u64>,
-    }
-    #[derive(Drop, starknet::Event)]
-    struct HealthOnTurnProcsEvent {
-        owner: ContractAddress,
-        entityId: u32,
-        damages: Array<u64>,
-        heals: Array<u64>,
+        ISkillFactoryDispatch: ISkillFactoryDispatcher,
+        IEventEmitterDispatch: IEventEmitterDispatcher,
     }
 
     #[external(v0)]
     impl BattlesImpl of super::IBattles<ContractState> {
         fn newBattle(ref self: ContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>) {
+            let alliesSpan = allyEntites.span();
+            let enemiesSpan = allyEntites.span();
             self.initBattleStorage(owner, allyEntites, enemyEntities);
+            let IEventEmitterDispatch = self.IEventEmitterDispatch.read();
+            IEventEmitterDispatch.newBattle(owner, alliesSpan, enemiesSpan);
             let mut battle = self.getBattle(owner);
-            battle.battleLoop();
+            battle.battleLoop(IEventEmitterDispatch);
             self.storeBattleState(ref battle, owner);
         }
         fn playTurn(ref self: ContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32) {
             let mut battle = self.getBattle(owner);
-            battle.playTurn(spellIndex, targetIndex);
+            battle.playTurn(spellIndex, targetIndex, self.IEventEmitterDispatch.read());
             self.storeBattleState(ref battle, owner);
         }
-        fn setSkillFactoryAdrs(ref self: ContractState, skillFactoryAdrs: ContractAddress) {
-            self.skillFactoryAdrs.write(skillFactoryAdrs);
+        fn setISkillFactoryDispatch(ref self: ContractState, skillFactoryAdrs: ContractAddress) {
+            self.ISkillFactoryDispatch.write(ISkillFactoryDispatcher { contract_address: skillFactoryAdrs });
+        }
+        fn setIEventEmitterDispatch(ref self: ContractState, eventEmitterAdrs: ContractAddress) {
+            self.IEventEmitterDispatch.write(IEventEmitterDispatcher { contract_address: eventEmitterAdrs });
         }
     }
 
@@ -180,7 +152,7 @@ use core::debug::PrintTrait;
                 entitiesNames.append(entity.name);
                 i += 1;
             };
-            let skillSets = ISkillFactoryDispatcher { contract_address: self.skillFactoryAdrs.read() }.getSkillSets(entitiesNames);
+            let skillSets = self.ISkillFactoryDispatch.read().getSkillSets(entitiesNames);
 
             let battle = Battle::new(entities, aliveEntities, deadEntities, turnTimeline, allies, enemies, healthOnTurnProcs, skillSets, self.isBattleOver.read(owner), self.isWaitingForPlayerAction.read(owner));
             return battle;

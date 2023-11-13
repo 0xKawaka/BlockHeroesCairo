@@ -135,16 +135,12 @@ fn getRandomIsPercent(seed: u64) -> bool {
 }
 
 trait RuneTrait {
-    // fn computeBonuses(self: Rune,  baseStats: BaseStatistics::BaseStatistics) -> BaseStatistics::BaseStatistics;
     fn upgrade(ref self: Rune);
     fn print(self: Rune);
     fn statisticToString(self: Rune)-> felt252;
 }
 
 impl RuneImpl of RuneTrait {
-    // fn computeBonuses(self: Rune, baseStats: BaseStatistics::BaseStatistics) -> BaseStatistics::BaseStatistics {
-    //     return BaseStatistics::new(0, 0, 0, 0, 0, 0);
-    // }
     fn upgrade(ref self: Rune) {
         self.rank += 1;
 
