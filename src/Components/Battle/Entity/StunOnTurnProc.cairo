@@ -19,7 +19,7 @@ fn new(duration: u8) -> StunOnTurnProc {
 trait StunOnTurnProcTrait {
     fn proc(ref self: StunOnTurnProc);
     fn setStunned(ref self: StunOnTurnProc, duration: u8);
-    fn isStunned(ref self: StunOnTurnProc) -> bool;
+    fn isStunned(self: StunOnTurnProc) -> bool;
     fn updateStunned(ref self: StunOnTurnProc);
 }
 
@@ -40,7 +40,7 @@ impl StunOnTurnProcImpl of StunOnTurnProcTrait {
         }
     }
 
-    fn isStunned(ref self: StunOnTurnProc) -> bool {
+    fn isStunned(self: StunOnTurnProc) -> bool {
         return self.stunned;
     }
 

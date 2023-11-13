@@ -2,12 +2,13 @@ use starknet::ContractAddress;
 use game::Components::Battle::Entity::{Entity};
 use game::Components::Hero::{Rune};
 
+use  game::Contracts::EventEmitter::EventEmitter::{DamageOrHealEvent, BuffEvent, TurnBarEvent};
+
 #[starknet::interface]
 trait IEventEmitter<TContractState> {
     fn newBattle(ref self: TContractState, owner: ContractAddress, allies: Span<Entity>, enemies: Span<Entity>);
-    fn playingTurn(ref self: TContractState, owner: ContractAddress, entityId: u32, turnBars: Array<u64>);
-    fn skill(ref self: TContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damagesById: Array<(u32, u64)>, healsById: Array<(u32, u64)>);
-    fn healthOnTurnProcs(ref self: TContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>);
+    fn skill(ref self: TContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<DamageOrHealEvent>, heals: Array<DamageOrHealEvent>, buffs: Array<BuffEvent>, status: Array<BuffEvent>); 
+    fn healthOnTurnProcs(ref self: TContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>, turnBars: Array<TurnBarEvent>);
     fn death(ref self: TContractState, owner: ContractAddress, entityId: u32);
     fn newAccount(ref self: TContractState, owner: ContractAddress, username: felt252);
     fn heroMinted(ref self: TContractState, owner: ContractAddress, heroName: felt252);
@@ -28,9 +29,7 @@ mod EventEmitter {
     #[derive(Drop, starknet::Event)]
     enum Event {
         NewBattle: NewBattle,
-        PlayingTurn: PlayingTurn,
         Skill: Skill,
-        // Buff: Buff,
         HealthOnTurnProcs: HealthOnTurnProcs,
         Death: Death,
 
@@ -45,32 +44,43 @@ mod EventEmitter {
         allies: Span<Entity>,
         enemies: Span<Entity>,
     }
-    #[derive(Drop, starknet::Event)]
-    struct PlayingTurn {
-        owner: ContractAddress,
+    #[derive(Drop, Copy, Serde)]
+    struct BuffEvent {
         entityId: u32,
-        turnBars: Array<u64>,
+        name: felt252,
+        duration: u8,
     }
+    #[derive(Drop, Copy, Serde)]
+    struct DamageOrHealEvent {
+        entityId: u32,
+        value: u64,
+    }
+
     #[derive(Drop, starknet::Event)]
     struct Skill {
         owner: ContractAddress,
         casterId: u32,
         targetId: u32,
         skillIndex: u8,
-        damagesById: Array<(u32, u64)>,
-        healsById: Array<(u32, u64)>,
+        damages: Array<DamageOrHealEvent>,
+        heals: Array<DamageOrHealEvent>,
+        buffs: Array<BuffEvent>,
+        status: Array<BuffEvent>,
     }
-    // #[derive(Drop, starknet::Event)]
-    // struct BuffStartTurn {
-    //     owner: ContractAddress,
-    //     entityId: u32,
-    // }
+
+    #[derive(Drop, Copy, Serde)]
+    struct TurnBarEvent {
+        entityId: u32,
+        value: u64,
+    }
+
     #[derive(Drop, starknet::Event)]
     struct HealthOnTurnProcs {
         owner: ContractAddress,
         entityId: u32,
         damages: Array<u64>,
         heals: Array<u64>,
+        turnBars: Array<TurnBarEvent>,
     }
     #[derive(Drop, starknet::Event)]
     struct Death {
@@ -104,31 +114,26 @@ mod EventEmitter {
             });
         }
 
-        fn playingTurn(ref self: ContractState, owner: ContractAddress, entityId: u32, turnBars: Array<u64>) {
-            self.emit(PlayingTurn {
-                owner: owner,
-                entityId: entityId,
-                turnBars: turnBars,
-            });
-        }
-
-        fn skill(ref self: ContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damagesById: Array<(u32, u64)>, healsById: Array<(u32, u64)>) {
+        fn skill(ref self: ContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<DamageOrHealEvent>, heals: Array<DamageOrHealEvent>, buffs: Array<BuffEvent>, status: Array<BuffEvent>) {
             self.emit(Skill {
                 owner: owner,
                 casterId: casterId,
                 targetId: targetId,
                 skillIndex: skillIndex,
-                damagesById: damagesById,
-                healsById: healsById,
+                damages: damages,
+                heals: heals,
+                buffs: buffs,
+                status: status,
             });
         }
 
-        fn healthOnTurnProcs(ref self: ContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>) {
+        fn healthOnTurnProcs(ref self: ContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>, turnBars: Array<TurnBarEvent>) {
             self.emit(HealthOnTurnProcs {
                 owner: owner,
                 entityId: entityId,
                 damages: damages,
                 heals: heals,
+                turnBars: turnBars,
             });
         }
 
