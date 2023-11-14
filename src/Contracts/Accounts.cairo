@@ -92,13 +92,13 @@ use game::Components::Hero::HeroTrait;
             let randIndex = rand32(get_block_timestamp(), heroesPossible.len());
             let heroName = *heroesPossible[randIndex];
             heroesList.append(Hero::new(heroesList.len(), heroName, 1, 1));
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroName);
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, heroName);
         }
         fn mintHeroAdmin(ref self: ContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
             let mut heroesList = self.heroes.read(accountAdrs);
             heroesList.append(Hero::new(heroesList.len(), name, level, rank));
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, name);
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, name);
         }
         fn mintRune(ref self: ContractState, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');

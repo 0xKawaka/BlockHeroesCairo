@@ -11,7 +11,7 @@ trait IEventEmitter<TContractState> {
     fn healthOnTurnProcs(ref self: TContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>, turnBars: Array<TurnBarEvent>);
     fn death(ref self: TContractState, owner: ContractAddress, entityId: u32);
     fn newAccount(ref self: TContractState, owner: ContractAddress, username: felt252);
-    fn heroMinted(ref self: TContractState, owner: ContractAddress, heroName: felt252);
+    fn heroMinted(ref self: TContractState, owner: ContractAddress, id: u32, name: felt252);
     fn runeMinted(ref self: TContractState, owner: ContractAddress, rune: Rune::Rune);
 }
 #[starknet::contract]
@@ -95,7 +95,8 @@ mod EventEmitter {
     #[derive(Drop, starknet::Event)]
     struct HeroMinted {
         owner: ContractAddress,
-        heroName: felt252,
+        id: u32,
+        name: felt252,
     }
     #[derive(Drop, starknet::Event)]
     struct RuneMinted {
@@ -151,10 +152,11 @@ mod EventEmitter {
             });
         }
 
-        fn heroMinted(ref self: ContractState, owner: ContractAddress, heroName: felt252) {
+        fn heroMinted(ref self: ContractState, owner: ContractAddress, id: u32, name: felt252) {
             self.emit(HeroMinted {
                 owner: owner,
-                heroName: heroName,
+                id: id,
+                name: name,
             });
         }
 
