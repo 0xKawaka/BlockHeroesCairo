@@ -83,15 +83,7 @@ impl SkillImpl of SkillTrait {
         let heals = self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
         caster.setOnCooldown(self.cooldown, skillIndex);
-    //         struct Skill {
-    //     owner: ContractAddress,
-    //     casterId: u32,
-    //     targetId: u32,
-    //     skillIndex: u8,
-    //     damages: Array<DamageOrHealEvent>,
-    //     heals: Array<DamageOrHealEvent>,
-    //     buffs: Array<BuffEvent>,
-    // }
+
         IEventEmitterDispatch.skill(battle.owner, caster.getIndex(), target.getIndex(), skillIndex, damages, heals, battle.getBuffsArray(), battle.getStatusArray());
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {

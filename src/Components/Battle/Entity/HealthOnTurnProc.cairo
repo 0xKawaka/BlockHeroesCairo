@@ -30,6 +30,7 @@ trait HealthOnTurnProcTrait {
     fn proc(ref self: HealthOnTurnProc, ref entity: Entity) -> u64;
     fn isExpired(ref self: HealthOnTurnProc) -> bool;
     fn reduceDuration(ref self: HealthOnTurnProc);
+    fn getDamageOrHeal(self: HealthOnTurnProc) -> DamageOrHealEnum;
     fn getEntityIndex(self: HealthOnTurnProc) -> u32;
 }
 
@@ -48,6 +49,9 @@ impl HealthOnTurnProcImpl of HealthOnTurnProcTrait {
     }
     fn reduceDuration(ref self: HealthOnTurnProc) {
         self.duration -= 1;
+    }
+    fn getDamageOrHeal(self: HealthOnTurnProc) -> DamageOrHealEnum {
+        self.damageOrHeal
     }
     fn getEntityIndex(self: HealthOnTurnProc) -> u32 {
         self.entityIndex

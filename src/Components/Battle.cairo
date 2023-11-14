@@ -1,3 +1,4 @@
+use game::Components::Battle::Entity::HealthOnTurnProc::HealthOnTurnProcTrait;
 mod Entity;
 
 use game::Components::Hero::Hero;
@@ -72,6 +73,8 @@ trait BattleTrait {
     fn getTurnBarsArray(ref self: Battle) -> Array<TurnBarEvent>;
     fn getBuffsArray(ref self: Battle) -> Array<BuffEvent>;
     fn getStatusArray(ref self: Battle) -> Array<BuffEvent>;
+    fn getBuffsHealthOnTurnProcs(ref self: Battle) -> Array<BuffEvent>;
+    fn getStatusHealthOnTurnProcs(ref self: Battle) -> Array<BuffEvent>;
     fn getHealthOnTurnProcsEntity(ref self: Battle, entityIndex: u32) -> Array<HealthOnTurnProc>;
     fn getEntityByIndex(ref self: Battle, entityIndex: u32) -> Entity::Entity;
     fn getOwner(self: Battle) -> ContractAddress;
@@ -366,7 +369,6 @@ impl BattleImpl of BattleTrait {
 
     }
     fn getBuffsArray(ref self: Battle) -> Array<BuffEvent> {
-        // TODO add on turn health procs
         let mut buffs: Array<BuffEvent> = ArrayTrait::new();
         let mut i: u32 = 0;
         loop {
@@ -374,7 +376,7 @@ impl BattleImpl of BattleTrait {
                 break;
             }
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
-            let mut buffsArray = entity.getBuffsArray();
+            let buffsArray = entity.getBuffsArray();
             let mut j: u32 = 0;
             loop {
                 if (j >= buffsArray.len()) {
@@ -386,11 +388,81 @@ impl BattleImpl of BattleTrait {
             };
             i = i + 1;
         };
+        let buffsHealthArray = self.getBuffsHealthOnTurnProcs();
+        let mut k: u32 = 0;
+        loop {
+            if (k >= buffsHealthArray.len()) {
+                break;
+            }
+            let buff = *buffsHealthArray[k];
+            buffs.append(buff);
+            k = k + 1;
+        };
         return buffs;
+    }
+    fn getBuffsHealthOnTurnProcs(ref self: Battle) -> Array<BuffEvent> {
+        let mut buffsHealthOnTurnProcs: Array<BuffEvent> = Default::default();
+        let mut i: u32 = 0;
+        loop {
+            if (i == self.healthOnTurnProcs.len()) {
+                break;
+            }
+            let onTurnProc = self.healthOnTurnProcs.getValue(i);
+            match onTurnProc.getDamageOrHeal() {
+                DamageOrHealEnum::Damage => (),
+                DamageOrHealEnum::Heal => buffsHealthOnTurnProcs.append(BuffEvent { entityId: onTurnProc.entityIndex, name: 'regen', duration: onTurnProc.duration }),
+            }
+            i = i + 1;
+        };
+        return buffsHealthOnTurnProcs;
     }
     fn getStatusArray(ref self: Battle) -> Array<BuffEvent> {
         let mut status: Array<BuffEvent> = ArrayTrait::new();
+        let mut i: u32 = 0;
+        loop {
+            if (i >= self.aliveEntities.len()) {
+                break;
+            }
+            let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
+            let statusArray = entity.getStatusArray();
+            let mut j: u32 = 0;
+            loop {
+                if (j >= statusArray.len()) {
+                    break;
+                }
+                let statusBuff = *statusArray[j];
+                status.append(BuffEvent { entityId: entity.index, name: statusBuff.name, duration: statusBuff.duration });
+                j = j + 1;
+            };
+            i = i + 1;
+        };
+        let statusHealthArray = self.getStatusHealthOnTurnProcs();
+        let mut k: u32 = 0;
+        loop {
+            if (k >= statusHealthArray.len()) {
+                break;
+            }
+            let statusBuff = *statusHealthArray[k];
+            status.append(statusBuff);
+            k = k + 1;
+        };
         return status;
+    }
+    fn getStatusHealthOnTurnProcs(ref self: Battle) -> Array<BuffEvent> {
+        let mut statusHealthOnTurnProcs: Array<BuffEvent> = Default::default();
+        let mut i: u32 = 0;
+        loop {
+            if (i == self.healthOnTurnProcs.len()) {
+                break;
+            }
+            let onTurnProc = self.healthOnTurnProcs.getValue(i);
+            match onTurnProc.getDamageOrHeal() {
+                DamageOrHealEnum::Damage => statusHealthOnTurnProcs.append(BuffEvent { entityId: onTurnProc.entityIndex, name: 'poison', duration: onTurnProc.duration }),
+                DamageOrHealEnum::Heal => (),
+            }
+            i = i + 1;
+        };
+        return statusHealthOnTurnProcs;
     }
     fn getHealthOnTurnProcsEntity(ref self: Battle, entityIndex: u32) -> Array<HealthOnTurnProc> {
         let mut healthOnTurnProcs: Array<HealthOnTurnProc> = ArrayTrait::new();
