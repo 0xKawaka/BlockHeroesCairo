@@ -226,9 +226,9 @@ fn battle(){
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
     gameDispatcher.createAccount('usernameTest');
-    gameDispatcher.mintHero();
-    gameDispatcher.mintHero();
-    gameDispatcher.mintHero();
+    // gameDispatcher.mintHero();
+    // gameDispatcher.mintHero();
+    // gameDispatcher.mintHero();
     let heroIds: Array<u32> = array![1, 2];
     gameDispatcher.startBattle(heroIds, 0, 1);
     // gameDispatcher.playTurn(2, 1);

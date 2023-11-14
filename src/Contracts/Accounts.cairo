@@ -23,17 +23,20 @@ trait IAccounts<TContractState> {
 
 #[starknet::contract]
 mod Accounts {
-    use core::option::OptionTrait;
+    use core::array::ArrayTrait;
+use core::option::OptionTrait;
 use core::box::BoxTrait;
 use game::Components::Hero::HeroTrait;
     use core::starknet::event::EventEmitter;
     use starknet::ContractAddress;
     use starknet::get_caller_address;
+    use starknet::get_block_timestamp;
 
     use game::Components::Account::AccountTrait;
     use game::Components::{Account, Account::AccountImpl};
     use game::Components::{Hero, Hero::HeroImpl, Hero::Rune, Hero::EquippedRunesImpl, Hero::Rune::RuneImpl};
     use game::Libraries::List::{List, ListTrait};
+    use game::Libraries::Random::rand32;
     use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
 
     use debug::PrintTrait;
@@ -85,7 +88,9 @@ use game::Components::Hero::HeroTrait;
         fn mintHero(ref self: ContractState, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
             let mut heroesList = self.heroes.read(accountAdrs);
-            let heroName = 'priest';
+            let heroesPossible: Array<felt252> = array!['priest', 'assassin', 'knight', 'hunter'];
+            let randIndex = rand32(get_block_timestamp(), heroesPossible.len());
+            let heroName = *heroesPossible[randIndex];
             heroesList.append(Hero::new(heroesList.len(), heroName, 1, 1));
             self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroName);
         }
