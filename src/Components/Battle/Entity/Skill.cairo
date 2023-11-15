@@ -10,7 +10,7 @@ use game::Components::Battle::Entity::Skill::Heal::{HealImpl};
 use game::Components::Battle::Entity::{Entity, EntityTrait};
 use game::Components::Battle::{Battle, BattleImpl};
 use game::Libraries::Random::rand32;
-use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, DamageOrHealEvent};
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, IdAndValueEvent};
 use starknet::get_block_timestamp;
 
 use debug::PrintTrait;
@@ -53,8 +53,8 @@ trait SkillTrait {
     fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<DamageOrHealEvent>;
-    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<DamageOrHealEvent>;
+    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent>;
+    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent>;
     fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity;
     fn print(self: @Skill);
 }
@@ -84,7 +84,7 @@ impl SkillImpl of SkillTrait {
         self.applyBuffs(ref caster, ref target, ref battle);
         caster.setOnCooldown(self.cooldown, skillIndex);
 
-        IEventEmitterDispatch.skill(battle.owner, caster.getIndex(), target.getIndex(), skillIndex, damages, heals, battle.getBuffsArray(), battle.getStatusArray());
+        IEventEmitterDispatch.skill(battle.owner, caster.getIndex(), target.getIndex(), skillIndex, damages, heals, battle.getBuffsArray(), battle.getStatusArray(), battle.getSpeedsEventArray());
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         let  mut i: u32 = 0;
@@ -97,11 +97,11 @@ impl SkillImpl of SkillTrait {
             i += 1;
         }
     }
-    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<DamageOrHealEvent> {
+    fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent> {
         return self.damage.apply(ref caster, ref target, ref battle);
         // ADD CRIT LATER
     }
-    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<DamageOrHealEvent> {
+    fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent> {
         return self.heal.apply(ref caster, ref target, ref battle);
     }
     fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity {

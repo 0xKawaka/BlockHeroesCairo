@@ -23,7 +23,7 @@ use game::Libraries::NullableVector::{VecTrait, NullableVector};
 use game::Libraries::SignedIntegers::{i64::i64, i64::i64Impl};
 use game::Libraries::Random::{rand8};
 use game::Libraries::List::{List, ListTrait};
-use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, EventEmitter::BuffEvent};
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, EventEmitter::BuffEvent, EventEmitter::EntityBuffEvent};
 use core::box::BoxTrait;
 use core::traits::Into;
 use debug::PrintTrait;
@@ -78,10 +78,10 @@ trait EntityTrait {
     // fn randCrit(ref self: Entity) -> bool;
     fn isStunned(ref self: Entity) -> bool;
     fn isDead(ref self: Entity) -> bool;
-    fn getBuffsArray(self: Entity) -> Array<BuffEvent>;
-    fn getStatsBuffsArray(self: Entity) -> Array<BuffEvent>;
-    fn getStatusArray(self: Entity) -> Array<BuffEvent>;
-    fn getStatsStatusArray(self: Entity) -> Array<BuffEvent>;
+    fn getBuffsArray(self: Entity) -> Array<EntityBuffEvent>;
+    fn getStatisticsBuffsArray(self: Entity) -> Array<EntityBuffEvent>;
+    fn getStatusArray(self: Entity) -> Array<EntityBuffEvent>;
+    fn getStatisticsStatusArray(self: Entity) -> Array<EntityBuffEvent>;
     fn getIndex(self: @Entity) -> u32;
     fn getTurnBar(self: @Entity) -> @TurnBar::TurnBar;
     fn getAttack(self: @Entity) -> u64;
@@ -232,39 +232,39 @@ impl EntityImpl of EntityTrait {
         }
         return false;
     }
-    fn getBuffsArray(self: Entity) -> Array<BuffEvent> {
-        return self.getStatsBuffsArray();
+    fn getBuffsArray(self: Entity) -> Array<EntityBuffEvent> {
+        return self.getStatisticsBuffsArray();
     }
-    fn getStatsBuffsArray(self: Entity) -> Array<BuffEvent> {
-        let mut buffsArray: Array<BuffEvent> = Default::default();
+    fn getStatisticsBuffsArray(self: Entity) -> Array<EntityBuffEvent> {
+        let mut buffsArray: Array<EntityBuffEvent> = Default::default();
         if(self.statistics.attack.getBonusValue() > 0 && self.statistics.attack.bonus.duration > 0) {
-            buffsArray.append(BuffEvent { entityId: self.index, name: 'attack', duration: self.statistics.attack.bonus.duration });
+            buffsArray.append(EntityBuffEvent { name: 'attack', duration: self.statistics.attack.bonus.duration });
         }
         if(self.statistics.defense.getBonusValue() > 0 && self.statistics.defense.bonus.duration > 0) {
-            buffsArray.append(BuffEvent { entityId: self.index, name: 'defense', duration: self.statistics.defense.bonus.duration });
+            buffsArray.append(EntityBuffEvent { name: 'defense', duration: self.statistics.defense.bonus.duration });
         }
         if(self.statistics.speed.getBonusValue() > 0 && self.statistics.speed.bonus.duration > 0) {
-            buffsArray.append(BuffEvent { entityId: self.index, name: 'speed', duration: self.statistics.speed.bonus.duration });
+            buffsArray.append(EntityBuffEvent { name: 'speed', duration: self.statistics.speed.bonus.duration });
         }
         return buffsArray;
     }
-    fn getStatusArray(self: Entity) -> Array<BuffEvent> {
-        let mut statusArray: Array<BuffEvent> = self.getStatsStatusArray();
+    fn getStatusArray(self: Entity) -> Array<EntityBuffEvent> {
+        let mut statusArray: Array<EntityBuffEvent> = self.getStatisticsStatusArray();
         if(self.stunOnTurnProc.isStunned()){
-            statusArray.append(BuffEvent { entityId: self.index, name: 'stun', duration: self.stunOnTurnProc.duration })
+            statusArray.append(EntityBuffEvent { name: 'stun', duration: self.stunOnTurnProc.duration })
         }
         return statusArray;
     }
-    fn getStatsStatusArray(self: Entity) -> Array<BuffEvent> {
-        let mut statusArray: Array<BuffEvent> = Default::default();
+    fn getStatisticsStatusArray(self: Entity) -> Array<EntityBuffEvent> {
+        let mut statusArray: Array<EntityBuffEvent> = Default::default();
         if(self.statistics.attack.getBonusValue() > 0 && self.statistics.attack.bonus.duration > 0) {
-            statusArray.append(BuffEvent { entityId: self.index, name: 'attack', duration: self.statistics.attack.bonus.duration });
+            statusArray.append(EntityBuffEvent { name: 'attack', duration: self.statistics.attack.bonus.duration });
         }
         if(self.statistics.defense.getBonusValue() > 0 && self.statistics.defense.bonus.duration > 0) {
-            statusArray.append(BuffEvent { entityId: self.index, name: 'defense', duration: self.statistics.defense.bonus.duration });
+            statusArray.append(EntityBuffEvent { name: 'defense', duration: self.statistics.defense.bonus.duration });
         }
         if(self.statistics.speed.getBonusValue() > 0 && self.statistics.speed.bonus.duration > 0) {
-            statusArray.append(BuffEvent { entityId: self.index, name: 'speed', duration: self.statistics.speed.bonus.duration });
+            statusArray.append(EntityBuffEvent { name: 'speed', duration: self.statistics.speed.bonus.duration });
         }
         return statusArray;
     }

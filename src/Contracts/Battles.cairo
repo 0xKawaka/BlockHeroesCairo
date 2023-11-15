@@ -11,7 +11,8 @@ trait IBattles<TContractState> {
 
 #[starknet::contract]
 mod Battles {
-    use game::Components::Battle::Entity::Skill::SkillTrait;
+    use game::Components::Battle::BattleTrait;
+use game::Components::Battle::Entity::Skill::SkillTrait;
     use core::box::BoxTrait;
     use core::option::OptionTrait;
     use core::array::ArrayTrait;
@@ -50,8 +51,10 @@ mod Battles {
             let enemiesSpan = allyEntites.span();
             self.initBattleStorage(owner, allyEntites, enemyEntities);
             let IEventEmitterDispatch = self.IEventEmitterDispatch.read();
-            IEventEmitterDispatch.newBattle(owner, alliesSpan, enemiesSpan);
+            // health, 
             let mut battle = self.getBattle(owner);
+            let healthsArray = battle.getHealthsArray();
+            IEventEmitterDispatch.newBattle(owner, healthsArray);
             battle.battleLoop(IEventEmitterDispatch);
             self.storeBattleState(ref battle, owner);
         }
