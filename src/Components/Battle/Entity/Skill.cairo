@@ -80,7 +80,7 @@ impl SkillImpl of SkillTrait {
         let damages = self.applyDamage(ref caster, ref target, ref battle);
         let heals = self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
-        caster.setOnCooldown(self.cooldown, skillIndex);
+        caster.setOnCooldown(skillIndex, self.cooldown);
         return SkillEventParams { casterId: caster.getIndex(), targetId: target.getIndex(), skillIndex, damages, heals};
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
