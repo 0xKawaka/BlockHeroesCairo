@@ -99,6 +99,7 @@ impl EntityImpl of EntityTrait {
             return;
         }
         if(self.isStunned()){
+            PrintTrait::print('stunned');
             self.endTurn(ref battle);
             return;
         }
@@ -143,7 +144,7 @@ impl EntityImpl of EntityTrait {
         PrintTrait::print('entity');
         PrintTrait::print(self.index);        
         battle.deadEntities.append(self.getIndex());
-        if(battle.checkBattleOver()) {
+        if(battle.checkAndProcessBattleOver()) {
             return;
         }
         let mut i: u32 = 0;
@@ -171,7 +172,6 @@ impl EntityImpl of EntityTrait {
             }
             i = i + 1;
         };
-
     }
     fn pickSkill(ref self: Entity) -> u8 {
         let mut seed = get_block_timestamp() + 19;

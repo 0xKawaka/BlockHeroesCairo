@@ -59,11 +59,12 @@ impl BuffImpl of BuffTrait {
                     break;
                 }
                 let mut entity = *entities[i];
-                if(isBonus && caster.getIndex() == entity.getIndex()){
+                if(isBonus && isStat && caster.getIndex() == entity.getIndex()){
                     self.applyByType(ref entity, ref battle, isStat, isBonus, self.duration + 1);
                 }
-                self.applyByType(ref entity, ref battle, isStat, isBonus, self.duration);
-                // battle.entities.set(entity.getIndex(), entity);
+                else {
+                    self.applyByType(ref entity, ref battle, isStat, isBonus, self.duration);
+                }
                 i += 1;
             }
         }

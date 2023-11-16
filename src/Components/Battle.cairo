@@ -55,7 +55,7 @@ trait BattleTrait {
     fn getEntityHighestTurn(ref self: Battle) -> Entity::Entity;
     fn waitForPlayerAction(ref self: Battle);
     fn checkAndProcessDeadEntities(ref self: Battle) -> Array<u32>;
-    fn checkBattleOver(ref self: Battle) -> bool;
+    fn checkAndProcessBattleOver(ref self: Battle) -> bool;
     fn isAlly(ref self: Battle, entityIndex: u32) -> bool;
     fn isAllyOf(ref self: Battle, entityIndex: u32, isAllyIndex: u32) -> bool;
     fn getAlliesOf(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
@@ -85,7 +85,6 @@ trait BattleTrait {
 
 impl BattleImpl of BattleTrait {
     fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
-        let mut i: u32 = 0;
         loop {
             // PrintTrait::print('self.isWaitingForPlayerAction');
             // self.isWaitingForPlayerAction.print();
@@ -96,14 +95,19 @@ impl BattleImpl of BattleTrait {
             let mut entity = self.getEntityHighestTurn();
             // entity.print();
             self.processHealthOnTurnProcs(ref entity, IEventEmitterDispatch);
+            PrintTrait::print('playTurn');
             entity.playTurn(ref self, IEventEmitterDispatch);
-            i += 1;
         };
     }
     fn playTurn(ref self: Battle, skillIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher) {
         assert(!self.isBattleOver, 'Battle is over');
+        if(!self.isWaitingForPlayerAction) {
+            PrintTrait::print('Not waiting for player action');
+        }
         assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
         let mut entity = self.getEntityHighestTurn();
+        PrintTrait::print('Entity player plaing : ');
+        entity.print();
         entity.playTurnPlayer(skillIndex, targetIndex, ref self, IEventEmitterDispatch);
         let mut target = self.getEntityByIndex(targetIndex);
         PrintTrait::print('Target health after:');
@@ -113,13 +117,17 @@ impl BattleImpl of BattleTrait {
         self.battleLoop(IEventEmitterDispatch);
     }
     fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity, IEventEmitterDispatch: IEventEmitterDispatcher) {
+        PrintTrait::print('processHealthOnTurnProcs of');
+        PrintTrait::print(entity.index);
         let mut damageArray: Array<u64> = Default::default();
         let mut healArray: Array<u64> = Default::default();
+        let mut removed: bool = false;
         let mut i: u32 = 0;
         loop {
             if (i >= self.healthOnTurnProcs.len()) {
                 break;
             }
+            removed = false;
             let mut onTurnProc = self.healthOnTurnProcs.getValue(i);
             if (onTurnProc.getEntityIndex() == entity.getIndex()) {
                 let damageOrHealVal = onTurnProc.proc(ref entity);
@@ -129,17 +137,20 @@ impl BattleImpl of BattleTrait {
                 }
                 
                 if(onTurnProc.isExpired()) {
+                    PrintTrait::print('Removing healthOnTurnProc');
                     self.healthOnTurnProcs.remove(i);
-                    i = i - 1;
+                    removed = true;
                 }
                 else {
                     self.healthOnTurnProcs.set(i, onTurnProc);
                 }
             }
-            i = i + 1;
+            if(!removed) {
+                i = i + 1;
+            }
         };
         IEventEmitterDispatch.startTurn(self.owner, entity.getIndex(), damageArray, healArray, self.getEventEntityBuffsArray(entity.index), self.getEventEntityStatusArray(entity.index), entity.isDead());
-        // self.entities.set(entity.getIndex(), entity);
+        PrintTrait::print('finished onturnprocs');
     }
     fn loopUntilNextTurn(ref self: Battle) {
         self.updateTurnBarsSpeed();
@@ -241,12 +252,12 @@ impl BattleImpl of BattleTrait {
         };
         return deadEntities;
     }
-    fn checkBattleOver(ref self: Battle) -> bool {
+    fn checkAndProcessBattleOver(ref self: Battle) -> bool {
         let mut i: u32 = 0;
         let mut alliesDeadCount: u32 = 0;
         let mut enemiesDeadCount: u32 = 0;
         loop {
-            if (i >= self.deadEntities.len()) {
+            if (i == self.deadEntities.len()) {
                 break;
             }
             let entityIndex = *self.deadEntities[i];

@@ -53,8 +53,13 @@ impl StatisticsImpl of StatisticsTrait {
         self.attack.bonus.reduceDuration();
         self.defense.bonus.reduceDuration();
         self.speed.bonus.reduceDuration();
-        self.criticalChance.bonus.reduceDuration();
-        self.criticalDamage.bonus.reduceDuration();
+        // self.criticalChance.bonus.reduceDuration();
+        // self.criticalDamage.bonus.reduceDuration();
+        self.attack.malus.reduceDuration();
+        self.defense.malus.reduceDuration();
+        self.speed.malus.reduceDuration();
+        // self.criticalChance.malus.reduceDuration();
+        // self.criticalDamage.malus.reduceDuration();
     }
     fn applyStatModifier(
         ref self: Statistics, buffType: BuffType, statModifierValue: u64, statModifierDuration: u8
