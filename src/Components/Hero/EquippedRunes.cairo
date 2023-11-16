@@ -4,12 +4,6 @@ use debug::PrintTrait;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct EquippedRunes {
-    // first: Option<Rune>,
-    // second: Option<Rune>,
-    // third: Option<Rune>,
-    // fourth: Option<Rune>,
-    // fifth: Option<Rune>,
-    // sixth: Option<Rune>,
     first: Option<u32>,
     second: Option<u32>,
     third: Option<u32>,
@@ -28,8 +22,6 @@ fn new() -> EquippedRunes {
         sixth: Option::None,
     }
 }
-
-
 
 trait EquippedRunesTrait {
     fn equip(ref self: EquippedRunes, ref rune: Rune, heroId: u32);

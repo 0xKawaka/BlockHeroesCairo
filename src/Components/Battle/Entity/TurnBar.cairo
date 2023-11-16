@@ -24,7 +24,6 @@ trait TurnBarTrait {
 impl TurnBarImpl of TurnBarTrait {
     fn incrementTurnbar(ref self: TurnBar) {
         self.turnbar += (self.speed * self.incrementStep) / self.decimals;
-    // self.turnbar.print();
     }
     fn isFull(self: TurnBar) -> bool {
         self.turnbar > 999

@@ -1,6 +1,4 @@
 use game::Components::Battle::BattleTrait;
-use core::box::BoxTrait;
-use core::option::OptionTrait;
 mod Damage;
 mod Heal;
 mod Buff;
@@ -83,8 +81,7 @@ impl SkillImpl of SkillTrait {
         let heals = self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
         caster.setOnCooldown(self.cooldown, skillIndex);
-
-        IEventEmitterDispatch.skill(battle.owner, caster.getIndex(), target.getIndex(), skillIndex, damages, heals, battle.getBuffsArray(), battle.getStatusArray(), battle.getSpeedsEventArray());
+        IEventEmitterDispatch.skill(battle.owner, caster.getIndex(), target.getIndex(), skillIndex, damages, heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities());
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         let  mut i: u32 = 0;
@@ -99,13 +96,13 @@ impl SkillImpl of SkillTrait {
     }
     fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent> {
         return self.damage.apply(ref caster, ref target, ref battle);
-        // ADD CRIT LATER
+        // TODO : ADD CRIT LATER
     }
     fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent> {
         return self.heal.apply(ref caster, ref target, ref battle);
     }
     fn pickTarget(self: Skill, caster: Entity, ref battle: Battle) -> Entity {
-        let mut seed = get_block_timestamp() + 22;
+        let mut seed = get_block_timestamp();
         if self.targetType == TargetType::Ally {
             let allies = battle.getAlliesOf(caster.getIndex());
             let randIndex = rand32(seed, allies.len());

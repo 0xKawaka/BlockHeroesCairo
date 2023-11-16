@@ -1,12 +1,5 @@
-use starknet::ContractAddress;
-
-use dict::Felt252DictTrait;
-use nullable::{nullable_from_box, match_nullable, FromNullableResult};
-
 const decimals: u64 = 100;
 const LEVEL_MULTIPLIER_BY_RANK: u64 = 10;
-
-use debug::PrintTrait;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct BaseStatistics {
@@ -17,7 +10,6 @@ struct BaseStatistics {
     criticalRate: u64,
     criticalDamage: u64,
 }
-
 
 fn new(
     health: u64, attack: u64, defense: u64, speed: u64, criticalRate: u64, criticalDamage: u64

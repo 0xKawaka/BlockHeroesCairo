@@ -1,5 +1,4 @@
-use game::Components::Battle::Entity::Statistics::Statistic::StatisticTrait;
-use core::option::OptionTrait;
+
 mod Statistics;
 mod TurnBar;
 mod Skill;
@@ -8,12 +7,13 @@ mod StunOnTurnProc;
 mod Cooldowns;
 mod SkillSet;
 
-
 use HealthOnTurnProc::{DamageOrHealEnum};
 use StunOnTurnProc::{StunOnTurnProcImpl};
 use Skill::{SkillImpl, Buff::BuffType};
 use Cooldowns::{CooldownsImpl, CooldownsTrait};
 use SkillSet::{SkillSetImpl, SkillSetTrait};
+
+use game::Components::Battle::Entity::Statistics::Statistic::StatisticTrait;
 use game::Components::Battle::Entity::{StunOnTurnProc::StunOnTurnProcTrait, Statistics::StatisticsTrait};
 use game::Components::Battle::BattleTrait;
 use game::Components::Battle::Entity::Statistics::{StatisticsImpl, Statistic::StatModifier::StatModifier, Statistic::Statistic};
@@ -24,8 +24,6 @@ use game::Libraries::SignedIntegers::{i64::i64, i64::i64Impl};
 use game::Libraries::Random::{rand8};
 use game::Libraries::List::{List, ListTrait};
 use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, EventEmitter::BuffEvent, EventEmitter::EntityBuffEvent};
-use core::box::BoxTrait;
-use core::traits::Into;
 use debug::PrintTrait;
 use starknet::get_block_timestamp;
 
@@ -63,7 +61,7 @@ trait EntityTrait {
     fn playTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn playTurnPlayer(ref self: Entity, skillIndex: u8, targetIndex: u32, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn endTurn(ref self: Entity, ref battle: Battle);
-    fn die(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
+    fn die(ref self: Entity, ref battle: Battle);
     fn pickSkill(ref self: Entity) -> u8;
     fn takeDamage(ref self: Entity, damage: u64);
     fn takeHeal(ref self: Entity, heal: u64);
@@ -78,10 +76,10 @@ trait EntityTrait {
     // fn randCrit(ref self: Entity) -> bool;
     fn isStunned(ref self: Entity) -> bool;
     fn isDead(ref self: Entity) -> bool;
-    fn getBuffsArray(self: Entity) -> Array<EntityBuffEvent>;
-    fn getStatisticsBuffsArray(self: Entity) -> Array<EntityBuffEvent>;
-    fn getStatusArray(self: Entity) -> Array<EntityBuffEvent>;
-    fn getStatisticsStatusArray(self: Entity) -> Array<EntityBuffEvent>;
+    fn getEventBuffsArray(self: Entity) -> Array<EntityBuffEvent>;
+    fn getEventStatisticsBuffsArray(self: Entity) -> Array<EntityBuffEvent>;
+    fn getEventStatusArray(self: Entity) -> Array<EntityBuffEvent>;
+    fn getEventStatisticsStatusArray(self: Entity) -> Array<EntityBuffEvent>;
     fn getIndex(self: @Entity) -> u32;
     fn getTurnBar(self: @Entity) -> @TurnBar::TurnBar;
     fn getAttack(self: @Entity) -> u64;
@@ -97,7 +95,7 @@ trait EntityTrait {
 impl EntityImpl of EntityTrait {
     fn playTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         if(self.isDead()) {
-            self.die(ref battle, IEventEmitterDispatch);
+            self.die(ref battle);
             return;
         }
         if(self.isStunned()){
@@ -138,8 +136,7 @@ impl EntityImpl of EntityTrait {
         self.cooldowns.reduceCooldowns();
         battle.entities.set(self.getIndex(), self);
     }
-    fn die(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
-        IEventEmitterDispatch.death(battle.owner, self.getIndex());
+    fn die(ref self: Entity, ref battle: Battle) {
         battle.deadEntities.append(self.getIndex());
         if(battle.checkBattleOver()) {
             return;
@@ -232,10 +229,10 @@ impl EntityImpl of EntityTrait {
         }
         return false;
     }
-    fn getBuffsArray(self: Entity) -> Array<EntityBuffEvent> {
-        return self.getStatisticsBuffsArray();
+    fn getEventBuffsArray(self: Entity) -> Array<EntityBuffEvent> {
+        return self.getEventStatisticsBuffsArray();
     }
-    fn getStatisticsBuffsArray(self: Entity) -> Array<EntityBuffEvent> {
+    fn getEventStatisticsBuffsArray(self: Entity) -> Array<EntityBuffEvent> {
         let mut buffsArray: Array<EntityBuffEvent> = Default::default();
         if(self.statistics.attack.getBonusValue() > 0 && self.statistics.attack.bonus.duration > 0) {
             buffsArray.append(EntityBuffEvent { name: 'attack', duration: self.statistics.attack.bonus.duration });
@@ -248,14 +245,14 @@ impl EntityImpl of EntityTrait {
         }
         return buffsArray;
     }
-    fn getStatusArray(self: Entity) -> Array<EntityBuffEvent> {
-        let mut statusArray: Array<EntityBuffEvent> = self.getStatisticsStatusArray();
+    fn getEventStatusArray(self: Entity) -> Array<EntityBuffEvent> {
+        let mut statusArray: Array<EntityBuffEvent> = self.getEventStatisticsStatusArray();
         if(self.stunOnTurnProc.isStunned()){
             statusArray.append(EntityBuffEvent { name: 'stun', duration: self.stunOnTurnProc.duration })
         }
         return statusArray;
     }
-    fn getStatisticsStatusArray(self: Entity) -> Array<EntityBuffEvent> {
+    fn getEventStatisticsStatusArray(self: Entity) -> Array<EntityBuffEvent> {
         let mut statusArray: Array<EntityBuffEvent> = Default::default();
         if(self.statistics.attack.getBonusValue() > 0 && self.statistics.attack.bonus.duration > 0) {
             statusArray.append(EntityBuffEvent { name: 'attack', duration: self.statistics.attack.bonus.duration });

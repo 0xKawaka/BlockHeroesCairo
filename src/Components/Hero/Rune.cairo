@@ -34,8 +34,6 @@ enum RuneStatistic {
     // CriticalDamage,
 }
 
-
-
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct Rune {
     id: u32,
@@ -56,7 +54,7 @@ const RUNE_RARITY_COUNT: u32 = 5;
 const RUNE_TYPE_COUNT: u32 = 6;
 
 fn new(id: u32) -> Rune {
-    let seed = get_block_timestamp() + 22;
+    let seed = get_block_timestamp();
     let statistic = getRandomStat(seed);
     let isPercent = getRandomIsPercent(seed);
     let rarity = getRandomRarity(seed);
@@ -144,7 +142,7 @@ impl RuneImpl of RuneTrait {
     fn upgrade(ref self: Rune) {
         self.rank += 1;
 
-        let seed = get_block_timestamp() + 22;
+        let seed = get_block_timestamp();
         if self.rank == 4 {
             self.rank4Bonus = Option::Some(RuneBonus::new(getRandomStat(seed), false));
         } else if self.rank == 8 {
