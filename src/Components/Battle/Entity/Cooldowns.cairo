@@ -29,8 +29,6 @@ impl CooldownsImpl of  CooldownsTrait {
         }
     }
     fn setCooldown(ref self: Cooldowns, skillIndex: u8, cooldown: u8) {
-        PrintTrait::print('skillIndex');
-        assert(skillIndex < 3, 'Skill index out of range');
         if(skillIndex  ==  0){
             return;
         }
@@ -42,9 +40,6 @@ impl CooldownsImpl of  CooldownsTrait {
         }
     }
     fn isOnCooldown(self: Cooldowns, skillIndex: u8) -> bool {
-        PrintTrait::print('skillIndex2');
-        PrintTrait::print(skillIndex);
-        assert(skillIndex < 3, 'Skill index out of range');
         if(skillIndex  ==  0){
             return false;
         }
