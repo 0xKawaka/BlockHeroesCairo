@@ -80,8 +80,8 @@ trait BattleTrait {
     fn sortTurnTimeline(ref self: Battle);
     fn getEntityHighestTurn(ref self: Battle) -> Entity::Entity;
     fn waitForPlayerAction(ref self: Battle);
-    fn checkAndProcessDeadEntities(ref self: Battle) -> Array<u32>;
-    fn checkAndProcessBattleOver(ref self: Battle) -> bool;
+    fn checkAndProcessDeadEntities(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) -> Array<u32>;
+    fn checkAndProcessBattleOver(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) -> bool;
     fn isAlly(ref self: Battle, entityIndex: u32) -> bool;
     fn isAllyOf(ref self: Battle, entityIndex: u32, isAllyIndex: u32) -> bool;
     fn getAliveAlliesOf(ref self: Battle, entityIndex: u32) -> Array<Entity::Entity>;
@@ -266,7 +266,7 @@ impl BattleImpl of BattleTrait {
         PrintTrait::print('Waiting for player action');
         self.isWaitingForPlayerAction = true;
     }
-    fn checkAndProcessDeadEntities(ref self: Battle) -> Array<u32> {
+    fn checkAndProcessDeadEntities(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) -> Array<u32> {
         let mut i: u32 = 0;
         let mut deadEntities: Array<u32> = Default::default();
         let mut died: bool = false;
@@ -277,7 +277,7 @@ impl BattleImpl of BattleTrait {
             died = false;
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
             if (entity.isDead()) {
-                entity.die(ref self);
+                entity.die(ref self, IEventEmitterDispatch);
                 deadEntities.append(entity.index);
             }
             if(!died) {
@@ -286,7 +286,7 @@ impl BattleImpl of BattleTrait {
         };
         return deadEntities;
     }
-    fn checkAndProcessBattleOver(ref self: Battle) -> bool {
+    fn checkAndProcessBattleOver(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) -> bool {
         let mut i: u32 = 0;
         let mut alliesDeadCount: u32 = 0;
         let mut enemiesDeadCount: u32 = 0;
@@ -302,13 +302,9 @@ impl BattleImpl of BattleTrait {
             }
             i = i + 1;
         };
-        if (alliesDeadCount == self.alliesIndexes.len()) {
+        if (alliesDeadCount == self.alliesIndexes.len() || enemiesDeadCount == self.enemiesIndexes.len()) {
             PrintTrait::print('All allies dead');
-            self.isBattleOver = true;
-            return true;
-        }
-        if (enemiesDeadCount == self.enemiesIndexes.len()) {
-            PrintTrait::print('All enemies dead');
+            IEventEmitterDispatch.endBattle(self.owner);
             self.isBattleOver = true;
             return true;
         }

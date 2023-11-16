@@ -235,4 +235,5 @@ fn battle(){
     gameDispatcher.playTurn(0, 4);
     gameDispatcher.playTurn(1, 4);
     gameDispatcher.playTurn(2, 4);
+    gameDispatcher.playTurn(0, 4);
 }

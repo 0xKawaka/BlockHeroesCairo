@@ -62,7 +62,7 @@ trait EntityTrait {
     fn playTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn playTurnPlayer(ref self: Entity, skillIndex: u8, targetIndex: u32, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn endTurn(ref self: Entity, ref battle: Battle);
-    fn die(ref self: Entity, ref battle: Battle);
+    fn die(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn pickSkill(ref self: Entity) -> u8;
     fn takeDamage(ref self: Entity, damage: u64);
     fn takeHeal(ref self: Entity, heal: u64);
@@ -96,7 +96,7 @@ trait EntityTrait {
 impl EntityImpl of EntityTrait {
     fn playTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         if(self.isDead()) {
-            self.die(ref battle);
+            self.die(ref battle, IEventEmitterDispatch);
             return;
         }
         self.cooldowns.reduceCooldowns();
@@ -119,7 +119,7 @@ impl EntityImpl of EntityTrait {
                     let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
                     let skillEventParams = skill.cast(skillIndex, ref self, ref battle);
                     self.endTurn(ref battle);
-                    IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities());
+                    IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities(IEventEmitterDispatch));
                     PrintTrait::print(*self.getTurnBar().turnbar);
                 },
             }
@@ -133,19 +133,19 @@ impl EntityImpl of EntityTrait {
         let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
         let skillEventParams = skill.castOnTarget(skillIndex, ref self, ref target, ref battle);
         self.endTurn(ref battle);
-        IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities());
+        IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities(IEventEmitterDispatch));
     }
     fn endTurn(ref self: Entity, ref battle: Battle) {
         self.processEndTurnProcs(ref battle);
         self.turnBar.resetTurn();
         battle.entities.set(self.getIndex(), self);
     }
-    fn die(ref self: Entity, ref battle: Battle) {
+    fn die(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         PrintTrait::print('death');
         PrintTrait::print('entity');
         PrintTrait::print(self.index);        
         battle.deadEntities.append(self.getIndex());
-        if(battle.checkAndProcessBattleOver()) {
+        if(battle.checkAndProcessBattleOver(IEventEmitterDispatch)) {
             return;
         }
         let mut i: u32 = 0;
