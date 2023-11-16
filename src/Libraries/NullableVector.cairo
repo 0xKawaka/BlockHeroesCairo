@@ -76,7 +76,7 @@ impl NullableVectorImpl<T, +Drop<T>, +Copy<T>> of VecTrait<NullableVector<T>, T>
         assert(index < self.len(), 'Index out of bounds');
         let mut i: u32 = index;
         loop {
-            if (i + 1 > self.len() - 1) {
+            if (i + 1 >= self.len()) {
                 self.len -= 1;
                 break;
             }

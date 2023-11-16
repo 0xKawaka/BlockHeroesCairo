@@ -36,7 +36,7 @@ impl DamageImpl of DamageTrait {
         }
 
         if (self.aoe) {
-            let enemies = battle.getAlliesOf(target.index);
+            let enemies = battle.getAliveAlliesOf(target.index);
             let mut i: u32 = 0;
             loop {
                 if (i >= enemies.len()) {

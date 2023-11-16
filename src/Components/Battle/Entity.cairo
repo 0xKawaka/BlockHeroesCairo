@@ -1,3 +1,4 @@
+use core::box::BoxTrait;
 
 mod Statistics;
 mod TurnBar;
@@ -149,7 +150,7 @@ impl EntityImpl of EntityTrait {
         }
         let mut i: u32 = 0;
         loop {
-            if(i > battle.aliveEntities.len() - 1) {
+            if(i >= battle.aliveEntities.len()) {
                 break;
             }
             let entityIndex = battle.aliveEntities.get(i).unwrap();
@@ -162,12 +163,38 @@ impl EntityImpl of EntityTrait {
 
         let mut i: u32 = 0;
         loop {
-            if(i > battle.turnTimeline.len() - 1) {
+            if(i >= battle.turnTimeline.len()) {
                 break;
             }
             let entityIndex = battle.turnTimeline.get(i).unwrap();
             if (entityIndex == self.getIndex()) {
                 battle.turnTimeline.remove(i);
+                break;
+            }
+            i = i + 1;
+        };
+
+        let mut i: u32 = 0;
+        loop {
+            if(i >= battle.aliveAlliesIndexes.len()) {
+                break;
+            }
+            let entityIndex = battle.aliveAlliesIndexes.get(i).unwrap();
+            if (entityIndex == self.getIndex()) {
+                battle.aliveAlliesIndexes.remove(i);
+                break;
+            }
+            i = i + 1;
+        };
+
+        let mut i: u32 = 0;
+        loop {
+            if(i >= battle.aliveEnemiesIndexes.len()) {
+                break;
+            }
+            let entityIndex = battle.aliveEnemiesIndexes.get(i).unwrap();
+            if (entityIndex == self.getIndex()) {
+                battle.aliveEnemiesIndexes.remove(i);
                 break;
             }
             i = i + 1;

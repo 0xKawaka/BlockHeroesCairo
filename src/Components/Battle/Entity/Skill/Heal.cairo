@@ -37,7 +37,7 @@ impl HealImpl of HealTrait {
         }
 
         if (self.aoe) {
-            let allies = battle.getAlliesOf(caster.index);
+            let allies = battle.getAliveAlliesOf(caster.index);
             let mut i: u32 = 0;
             loop {
                 if (i >= allies.len()) {

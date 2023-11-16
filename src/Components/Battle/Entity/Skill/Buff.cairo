@@ -55,7 +55,7 @@ impl BuffImpl of BuffTrait {
             let entities = self.getAoeEntities(ref caster, ref battle, isBonus);
             let mut i: u32 = 0;
             loop {
-                if(i > entities.len() - 1){
+                if(i >= entities.len()){
                     break;
                 }
                 let mut entity = *entities[i];
@@ -69,7 +69,7 @@ impl BuffImpl of BuffTrait {
             }
         }
         else {
-            if(self.self && self.target && caster.getIndex() == target.getIndex() && battle.getAlliesOf(caster.getIndex()).len() > 1){
+            if(self.self && self.target && caster.getIndex() == target.getIndex() && battle.getAliveAlliesOf(caster.getIndex()).len() > 1){
                 self.applyByType(ref caster, ref battle, isStat, isBonus, self.duration + 1);
                 return;
             }
@@ -103,10 +103,10 @@ impl BuffImpl of BuffTrait {
     }
     fn getAoeEntities(self: Buff, ref caster: Entity, ref battle: Battle, isBonus: bool) -> Array<Entity> {
         if(isBonus) {
-            return battle.getAlliesOf(caster.getIndex());
+            return battle.getAliveAlliesOf(caster.getIndex());
         }
         else {
-            return battle.getEnemiesOf(caster.getIndex());
+            return battle.getAliveEnemiesOf(caster.getIndex());
         }
     }
     fn isBonus(self: Buff) -> bool {
