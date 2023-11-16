@@ -98,6 +98,7 @@ impl EntityImpl of EntityTrait {
             self.die(ref battle);
             return;
         }
+        self.cooldowns.reduceCooldowns();
         if(self.isStunned()){
             PrintTrait::print('stunned');
             self.endTurn(ref battle);
@@ -136,7 +137,6 @@ impl EntityImpl of EntityTrait {
     fn endTurn(ref self: Entity, ref battle: Battle) {
         self.processEndTurnProcs(ref battle);
         self.turnBar.resetTurn();
-        self.cooldowns.reduceCooldowns();
         battle.entities.set(self.getIndex(), self);
     }
     fn die(ref self: Entity, ref battle: Battle) {

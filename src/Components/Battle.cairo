@@ -100,21 +100,25 @@ impl BattleImpl of BattleTrait {
         };
     }
     fn playTurn(ref self: Battle, skillIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher) {
-        assert(!self.isBattleOver, 'Battle is over');
-        if(!self.isWaitingForPlayerAction) {
-            PrintTrait::print('Not waiting for player action');
-        }
-        assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
-        let mut entity = self.getEntityHighestTurn();
-        PrintTrait::print('Entity player plaing : ');
-        entity.print();
-        entity.playTurnPlayer(skillIndex, targetIndex, ref self, IEventEmitterDispatch);
-        let mut target = self.getEntityByIndex(targetIndex);
-        PrintTrait::print('Target health after:');
-        target.getHealth().print();
-        // target.isStunned().print();
-        self.isWaitingForPlayerAction = false;
-        self.battleLoop(IEventEmitterDispatch);
+        self.getEntityByIndex(0).getHealth().print();
+        self.getEntityByIndex(5).cooldowns.skill1.print();
+        self.getEntityByIndex(5).cooldowns.skill2.print();
+        // PrintTrait::print('Play turn');
+        // assert(!self.isBattleOver, 'Battle is over');
+        // if(!self.isWaitingForPlayerAction) {
+        //     PrintTrait::print('Not waiting for player action');
+        // }
+        // assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
+        // let mut entity = self.getEntityHighestTurn();
+        // PrintTrait::print('Entity player playing');
+        // entity.index.print();
+        // entity.playTurnPlayer(skillIndex, targetIndex, ref self, IEventEmitterDispatch);
+        // let mut target = self.getEntityByIndex(targetIndex);
+        // PrintTrait::print('Target health after:');
+        // target.getHealth().print();
+        // // target.isStunned().print();
+        // self.isWaitingForPlayerAction = false;
+        // self.battleLoop(IEventEmitterDispatch);
     }
     fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity, IEventEmitterDispatch: IEventEmitterDispatcher) {
         PrintTrait::print('processHealthOnTurnProcs of');

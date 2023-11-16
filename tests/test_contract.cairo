@@ -233,4 +233,5 @@ fn battle(){
     gameDispatcher.startBattle(heroIds, 0, 0);
     // gameDispatcher.playTurn(2, 1);
     gameDispatcher.playTurn(0, 4);
+    // gameDispatcher.playTurn(1, 4);
 }
