@@ -68,10 +68,10 @@ impl DamageImpl of DamageTrait {
     fn computeDamage(self: Damage, ref caster: Entity, ref target: Entity) -> u64 {
         match self.damageType {
             DamageType::Flat => {
-                return self.value * (caster.getAttack() / target.getDefense());
+                return (self.value * caster.getAttack()) / target.getDefense();
             },
             DamageType::Percent => {
-                return self.value * target.getMaxHealth() / 100;
+                return (self.value * target.getMaxHealth()) / 100;
             },
         }
     }

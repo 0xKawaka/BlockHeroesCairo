@@ -129,8 +129,8 @@ impl EntityImpl of EntityTrait {
         let skillSet = battle.skillSets.get(self.index).unwrap().unbox();
         let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
         let skillEventParams = skill.castOnTarget(skillIndex, ref self, ref target, ref battle);
-        IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities());
         self.endTurn(ref battle);
+        IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities());
     }
     fn endTurn(ref self: Entity, ref battle: Battle) {
         self.processEndTurnProcs(ref battle);

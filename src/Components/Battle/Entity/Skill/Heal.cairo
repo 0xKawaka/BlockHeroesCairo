@@ -72,7 +72,7 @@ impl HealImpl of HealTrait {
                 return self.value;
             },
             HealType::Percent => {
-                return self.value * target.getMaxHealth() / 100;
+                return (self.value * target.getMaxHealth()) / 100;
             },
         }
     }

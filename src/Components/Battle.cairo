@@ -138,7 +138,7 @@ impl BattleImpl of BattleTrait {
             }
             i = i + 1;
         };
-        IEventEmitterDispatch.startTurn(self.owner, entity.getIndex(), damageArray, healArray, entity.getEventBuffsArray(), entity.getEventStatusArray(), entity.isDead());
+        IEventEmitterDispatch.startTurn(self.owner, entity.getIndex(), damageArray, healArray, self.getEventEntityBuffsArray(entity.index), self.getEventEntityStatusArray(entity.index), entity.isDead());
         // self.entities.set(entity.getIndex(), entity);
     }
     fn loopUntilNextTurn(ref self: Battle) {
