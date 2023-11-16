@@ -40,7 +40,7 @@ fn new(buffType: BuffType, value: u64, duration: u8, target: bool, aoe: bool, se
 
 trait BuffTrait {
     fn apply(self: Buff, ref caster: Entity, ref target: Entity, ref battle: Battle);
-    fn applyByType(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool);
+    fn applyByType(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool, duration: u8);
     fn getAoeEntities(self: Buff, ref caster: Entity, ref battle: Battle, isBonus: bool) -> Array<Entity>;
     fn isBonus(self: Buff) -> bool;
     fn isStat(self: Buff) -> bool;
@@ -59,36 +59,39 @@ impl BuffImpl of BuffTrait {
                     break;
                 }
                 let mut entity = *entities[i];
-                self.applyByType(ref entity, ref battle, isStat, isBonus);
+                if(isBonus && caster.getIndex() == entity.getIndex()){
+                    self.applyByType(ref entity, ref battle, isStat, isBonus, self.duration + 1);
+                }
+                self.applyByType(ref entity, ref battle, isStat, isBonus, self.duration);
                 // battle.entities.set(entity.getIndex(), entity);
                 i += 1;
             }
         }
         else {
             if(self.self && self.target && caster.getIndex() == target.getIndex() && battle.getAlliesOf(caster.getIndex()).len() > 1){
-                self.applyByType(ref caster, ref battle, isStat, isBonus);
+                self.applyByType(ref caster, ref battle, isStat, isBonus, self.duration + 1);
                 return;
             }
             if(self.self){
-                self.applyByType(ref caster, ref battle, isStat, isBonus);
+                self.applyByType(ref caster, ref battle, isStat, isBonus, self.duration + 1);
             }
             if(self.target) {
-                self.applyByType(ref target, ref battle, isStat, isBonus);
+                self.applyByType(ref target, ref battle, isStat, isBonus, self.duration);
             }
         }
     }
-    fn applyByType(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool) {
+    fn applyByType(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool, duration: u8) {
         if(isStat){
-            entity.applyStatModifier(self.buffType, self.value, self.duration);
+            entity.applyStatModifier(self.buffType, self.value, duration);
         }
         else if (self.buffType == BuffType::Poison) {
-            entity.applyPoison(ref battle, self.value, self.duration);
+            entity.applyPoison(ref battle, self.value, duration);
         }
         else if (self.buffType == BuffType::Regen) {
-            entity.applyRegen(ref battle, self.value, self.duration);
+            entity.applyRegen(ref battle, self.value, duration);
         }
         else if (self.buffType == BuffType::Stun) {
-            entity.applyStun(self.duration);
+            entity.applyStun(duration);
         }
         else {
             let mut error = ArrayTrait::new();

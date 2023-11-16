@@ -23,7 +23,7 @@ use game::Libraries::NullableVector::{VecTrait, NullableVector};
 use game::Libraries::SignedIntegers::{i64::i64, i64::i64Impl};
 use game::Libraries::Random::{rand8};
 use game::Libraries::List::{List, ListTrait};
-use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, EventEmitter::BuffEvent, EventEmitter::EntityBuffEvent};
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, EventEmitter::BuffEvent, EventEmitter::EntityBuffEvent, SkillEventParams};
 use debug::PrintTrait;
 use starknet::get_block_timestamp;
 
@@ -114,8 +114,9 @@ impl EntityImpl of EntityTrait {
                     let skillIndex = self.pickSkill();
                     let skillSet = battle.skillSets.get(self.index).unwrap().unbox();
                     let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
-                    skill.cast(skillIndex, ref self, ref battle, IEventEmitterDispatch);
+                    let skillEventParams = skill.cast(skillIndex, ref self, ref battle);
                     self.endTurn(ref battle);
+                    IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities());
                     PrintTrait::print(*self.getTurnBar().turnbar);
                 },
             }
@@ -127,7 +128,8 @@ impl EntityImpl of EntityTrait {
         assert(!self.cooldowns.isOnCooldown(skillIndex), 'Skill is on cooldown');
         let skillSet = battle.skillSets.get(self.index).unwrap().unbox();
         let skill = *skillSet.get(skillIndex.into()).unwrap().unbox();
-        skill.castOnTarget(skillIndex, ref self, ref target, ref battle, IEventEmitterDispatch);
+        let skillEventParams = skill.castOnTarget(skillIndex, ref self, ref target, ref battle);
+        IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities());
         self.endTurn(ref battle);
     }
     fn endTurn(ref self: Entity, ref battle: Battle) {
@@ -137,6 +139,9 @@ impl EntityImpl of EntityTrait {
         battle.entities.set(self.getIndex(), self);
     }
     fn die(ref self: Entity, ref battle: Battle) {
+        PrintTrait::print('death');
+        PrintTrait::print('entity');
+        PrintTrait::print(self.index);        
         battle.deadEntities.append(self.getIndex());
         if(battle.checkBattleOver()) {
             return;
@@ -169,7 +174,7 @@ impl EntityImpl of EntityTrait {
 
     }
     fn pickSkill(ref self: Entity) -> u8 {
-        let mut seed = get_block_timestamp() + 22;
+        let mut seed = get_block_timestamp() + 19;
         if(self.cooldowns.isOnCooldown(1) && self.cooldowns.isOnCooldown(2)) {
             return 0;
         }

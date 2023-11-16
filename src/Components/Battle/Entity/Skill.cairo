@@ -8,7 +8,7 @@ use game::Components::Battle::Entity::Skill::Heal::{HealImpl};
 use game::Components::Battle::Entity::{Entity, EntityTrait};
 use game::Components::Battle::{Battle, BattleImpl};
 use game::Libraries::Random::rand32;
-use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, IdAndValueEvent};
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait, IdAndValueEvent, SkillEventParams};
 use starknet::get_block_timestamp;
 
 use debug::PrintTrait;
@@ -48,8 +48,8 @@ fn new(
 }
 
 trait SkillTrait {
-    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
-    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher);
+    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle) -> SkillEventParams;
+    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle) -> SkillEventParams;
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle);
     fn applyDamage(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent>;
     fn applyHeal(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent>;
@@ -58,11 +58,11 @@ trait SkillTrait {
 }
 
 impl SkillImpl of SkillTrait {
-    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
+    fn cast(self: Skill, skillIndex: u8, ref caster: Entity, ref battle: Battle) -> SkillEventParams {
         let mut target = self.pickTarget(caster, ref battle);
-        self.castOnTarget(skillIndex, ref caster, ref target, ref battle, IEventEmitterDispatch);
+        return self.castOnTarget(skillIndex, ref caster, ref target, ref battle);
     }
-    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
+    fn castOnTarget(self: Skill, skillIndex: u8, ref caster: Entity, ref target: Entity, ref battle: Battle) -> SkillEventParams {
         match self.targetType {
             TargetType::Ally => {
                 assert(battle.isAllyOf(caster.getIndex(),  target.getIndex()), 'Target should be ally');
@@ -81,7 +81,7 @@ impl SkillImpl of SkillTrait {
         let heals = self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
         caster.setOnCooldown(self.cooldown, skillIndex);
-        IEventEmitterDispatch.skill(battle.owner, caster.getIndex(), target.getIndex(), skillIndex, damages, heals, battle.getEventBuffsArray(), battle.getEventStatusArray(), battle.getEventSpeedsArray(), battle.checkAndProcessDeadEntities());
+        return SkillEventParams { casterId: caster.getIndex(), targetId: target.getIndex(), skillIndex, damages, heals};
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         let  mut i: u32 = 0;

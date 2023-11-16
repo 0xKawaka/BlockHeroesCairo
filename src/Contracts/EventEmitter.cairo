@@ -4,6 +4,15 @@ use game::Components::Hero::{Rune};
 
 use game::Contracts::EventEmitter::EventEmitter::{IdAndValueEvent, BuffEvent, TurnBarEvent, EntityBuffEvent};
 
+#[derive(Destruct, Serde)]
+struct SkillEventParams {
+    casterId: u32,
+    targetId: u32,
+    skillIndex: u8,
+    damages: Array<IdAndValueEvent>,
+    heals: Array<IdAndValueEvent>,
+}
+
 #[starknet::interface]
 trait IEventEmitter<TContractState> {
     fn newBattle(ref self: TContractState, owner: ContractAddress, healthsArray: Array<u64>);

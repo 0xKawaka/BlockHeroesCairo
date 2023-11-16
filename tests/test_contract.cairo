@@ -232,5 +232,5 @@ fn battle(){
     let heroIds: Array<u32> = array![0, 2];
     gameDispatcher.startBattle(heroIds, 0, 0);
     // gameDispatcher.playTurn(2, 1);
-    // gameDispatcher.playTurn(0, 2);
+    // gameDispatcher.playTurn(0, 4);
 }
