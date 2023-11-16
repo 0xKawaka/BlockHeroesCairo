@@ -60,7 +60,7 @@ impl BuffImpl of BuffTrait {
                 }
                 let mut entity = *entities[i];
                 self.applyByType(ref entity, ref battle, isStat, isBonus);
-                battle.entities.set(entity.getIndex(), entity);
+                // battle.entities.set(entity.getIndex(), entity);
                 i += 1;
             }
         }
@@ -71,7 +71,6 @@ impl BuffImpl of BuffTrait {
             }
             if(self.self){
                 self.applyByType(ref caster, ref battle, isStat, isBonus);
-
             }
             if(self.target) {
                 self.applyByType(ref target, ref battle, isStat, isBonus);

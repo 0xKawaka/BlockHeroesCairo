@@ -229,8 +229,8 @@ fn battle(){
     // gameDispatcher.mintHero();
     // gameDispatcher.mintHero();
     // gameDispatcher.mintHero();
-    let heroIds: Array<u32> = array![1, 2];
-    gameDispatcher.startBattle(heroIds, 0, 1);
+    let heroIds: Array<u32> = array![0, 2];
+    gameDispatcher.startBattle(heroIds, 0, 0);
     // gameDispatcher.playTurn(2, 1);
-    gameDispatcher.playTurn(0, 2);
+    // gameDispatcher.playTurn(0, 2);
 }

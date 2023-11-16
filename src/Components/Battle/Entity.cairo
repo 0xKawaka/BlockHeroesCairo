@@ -254,14 +254,14 @@ impl EntityImpl of EntityTrait {
     }
     fn getEventStatisticsStatusArray(self: Entity) -> Array<EntityBuffEvent> {
         let mut statusArray: Array<EntityBuffEvent> = Default::default();
-        if(self.statistics.attack.getBonusValue() > 0 && self.statistics.attack.bonus.duration > 0) {
-            statusArray.append(EntityBuffEvent { name: 'attack', duration: self.statistics.attack.bonus.duration });
+        if(self.statistics.attack.getMalusValue() > 0 && self.statistics.attack.malus.duration > 0) {
+            statusArray.append(EntityBuffEvent { name: 'attack', duration: self.statistics.attack.malus.duration });
         }
-        if(self.statistics.defense.getBonusValue() > 0 && self.statistics.defense.bonus.duration > 0) {
-            statusArray.append(EntityBuffEvent { name: 'defense', duration: self.statistics.defense.bonus.duration });
+        if(self.statistics.defense.getMalusValue() > 0 && self.statistics.defense.malus.duration > 0) {
+            statusArray.append(EntityBuffEvent { name: 'defense', duration: self.statistics.defense.malus.duration });
         }
-        if(self.statistics.speed.getBonusValue() > 0 && self.statistics.speed.bonus.duration > 0) {
-            statusArray.append(EntityBuffEvent { name: 'speed', duration: self.statistics.speed.bonus.duration });
+        if(self.statistics.speed.getMalusValue() > 0 && self.statistics.speed.malus.duration > 0) {
+            statusArray.append(EntityBuffEvent { name: 'speed', duration: self.statistics.speed.malus.duration });
         }
         return statusArray;
     }
