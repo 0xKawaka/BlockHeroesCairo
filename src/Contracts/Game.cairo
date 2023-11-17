@@ -70,8 +70,12 @@ mod Game {
         fn createAccount(ref self: ContractState, username: felt252) {
             self.IAccountsDispatch.read().createAccount( username, get_caller_address());
             self.IAccountsDispatch.read().mintHeroAdmin( get_caller_address(), 'priest', 1, 1);
+            self.IAccountsDispatch.read().mintHeroAdmin( get_caller_address(), 'priest', 1, 1);
+            self.IAccountsDispatch.read().mintHeroAdmin( get_caller_address(), 'hunter', 1, 1);
             self.IAccountsDispatch.read().mintHeroAdmin( get_caller_address(), 'hunter', 1, 1);
             self.IAccountsDispatch.read().mintHeroAdmin( get_caller_address(), 'knight', 1, 1);
+            self.IAccountsDispatch.read().mintHeroAdmin( get_caller_address(), 'knight', 1, 1);
+            self.IAccountsDispatch.read().mintHeroAdmin( get_caller_address(), 'assassin', 1, 1);
             self.IAccountsDispatch.read().mintHeroAdmin( get_caller_address(), 'assassin', 1, 1);
         }
         fn setIAccountsDispatch(ref self: ContractState, newAccountsAdrs: ContractAddress) {

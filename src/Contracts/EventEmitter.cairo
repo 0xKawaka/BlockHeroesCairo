@@ -16,8 +16,9 @@ struct SkillEventParams {
 #[starknet::interface]
 trait IEventEmitter<TContractState> {
     fn newBattle(ref self: TContractState, owner: ContractAddress, healthsArray: Array<u64>);
-    fn skill(ref self: TContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<IdAndValueEvent>, heals: Array<IdAndValueEvent>, buffs: Array<BuffEvent>, status: Array<BuffEvent>, speeds: Array<IdAndValueEvent>, deaths: Array<u32>); 
+    fn skill(ref self: TContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<IdAndValueEvent>, heals: Array<IdAndValueEvent>, deaths: Array<u32>); 
     fn startTurn(ref self: TContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>, buffs: Array<EntityBuffEvent>, status: Array<EntityBuffEvent>, isDead: bool);
+    fn endTurn(ref self: TContractState, owner: ContractAddress, buffs: Array<BuffEvent>, status: Array<BuffEvent>, speeds: Array<IdAndValueEvent>);
     fn endBattle(ref self: TContractState, owner: ContractAddress);
     fn newAccount(ref self: TContractState, owner: ContractAddress, username: felt252);
     fn heroMinted(ref self: TContractState, owner: ContractAddress, id: u32, name: felt252);
@@ -40,6 +41,7 @@ mod EventEmitter {
         NewBattle: NewBattle,
         Skill: Skill,
         StartTurn: StartTurn,
+        EndTurn: EndTurn,
         EndBattle: EndBattle,
 
         NewAccount: NewAccount,
@@ -72,10 +74,15 @@ mod EventEmitter {
         skillIndex: u8,
         damages: Array<IdAndValueEvent>,
         heals: Array<IdAndValueEvent>,
+        deaths: Array<u32>,
+    }
+
+    #[derive(Drop, starknet::Event)]
+    struct EndTurn {
+        owner: ContractAddress,
         buffs: Array<BuffEvent>,
         status: Array<BuffEvent>,
         speeds: Array<IdAndValueEvent>,
-        deaths: Array<u32>,
     }
 
     #[derive(Drop, Copy, Serde)]
@@ -132,7 +139,7 @@ mod EventEmitter {
             });
         }
 
-        fn skill(ref self: ContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<IdAndValueEvent>, heals: Array<IdAndValueEvent>, buffs: Array<BuffEvent>, status: Array<BuffEvent>, speeds: Array<IdAndValueEvent>,  deaths: Array<u32>) {
+        fn skill(ref self: ContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<IdAndValueEvent>, heals: Array<IdAndValueEvent>, deaths: Array<u32>) {
             self.emit(Skill {
                 owner: owner,
                 casterId: casterId,
@@ -140,10 +147,16 @@ mod EventEmitter {
                 skillIndex: skillIndex,
                 damages: damages,
                 heals: heals,
+                deaths: deaths
+            });
+        }
+
+        fn endTurn(ref self: ContractState, owner: ContractAddress, buffs: Array<BuffEvent>, status: Array<BuffEvent>, speeds: Array<IdAndValueEvent>) {
+            self.emit(EndTurn {
+                owner: owner,
                 buffs: buffs,
                 status: status,
                 speeds: speeds,
-                deaths: deaths
             });
         }
 
