@@ -26,7 +26,7 @@ fn new(value: u64, target: bool, aoe: bool, self: bool, healType: HealType) -> H
 
 trait HealTrait {
     fn apply(self: Heal, ref caster: Entity, ref target: Entity, ref battle: Battle) -> Array<IdAndValueEvent>;
-    fn computeHeal(self: Heal, ref caster: Entity, ref target: Entity) -> u64;
+    fn computeHeal(self: Heal, ref target: Entity) -> u64;
 }
 
 impl HealImpl of HealTrait {
@@ -44,7 +44,26 @@ impl HealImpl of HealTrait {
                     break;
                 }
                 let mut ally = *allies[i];
-                let heal = self.computeHeal(ref caster, ref ally);
+
+
+                // Apply on caster direcly to prevent it being overwritten later
+                if(caster.index == ally.getIndex()){
+                    let heal = self.computeHeal(ref caster);
+                    caster.takeHeal(heal);
+                    healByIdArray.append(IdAndValueEvent { entityId: caster.index, value: heal });
+                    i += 1;
+                    continue;
+                }
+                // Apply on target direcly to prevent it being overwritten later
+                else if(target.index == ally.getIndex()) {
+                    let heal = self.computeHeal(ref target);
+                    target.takeHeal(heal);
+                    healByIdArray.append(IdAndValueEvent { entityId: target.index, value: heal });
+                    i += 1;
+                    continue;
+                }
+
+                let heal = self.computeHeal(ref ally);
                 ally.takeHeal(heal);
                 healByIdArray.append(IdAndValueEvent { entityId: ally.index, value: heal });
                 battle.entities.set(ally.index, ally);
@@ -52,21 +71,26 @@ impl HealImpl of HealTrait {
             }
         } else {
             if (self.self) {
-                let heal = self.computeHeal(ref caster, ref caster);
+                let heal = self.computeHeal(ref caster);
                 caster.takeHeal(heal);
                 healByIdArray.append(IdAndValueEvent { entityId: caster.index, value: heal });
-                battle.entities.set(caster.index, caster);
+                // battle.entities.set(caster.index, caster);
             }
             if (self.target) {
-                let heal = self.computeHeal(ref caster, ref target);
+                // if already healed self and target is self, return
+                if(self.self && target.index == caster.index){
+                    return healByIdArray;
+                }
+
+                let heal = self.computeHeal(ref target);
                 target.takeHeal(heal);
                 healByIdArray.append(IdAndValueEvent { entityId: target.index, value: heal });
-                battle.entities.set(target.index, target);
+                // battle.entities.set(target.index, target);
             }
         }
         return healByIdArray;
     }
-    fn computeHeal(self: Heal, ref caster: Entity, ref target: Entity) -> u64 {
+    fn computeHeal(self: Heal, ref target: Entity) -> u64 {
         match self.healType {
             HealType::Flat => {
                 return self.value;

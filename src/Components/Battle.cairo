@@ -114,7 +114,7 @@ trait BattleTrait {
 }
 
 impl BattleImpl of BattleTrait {
-    fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
+    fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {       
         loop {
             // PrintTrait::print('self.isWaitingForPlayerAction');
             // self.isWaitingForPlayerAction.print();

@@ -232,9 +232,9 @@ fn battle(){
     let heroIds: Array<u32> = array![0, 1];
     gameDispatcher.startBattle(heroIds, 0, 0);
     // gameDispatcher.playTurn(2, 1);
-    gameDispatcher.playTurn(2, 1);
     gameDispatcher.playTurn(1, 1);
     gameDispatcher.playTurn(2, 0);
+    gameDispatcher.playTurn(0, 4);
     gameDispatcher.playTurn(0, 4);
     gameDispatcher.playTurn(0, 4);
 }

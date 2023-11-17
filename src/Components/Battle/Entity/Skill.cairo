@@ -1,3 +1,4 @@
+use game::Libraries::IVector::VecTrait;
 use core::array::ArrayTrait;
 use game::Components::Battle::BattleTrait;
 mod Damage;
@@ -89,6 +90,11 @@ impl SkillImpl of SkillTrait {
         let heals = self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
         caster.setOnCooldown(skillIndex, self.cooldown);
+
+        // If target and caster overlap, only caster is updated
+        if(target.index != caster.index) {
+            battle.entities.set(target.getIndex(), target);
+        }
         return SkillEventParams { casterId: caster.getIndex(), targetId: target.getIndex(), skillIndex, damages, heals};
     }
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {

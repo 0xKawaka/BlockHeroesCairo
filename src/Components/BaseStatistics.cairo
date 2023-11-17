@@ -38,16 +38,16 @@ trait BaseStatisticsTrait {
 
 impl BaseStatisticsImpl of BaseStatisticsTrait {
     fn getHealth(self: BaseStatistics, level: u16, rank: u16) -> u64 {
-        return self.health + self.health * (level.into() - 1) / decimals;
+        return self.health + (self.health * (level.into() - 1) / decimals);
     }
     fn getAttack(self: BaseStatistics, level: u16, rank: u16) -> u64 {
-        return self.attack + self.attack * (level.into() - 1) / decimals;
+        return self.attack + (self.attack * (level.into() - 1) / decimals);
     }
     fn getDefense(self: BaseStatistics, level: u16, rank: u16) -> u64 {
-        return self.defense + self.defense * (level.into() - 1) / decimals;
+        return self.defense + (self.defense * (level.into() - 1) / decimals);
     }
     fn getSpeed(self: BaseStatistics, level: u16, rank: u16) -> u64 {
-        return self.speed + self.speed * (level.into() - 1) / decimals;
+        return self.speed + (self.speed * (level.into() - 1) / decimals);
     }
     fn getCriticalRate(self: BaseStatistics, level: u16, rank: u16) -> u64 {
         return self.criticalRate;

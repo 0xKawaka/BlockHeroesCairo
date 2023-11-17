@@ -43,6 +43,18 @@ impl DamageImpl of DamageTrait {
                     break;
                 }
                 let mut enemy = *enemies[i];
+                
+                // Can bug if damage AOE on own team, copy heal impl for that
+
+                // Apply on target direcly to prevent it being overwritten later
+                if(target.index == enemy.getIndex()) {
+                    let damage = self.computeDamage(ref caster, ref target);
+                    target.takeDamage(damage);
+                    damageByIdArray.append(IdAndValueEvent { entityId: target.index, value: damage });
+                    i += 1;
+                    continue;
+                }
+
                 let damage = self.computeDamage(ref caster, ref enemy);
                 enemy.takeDamage(damage);
                 damageByIdArray.append(IdAndValueEvent { entityId: enemy.index, value: damage });
@@ -54,13 +66,17 @@ impl DamageImpl of DamageTrait {
                 let damage = self.computeDamage(ref caster, ref caster);
                 caster.takeDamage(damage);
                 damageByIdArray.append(IdAndValueEvent { entityId: caster.index, value: damage });
-                battle.entities.set(caster.index, caster);
+                // battle.entities.set(caster.index, caster);
             }
             if (self.target) {
+                // if already damaged self and target is self, return
+                if(self.self && target.index == caster.index){
+                    return damageByIdArray;
+                }
                 let damage = self.computeDamage(ref caster, ref target);
                 target.takeDamage(damage);
                 damageByIdArray.append(IdAndValueEvent { entityId: target.index, value: damage });
-                battle.entities.set(target.index, target);
+                // battle.entities.set(target.index, target);
             }
         }
         return damageByIdArray;
