@@ -120,7 +120,6 @@ impl EntityImpl of EntityTrait {
                     let skillEventParams = skill.cast(skillIndex, ref self, ref battle);
                     IEventEmitterDispatch.skill(battle.owner, skillEventParams.casterId, skillEventParams.targetId, skillIndex, skillEventParams.damages, skillEventParams.heals, battle.checkAndProcessDeadEntities(IEventEmitterDispatch));
                     self.endTurn(ref battle, IEventEmitterDispatch);
-                    PrintTrait::print(*self.getTurnBar().turnbar);
                 },
             }
         }
@@ -143,7 +142,6 @@ impl EntityImpl of EntityTrait {
     }
     fn die(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
         PrintTrait::print('death');
-        PrintTrait::print('entity');
         PrintTrait::print(self.index);        
         battle.deadEntities.append(self.getIndex());
         if(battle.checkAndProcessBattleOver(IEventEmitterDispatch)) {
@@ -202,7 +200,7 @@ impl EntityImpl of EntityTrait {
         };
     }
     fn pickSkill(ref self: Entity) -> u8 {
-        let mut seed = get_block_timestamp() + 19;
+        let mut seed = get_block_timestamp();
         if(self.cooldowns.isOnCooldown(1) && self.cooldowns.isOnCooldown(2)) {
             return 0;
         }
@@ -217,13 +215,13 @@ impl EntityImpl of EntityTrait {
         return skillIndex;
     }
     fn takeDamage(ref self: Entity, damage: u64) {
-        PrintTrait::print('takeDamage');
-        damage.print();
+        // PrintTrait::print('takeDamage');
+        // damage.print();
         self.statistics.health -= i64Impl::new(damage, false);
     }
     fn takeHeal(ref self: Entity, heal: u64) {
-        PrintTrait::print('takeHeal');
-        heal.print();
+        // PrintTrait::print('takeHeal');
+        // heal.print();
         self.statistics.health += i64Impl::new(heal, false);
     }
     fn incrementTurnbar(ref self: Entity) {

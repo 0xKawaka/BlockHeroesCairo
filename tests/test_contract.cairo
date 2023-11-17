@@ -229,12 +229,13 @@ fn battle(){
     // gameDispatcher.mintHero();
     // gameDispatcher.mintHero();
     // gameDispatcher.mintHero();
-    let heroIds: Array<u32> = array![0, 1];
-    gameDispatcher.startBattle(heroIds, 0, 0);
+    let heroIds: Array<u32> = array![4, 5];
+    gameDispatcher.startBattle(heroIds, 1, 1);
     // gameDispatcher.playTurn(2, 1);
-    gameDispatcher.playTurn(1, 1);
-    gameDispatcher.playTurn(2, 0);
-    gameDispatcher.playTurn(0, 4);
-    gameDispatcher.playTurn(0, 4);
-    gameDispatcher.playTurn(0, 4);
+    gameDispatcher.playTurn(1, 4);
+    gameDispatcher.playTurn(2, 3);
+    // gameDispatcher.playTurn(0, 4);
+    // gameDispatcher.playTurn(0, 3);
+    // gameDispatcher.playTurn(0, 4);
+    // gameDispatcher.playTurn(0, 4);
 }

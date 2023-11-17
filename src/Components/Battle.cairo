@@ -80,6 +80,7 @@ trait BattleTrait {
     fn sortTurnTimeline(ref self: Battle);
     fn getEntityHighestTurn(ref self: Battle) -> Entity::Entity;
     fn waitForPlayerAction(ref self: Battle);
+    fn checkTurnBarsForFullBars(ref self: Battle) -> bool;
     fn checkAndProcessDeadEntities(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) -> Array<u32>;
     fn checkAndProcessBattleOver(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) -> bool;
     fn isAlly(ref self: Battle, entityIndex: u32) -> bool;
@@ -116,43 +117,36 @@ trait BattleTrait {
 impl BattleImpl of BattleTrait {
     fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {       
         loop {
-            // PrintTrait::print('self.isWaitingForPlayerAction');
-            // self.isWaitingForPlayerAction.print();
             if (self.isBattleOver || self.isWaitingForPlayerAction) {
                 break;
             }
             self.loopUntilNextTurn();
             let mut entity = self.getEntityHighestTurn();
-            // entity.print();
             self.processHealthOnTurnProcs(ref entity, IEventEmitterDispatch);
-            PrintTrait::print('playTurn');
+            // PrintTrait::print('playTurn');
             entity.playTurn(ref self, IEventEmitterDispatch);
         };
     }
     fn playTurn(ref self: Battle, skillIndex: u8, targetIndex: u32, IEventEmitterDispatch: IEventEmitterDispatcher) {
-        PrintTrait::print('Play turn');
+        // PrintTrait::print('Play turn');
         assert(!self.isBattleOver, 'Battle is over');
-        if(!self.isWaitingForPlayerAction) {
-            PrintTrait::print('Not waiting for player action');
-        }
         assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
         let mut entity = self.getEntityHighestTurn();
-        PrintTrait::print('Entity player playing index :');
-        entity.index.print();
+        // PrintTrait::print('Entity player playing index :');
+        // entity.index.print();
         entity.playTurnPlayer(skillIndex, targetIndex, ref self, IEventEmitterDispatch);
-        let mut target = self.getEntityByIndex(targetIndex);
         self.isWaitingForPlayerAction = false;
         self.battleLoop(IEventEmitterDispatch);
     }
     fn processHealthOnTurnProcs(ref self: Battle, ref entity: Entity::Entity, IEventEmitterDispatch: IEventEmitterDispatcher) {
-        PrintTrait::print('processHealthOnTurnProcs of');
-        PrintTrait::print(entity.index);
+        // PrintTrait::print('processHealthOnTurnProcs of');
+        // PrintTrait::print(entity.index);
         let mut damageArray: Array<u64> = Default::default();
         let mut healArray: Array<u64> = Default::default();
         let mut removed: bool = false;
         let mut i: u32 = 0;
         loop {
-            if (i >= self.healthOnTurnProcs.len()) {
+            if (i == self.healthOnTurnProcs.len()) {
                 break;
             }
             removed = false;
@@ -183,25 +177,41 @@ impl BattleImpl of BattleTrait {
     fn loopUntilNextTurn(ref self: Battle) {
         PrintTrait::print('Loop until next turn');
         self.updateTurnBarsSpeed();
-        self.sortTurnTimeline();
         loop {
-            if ((*self.getEntityHighestTurn().getTurnBar()).isFull()) {
-                PrintTrait::print('Fullbar entity : ');
-                PrintTrait::print(self.getEntityHighestTurn().getIndex());
-                PrintTrait::print(*self.getEntityHighestTurn().getTurnBar().turnbar);
-                PrintTrait::print(self.getEntityByIndex(self.turnTimeline.getValue(1)).getIndex());
-                PrintTrait::print(*self.getEntityByIndex(self.turnTimeline.getValue(1)).getTurnBar().turnbar);
+            if (self.checkTurnBarsForFullBars()) {
+                self.sortTurnTimeline();
+                // PrintTrait::print('Fullbar entity : ');
+                // PrintTrait::print(self.getEntityHighestTurn().getIndex());
+                // PrintTrait::print(*self.getEntityHighestTurn().getTurnBar().turnbar);
+                // PrintTrait::print(self.getEntityByIndex(self.turnTimeline.getValue(1)).getIndex());
+                // PrintTrait::print(*self.getEntityByIndex(self.turnTimeline.getValue(1)).getTurnBar().turnbar);
                 break;
             }
             self.incrementTurnBars();
-            self.sortTurnTimeline();
         };
-    // self.printTurnTimeline();
     }
+
+    fn checkTurnBarsForFullBars(ref self: Battle) -> bool {
+        let mut i: u32 = 0;
+        let mut isFull = false;
+        loop {
+            if (i >= self.aliveEntities.len()) {
+                break;
+            }
+            let entity = self.entities.getValue(self.aliveEntities.getValue(i));
+            if ((*entity.getTurnBar()).isFull()) {
+                isFull =  true;
+                break;
+            }
+            i = i + 1;
+        };
+        return isFull;
+    }
+
     fn updateTurnBarsSpeed(ref self: Battle) {
         let mut i: u32 = 0;
         loop {
-            if (i >= self.aliveEntities.len()) {
+            if (i == self.aliveEntities.len()) {
                 break;
             }
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
@@ -213,7 +223,7 @@ impl BattleImpl of BattleTrait {
     fn incrementTurnBars(ref self: Battle) {
         let mut i: u32 = 0;
         loop {
-            if (i >= self.aliveEntities.len()) {
+            if (i == self.aliveEntities.len()) {
                 break;
             }
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
@@ -274,9 +284,7 @@ impl BattleImpl of BattleTrait {
         self.turnTimeline = VecTrait::<Vector, u32>::newFromArray(sortedArray);
     }
     fn getEntityHighestTurn(ref self: Battle) -> Entity::Entity {
-        let entityIndex = self.turnTimeline.getValue(0);
-        let entity = self.entities.getValue(entityIndex);
-        return entity;
+        return self.entities.getValue(self.turnTimeline.getValue(0));
     }
     fn waitForPlayerAction(ref self: Battle) {
         PrintTrait::print('Waiting for player action');
@@ -287,7 +295,7 @@ impl BattleImpl of BattleTrait {
         let mut deadEntities: Array<u32> = Default::default();
         let mut died: bool = false;
         loop {
-            if (i >= self.aliveEntities.len()) {
+            if (i == self.aliveEntities.len()) {
                 break;
             }
             died = false;
@@ -295,6 +303,7 @@ impl BattleImpl of BattleTrait {
             if (entity.isDead()) {
                 entity.die(ref self, IEventEmitterDispatch);
                 deadEntities.append(entity.index);
+                died = true;
             }
             if(!died) {
                 i = i + 1;
@@ -371,9 +380,8 @@ impl BattleImpl of BattleTrait {
         let mut allies: Array<Entity::Entity> = ArrayTrait::new();
         let mut i: u32 = 0;
         let mut aliveAlliesIndexesArray = self.aliveAlliesIndexes.toArray();
-        let aliveAlliesIndexesArrayLen = aliveAlliesIndexesArray.len();
         loop {
-            if (i >= aliveAlliesIndexesArrayLen) {
+            if (i == aliveAlliesIndexesArray.len()) {
                 break;
             }
             let allyIndex = *aliveAlliesIndexesArray[i];
@@ -389,9 +397,8 @@ impl BattleImpl of BattleTrait {
         let mut enemies: Array<Entity::Entity> = ArrayTrait::new();
         let mut i: u32 = 0;
         let mut aliveEnemiesIndexesArray = self.aliveEnemiesIndexes.toArray();
-        let aliveEnemiesIndexesArrayLen = aliveEnemiesIndexesArray.len();
         loop {
-            if (i >= aliveEnemiesIndexesArrayLen) {
+            if (i == aliveEnemiesIndexesArray.len()) {
                 break;
             }
             let enemyIndex = *aliveEnemiesIndexesArray[i];
@@ -405,13 +412,11 @@ impl BattleImpl of BattleTrait {
         let mut allies: Array<Entity::Entity> = ArrayTrait::new();
         let mut i: u32 = 0;
         let mut alliesIndexesSpan = self.alliesIndexes.span();
-        let alliesIndexesSpanLen = alliesIndexesSpan.len();
         loop {
-            if (i >= alliesIndexesSpanLen) {
+            if (i == alliesIndexesSpan.len()) {
                 break;
             }
-            let allyIndexOption = alliesIndexesSpan.pop_front();
-            let allyIndex = *allyIndexOption.unwrap();
+            let allyIndex = *alliesIndexesSpan.pop_front().unwrap();
             let mut entity = self.entities.getValue(allyIndex);
             i = i + 1;
         };
@@ -421,13 +426,11 @@ impl BattleImpl of BattleTrait {
         let mut enemies: Array<Entity::Entity> = ArrayTrait::new();
         let mut i: u32 = 0;
         let mut enemiesIndexesSpan = self.enemiesIndexes.span();
-        let enemiesIndexesSpanLen = enemiesIndexesSpan.len();
         loop {
-            if (i >= enemiesIndexesSpanLen) {
+            if (i == enemiesIndexesSpan.len()) {
                 break;
             }
-            let enemyIndexOption = enemiesIndexesSpan.pop_front();
-            let enemyIndex = *enemyIndexOption.unwrap();
+            let enemyIndex = *enemiesIndexesSpan.pop_front().unwrap();
             let mut entity =self.entities.getValue(enemyIndex);
             i = i + 1;
         };
@@ -437,13 +440,11 @@ impl BattleImpl of BattleTrait {
         let mut allies: Array<Entity::Entity> = ArrayTrait::new();
         let mut i: u32 = 0;
         let mut alliesIndexesSpan = self.alliesIndexes.span();
-        let alliesIndexesSpanLen = alliesIndexesSpan.len();
         loop {
-            if (i == alliesIndexesSpanLen) {
+            if (i == alliesIndexesSpan.len()) {
                 break;
             }
-            let allyIndexOption = alliesIndexesSpan.pop_front();
-            let allyIndex = *allyIndexOption.unwrap();
+            let allyIndex = *alliesIndexesSpan.pop_front().unwrap();
             if (allyIndex != entityIndex) {
                 let mut entity = self.entities.getValue(allyIndex);
                 if(!entity.isDead()) {
@@ -458,13 +459,11 @@ impl BattleImpl of BattleTrait {
         let mut enemies: Array<Entity::Entity> = ArrayTrait::new();
         let mut i: u32 = 0;
         let mut enemiesIndexesSpan = self.enemiesIndexes.span();
-        let enemiesIndexesSpanLen = enemiesIndexesSpan.len();
         loop {
-            if (i == enemiesIndexesSpanLen) {
+            if (i == enemiesIndexesSpan.len()) {
                 break;
             }
-            let enemyIndexOption = enemiesIndexesSpan.pop_front();
-            let enemyIndex = *enemyIndexOption.unwrap();
+            let enemyIndex = *enemiesIndexesSpan.pop_front().unwrap();
             if (enemyIndex != entityIndex) {
                 let mut entity = self.entities.getValue(enemyIndex);
                 if(!entity.isDead()) {
@@ -479,7 +478,7 @@ impl BattleImpl of BattleTrait {
         let mut speeds: Array<IdAndValueEvent> = ArrayTrait::new();
         let mut i: u32 = 0;
         loop {
-            if (i >= self.aliveEntities.len()) {
+            if (i == self.aliveEntities.len()) {
                 break;
             }
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
@@ -492,7 +491,7 @@ impl BattleImpl of BattleTrait {
         let mut turnBars: Array<TurnBarEvent> = ArrayTrait::new();
         let mut i: u32 = 0;
         loop {
-            if (i >= self.aliveEntities.len()) {
+            if (i == self.aliveEntities.len()) {
                 break;
             }
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
@@ -508,7 +507,7 @@ impl BattleImpl of BattleTrait {
         let buffsHealthArray = self.getEventEntityBuffsHealthOnTurnProcs(entityIndex);
         let mut i: u32 = 0;
         loop {
-            if (i >= buffsArray.len()) {
+            if (i == buffsArray.len()) {
                 break;
             }
             let buff = *buffsArray[i];
@@ -517,7 +516,7 @@ impl BattleImpl of BattleTrait {
         };
         let mut j: u32 = 0;
         loop {
-            if (j >= buffsHealthArray.len()) {
+            if (j == buffsHealthArray.len()) {
                 break;
             }
             let buff = *buffsHealthArray[j];
@@ -532,7 +531,7 @@ impl BattleImpl of BattleTrait {
         let statusHealthArray = self.getEventEntityStatusHealthOnTurnProcs(entityIndex);
         let mut i: u32 = 0;
         loop {
-            if (i >= statusArray.len()) {
+            if (i == statusArray.len()) {
                 break;
             }
             let statusBuff = *statusArray[i];
@@ -541,7 +540,7 @@ impl BattleImpl of BattleTrait {
         };
         let mut j: u32 = 0;
         loop {
-            if (j >= statusHealthArray.len()) {
+            if (j == statusHealthArray.len()) {
                 break;
             }
             let statusBuff = *statusHealthArray[j];
@@ -555,7 +554,7 @@ impl BattleImpl of BattleTrait {
         let buffsHealthArray = self.getHealthOnTurnProcsEntity(entityIndex);
         let mut i: u32 = 0;
         loop {
-            if (i >= buffsHealthArray.len()) {
+            if (i == buffsHealthArray.len()) {
                 break;
             }
             let buff = *buffsHealthArray[i];
@@ -572,7 +571,7 @@ impl BattleImpl of BattleTrait {
         let statusHealthArray = self.getHealthOnTurnProcsEntity(entityIndex);
         let mut i: u32 = 0;
         loop {
-            if (i >= statusHealthArray.len()) {
+            if (i == statusHealthArray.len()) {
                 break;
             }
             let buff = *statusHealthArray[i];
@@ -588,14 +587,14 @@ impl BattleImpl of BattleTrait {
         let mut buffs: Array<BuffEvent> = ArrayTrait::new();
         let mut i: u32 = 0;
         loop {
-            if (i >= self.aliveEntities.len()) {
+            if (i == self.aliveEntities.len()) {
                 break;
             }
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
             let buffsArray = entity.getEventBuffsArray();
             let mut j: u32 = 0;
             loop {
-                if (j >= buffsArray.len()) {
+                if (j == buffsArray.len()) {
                     break;
                 }
                 let buff = *buffsArray[j];
@@ -607,7 +606,7 @@ impl BattleImpl of BattleTrait {
         let buffsHealthArray = self.getEventBuffsHealthOnTurnProcs();
         let mut k: u32 = 0;
         loop {
-            if (k >= buffsHealthArray.len()) {
+            if (k == buffsHealthArray.len()) {
                 break;
             }
             let buff = *buffsHealthArray[k];
@@ -636,14 +635,14 @@ impl BattleImpl of BattleTrait {
         let mut status: Array<BuffEvent> = ArrayTrait::new();
         let mut i: u32 = 0;
         loop {
-            if (i >= self.aliveEntities.len()) {
+            if (i == self.aliveEntities.len()) {
                 break;
             }
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));
             let statusArray = entity.getEventStatusArray();
             let mut j: u32 = 0;
             loop {
-                if (j >= statusArray.len()) {
+                if (j == statusArray.len()) {
                     break;
                 }
                 let statusBuff = *statusArray[j];
@@ -655,7 +654,7 @@ impl BattleImpl of BattleTrait {
         let statusHealthArray = self.getEventStatusHealthOnTurnProcs();
         let mut k: u32 = 0;
         loop {
-            if (k >= statusHealthArray.len()) {
+            if (k == statusHealthArray.len()) {
                 break;
             }
             let statusBuff = *statusHealthArray[k];
@@ -699,7 +698,7 @@ impl BattleImpl of BattleTrait {
         let mut healths: Array<u64> = ArrayTrait::new();
         let mut i: u32 = 0;
         loop {
-            if (i >= self.aliveEntities.len()) {
+            if (i == self.aliveEntities.len()) {
                 break;
             }
             let mut entity = self.entities.getValue(self.aliveEntities.getValue(i));

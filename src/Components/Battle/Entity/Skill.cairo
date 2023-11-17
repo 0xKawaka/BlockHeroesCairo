@@ -80,12 +80,6 @@ impl SkillImpl of SkillTrait {
                 assert(!battle.isAllyOf(caster.getIndex(),  target.getIndex()), 'Target should be enemy');
             },
         }
-        PrintTrait::print('caster:');
-        PrintTrait::print(caster.name);
-        PrintTrait::print(caster.getIndex());
-        PrintTrait::print(self.name);
-        PrintTrait::print('target:');
-        PrintTrait::print(target.getIndex());
         let damages = self.applyDamage(ref caster, ref target, ref battle);
         let heals = self.applyHeal(ref caster, ref target, ref battle);
         self.applyBuffs(ref caster, ref target, ref battle);
@@ -100,7 +94,7 @@ impl SkillImpl of SkillTrait {
     fn applyBuffs(self: Skill, ref caster: Entity, ref target: Entity, ref battle: Battle) {
         let  mut i: u32 = 0;
         loop {
-            if (i >= self.buffs.len()) {
+            if (i == self.buffs.len()) {
                 break;
             }
             let buff = *self.buffs[i];
@@ -138,11 +132,5 @@ impl SkillImpl of SkillTrait {
     }
     fn print(self: @Skill) {
         (*self.name).print();
-    // (*self.description).print();
-    // (*self.cooldown).print();
-    // (*self.damage).print();
-    // (*self.heal).print();
-    // (*self.targetType).print();
-    // (*self.accuracy).print();
     }
 }
