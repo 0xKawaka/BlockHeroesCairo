@@ -37,7 +37,6 @@ trait StatisticsTrait {
         ref self: Statistics, buffType: BuffType, statModifierValue: u64, statModifierDuration: u8,
     );
     fn resetBonusMalus(ref self: Statistics);
-    fn getSpeedNextTurn(self: @Statistics) -> u64;
     fn getAttack(self: @Statistics) -> u64;
     fn getDefense(self: @Statistics) -> u64;
     fn getSpeed(self: @Statistics) -> u64;
@@ -89,9 +88,6 @@ impl StatisticsImpl of StatisticsTrait {
         self.speed.resetBonusMalus();
         self.criticalChance.resetBonusMalus();
         self.criticalDamage.resetBonusMalus();
-    }
-    fn getSpeedNextTurn(self: @Statistics) -> u64 {
-        return *self.speed.value;
     }
     fn getAttack(self: @Statistics) -> u64 {
         return self.attack.getModifiedValue();

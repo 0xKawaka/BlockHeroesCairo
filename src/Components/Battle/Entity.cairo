@@ -109,8 +109,8 @@ impl EntityImpl of EntityTrait {
             match self.allyOrEnemy {
                 AllyOrEnemy::Ally => {
                     battle.waitForPlayerAction();
-                    self.name.print();
-                    self.index.print();
+                    // self.name.print();
+                    // self.index.print();
                     battle.entities.set(self.getIndex(), self);
                 },
                 AllyOrEnemy::Enemy => {
@@ -257,7 +257,7 @@ impl EntityImpl of EntityTrait {
         self.stunOnTurnProc.isStunned()
     }
     fn isDead(ref self: Entity) -> bool {
-        if (self.statistics.getHealth().min(i64Impl::new(1, false)) == self.statistics.getHealth()) {
+        if (self.statistics.getHealth().min(i64Impl::new(0, false)) == self.statistics.getHealth()) {
             return true;
         }
         return false;

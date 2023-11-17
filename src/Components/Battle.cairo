@@ -137,13 +137,10 @@ impl BattleImpl of BattleTrait {
         }
         assert(self.isWaitingForPlayerAction, 'Not waiting for player action');
         let mut entity = self.getEntityHighestTurn();
-        PrintTrait::print('Entity player playing');
+        PrintTrait::print('Entity player playing index :');
         entity.index.print();
         entity.playTurnPlayer(skillIndex, targetIndex, ref self, IEventEmitterDispatch);
         let mut target = self.getEntityByIndex(targetIndex);
-        PrintTrait::print('Target health after:');
-        target.getHealth().print();
-        // target.isStunned().print();
         self.isWaitingForPlayerAction = false;
         self.battleLoop(IEventEmitterDispatch);
     }
@@ -168,7 +165,7 @@ impl BattleImpl of BattleTrait {
                 }
                 
                 if(onTurnProc.isExpired()) {
-                    PrintTrait::print('Removing healthOnTurnProc');
+                    // PrintTrait::print('Removing healthOnTurnProc');
                     self.healthOnTurnProcs.remove(i);
                     removed = true;
                 }
@@ -181,13 +178,19 @@ impl BattleImpl of BattleTrait {
             }
         };
         IEventEmitterDispatch.startTurn(self.owner, entity.getIndex(), damageArray, healArray, self.getEventEntityBuffsArray(entity.index), self.getEventEntityStatusArray(entity.index), entity.isDead());
-        PrintTrait::print('finished onturnprocs');
+        // PrintTrait::print('finished onturnprocs');
     }
     fn loopUntilNextTurn(ref self: Battle) {
+        PrintTrait::print('Loop until next turn');
         self.updateTurnBarsSpeed();
         self.sortTurnTimeline();
         loop {
             if ((*self.getEntityHighestTurn().getTurnBar()).isFull()) {
+                PrintTrait::print('Fullbar entity : ');
+                PrintTrait::print(self.getEntityHighestTurn().getIndex());
+                PrintTrait::print(*self.getEntityHighestTurn().getTurnBar().turnbar);
+                PrintTrait::print(self.getEntityByIndex(self.turnTimeline.getValue(1)).getIndex());
+                PrintTrait::print(*self.getEntityByIndex(self.turnTimeline.getValue(1)).getTurnBar().turnbar);
                 break;
             }
             self.incrementTurnBars();
@@ -219,6 +222,7 @@ impl BattleImpl of BattleTrait {
             i = i + 1;
         };
     }
+
     fn sortTurnTimeline(ref self: Battle) {
         if self.turnTimeline.len() < 2 {
             return;
@@ -227,7 +231,7 @@ impl BattleImpl of BattleTrait {
         let mut idx2 = 1;
         let mut sortedIteration = 0;
         let mut sortedArray: Array<u32> = Default::default();
-
+        
         loop {
             if idx2 == self.turnTimeline.len() {
                 sortedArray.append(self.turnTimeline.getValue(idx1));
@@ -244,14 +248,26 @@ impl BattleImpl of BattleTrait {
                 let entityIndex2 = self.turnTimeline.getValue(idx2);
                 let entity1TurnBar = *self.entities.getValue(entityIndex1).getTurnBar().turnbar;
                 let entity2TurnBar = *self.entities.getValue(entityIndex2).getTurnBar().turnbar;
-                if entity2TurnBar > entity1TurnBar {
-                    sortedArray.append(self.turnTimeline.getValue(idx2));
-                    idx2 += 1;
-                    sortedIteration = 1;
-                } else {
-                    sortedArray.append(self.turnTimeline.getValue(idx1));
+                if entity1TurnBar > entity2TurnBar {
+                    sortedArray.append(entityIndex1);
                     idx1 = idx2;
                     idx2 += 1;
+                }
+                else if (entity1TurnBar == entity2TurnBar) {
+                    if(entityIndex1 > entityIndex2){
+                        sortedArray.append(entityIndex2);
+                        idx2 += 1;
+                    }
+                    else {
+                        sortedArray.append(entityIndex1);
+                        idx1 = idx2;
+                        idx2 += 1;
+                    }
+                }
+                else {
+                    sortedArray.append(entityIndex2);
+                    idx2 += 1;
+                    sortedIteration = 1;
                 }
             };
         };
@@ -302,9 +318,15 @@ impl BattleImpl of BattleTrait {
             }
             i = i + 1;
         };
-        if (alliesDeadCount == self.alliesIndexes.len() || enemiesDeadCount == self.enemiesIndexes.len()) {
+        if (alliesDeadCount == self.alliesIndexes.len()) {
             PrintTrait::print('All allies dead');
-            IEventEmitterDispatch.endBattle(self.owner);
+            IEventEmitterDispatch.endBattle(self.owner, false);
+            self.isBattleOver = true;
+            return true;
+        }
+        if (enemiesDeadCount == self.enemiesIndexes.len()) {
+            PrintTrait::print('All enemies dead');
+            IEventEmitterDispatch.endBattle(self.owner, true);
             self.isBattleOver = true;
             return true;
         }
