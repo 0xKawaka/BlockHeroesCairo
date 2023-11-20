@@ -106,22 +106,22 @@ mod EntityFactory {
                 let runeStat = runeStatWithoutRank + ((runeStatWithoutRank * rune.rank) / 10);
                 self.matchAndAddStat(ref runesTotalBonusStats, rune.statistic, runeStat.into(), rune.isPercent, baseStats);
                 if (rune.rank > 3) {
-                    let bonusRank4 = rune.rank4Bonus.unwrap();
+                    let bonusRank4 = rune.rank4Bonus;
                     let runeBonusStat = self.runesBonusStatsTable.read((bonusRank4.statistic, rune.rarity, bonusRank4.isPercent));
                     self.matchAndAddStat(ref runesTotalBonusStats, bonusRank4.statistic, runeBonusStat.into(), bonusRank4.isPercent, baseStats);
                 }
                 if (rune.rank > 7) {
-                    let bonusRank8 = rune.rank8Bonus.unwrap();
+                    let bonusRank8 = rune.rank8Bonus;
                     let runeBonusStat = self.runesBonusStatsTable.read((bonusRank8.statistic, rune.rarity, bonusRank8.isPercent));
                     self.matchAndAddStat(ref runesTotalBonusStats, bonusRank8.statistic, runeBonusStat.into(), bonusRank8.isPercent, baseStats);
                 }
                 if (rune.rank > 11) {
-                    let bonusRank12 = rune.rank12Bonus.unwrap();
+                    let bonusRank12 = rune.rank12Bonus;
                     let runeBonusStat = self.runesBonusStatsTable.read((bonusRank12.statistic, rune.rarity, bonusRank12.isPercent));
                     self.matchAndAddStat(ref runesTotalBonusStats, bonusRank12.statistic, runeBonusStat.into(), bonusRank12.isPercent, baseStats);
                 }
                 if (rune.rank > 15) {
-                    let bonusRank16 = rune.rank16Bonus.unwrap();
+                    let bonusRank16 = rune.rank16Bonus;
                     let runeBonusStat = self.runesBonusStatsTable.read((bonusRank16.statistic, rune.rarity, bonusRank16.isPercent));
                     self.matchAndAddStat(ref runesTotalBonusStats, bonusRank16.statistic, runeBonusStat.into(), bonusRank16.isPercent, baseStats);
                 }
@@ -150,7 +150,7 @@ mod EntityFactory {
 
         fn initBaseStatisticsDict(ref self: ContractState) {
             self.baseStatistics.write('assassin', BaseStatistics::new(1300, 200, 100, 185, 10, 100));
-            self.baseStatistics.write('knight', BaseStatistics::new(2000, 120, 180, 70, 10, 100));
+            self.baseStatistics.write('knight', BaseStatistics::new(2000, 120, 180, 150, 10, 100));
             self.baseStatistics.write('priest', BaseStatistics::new(1500, 150, 150, 160, 10, 100));
             self.baseStatistics.write('hunter', BaseStatistics::new(1400, 170, 130, 170, 10, 200));
         }

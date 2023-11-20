@@ -4,117 +4,159 @@ use debug::PrintTrait;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct EquippedRunes {
-    first: Option<u32>,
-    second: Option<u32>,
-    third: Option<u32>,
-    fourth: Option<u32>,
-    fifth: Option<u32>,
-    sixth: Option<u32>,
+    isFirstRuneEquipped: bool,
+    first: u32,
+    isSecondRuneEquipped: bool,
+    second: u32,
+    isThirdRuneEquipped: bool,
+    third: u32,
+    isFourthRuneEquipped: bool,
+    fourth: u32,
+    isFifthRuneEquipped: bool,
+    fifth: u32,
+    isSixthRuneEquipped: bool,
+    sixth: u32,
 }
 
 fn new() -> EquippedRunes {
     EquippedRunes {
-        first: Option::None,
-        second: Option::None,
-        third: Option::None,
-        fourth: Option::None,
-        fifth: Option::None,
-        sixth: Option::None,
+        isFirstRuneEquipped: false,
+        isSecondRuneEquipped: false,
+        isThirdRuneEquipped: false,
+        isFourthRuneEquipped: false,
+        isFifthRuneEquipped: false,
+        isSixthRuneEquipped: false,
+        first: 0,
+        second: 0,
+        third: 0,
+        fourth: 0,
+        fifth: 0,
+        sixth: 0,
     }
 }
 
 trait EquippedRunesTrait {
-    fn equip(ref self: EquippedRunes, ref rune: Rune, heroId: u32);
-    fn handleEquipRune(ref self: EquippedRunes, runeAlreadyEquipped: Option<u32>, ref rune: Rune, heroId: u32);
+    fn equipRune(ref self: EquippedRunes, ref rune: Rune, heroId: u32);
+    fn handleEquipRune(ref self: EquippedRunes, isAnotherRuneAlreadyEquipped: bool, runeAlreadyEquippedId: u32, ref rune: Rune, heroId: u32);
     fn equipRuneEmptySlot(ref self: EquippedRunes, ref rune: Rune, heroId: u32);
+    fn unequipRune(ref self: EquippedRunes, ref rune: Rune, heroId: u32);
     fn getRunesIndexArray(self: EquippedRunes) -> Array<u32>;
     fn print(self: EquippedRunes);
-    fn printIfValue(self: EquippedRunes, optionRune: Option<u32>);
 }
 
 impl EquippedRunesImpl of EquippedRunesTrait {
-    fn equip(ref self: EquippedRunes, ref rune: Rune, heroId: u32) {
+    fn equipRune(ref self: EquippedRunes, ref rune: Rune, heroId: u32) {
         match rune.runeType {
-            RuneType::First => self.handleEquipRune(self.first, ref rune, heroId),
-            RuneType::Second => self.handleEquipRune(self.second, ref rune, heroId),
-            RuneType::Third => self.handleEquipRune(self.third, ref rune, heroId),
-            RuneType::Fourth => self.handleEquipRune(self.fourth, ref rune, heroId),
-            RuneType::Fifth => self.handleEquipRune(self.fifth, ref rune, heroId),
-            RuneType::Sixth => self.handleEquipRune(self.sixth, ref rune, heroId),
+            RuneType::First => self.handleEquipRune(self.isFirstRuneEquipped, self.first, ref rune, heroId),
+            RuneType::Second => self.handleEquipRune(self.isSecondRuneEquipped, self.second, ref rune, heroId),
+            RuneType::Third => self.handleEquipRune(self.isThirdRuneEquipped, self.third, ref rune, heroId),
+            RuneType::Fourth => self.handleEquipRune(self.isFourthRuneEquipped, self.fourth, ref rune, heroId),
+            RuneType::Fifth => self.handleEquipRune(self.isFifthRuneEquipped, self.fifth, ref rune, heroId),
+            RuneType::Sixth => self.handleEquipRune(self.isSixthRuneEquipped, self.sixth, ref rune, heroId),
         }
     }
-    fn handleEquipRune(ref self: EquippedRunes, runeAlreadyEquipped: Option<u32>, ref rune: Rune, heroId: u32) {
-        match runeAlreadyEquipped {
-            Option::Some(mut equippedRune) => {
-                // TODO : Pass List as ref to set rune to None
-                // equippedRune.heroEquipped = Option::None;
-                self.equipRuneEmptySlot(ref rune, heroId);
-            },
-            Option::None => self.equipRuneEmptySlot(ref rune, heroId),
+    fn handleEquipRune(ref self: EquippedRunes, isAnotherRuneAlreadyEquipped: bool, runeAlreadyEquippedId: u32, ref rune: Rune, heroId: u32) {
+        if(isAnotherRuneAlreadyEquipped) {
+            // runeAlreadyEquipped.unequip();
+            self.equipRuneEmptySlot(ref rune, heroId);
+        } else {
+            self.equipRuneEmptySlot(ref rune, heroId);
         }
     }
     fn equipRuneEmptySlot(ref self: EquippedRunes, ref rune: Rune, heroId: u32) {
         match rune.runeType {
-            RuneType::First => self.first = Option::Some(rune.id),
-            RuneType::Second => self.second = Option::Some(rune.id),
-            RuneType::Third => self.third = Option::Some(rune.id),
-            RuneType::Fourth => self.fourth = Option::Some(rune.id),
-            RuneType::Fifth => self.fifth = Option::Some(rune.id),
-            RuneType::Sixth => self.sixth = Option::Some(rune.id),
+            RuneType::First => {
+                self.first = rune.id;
+                self.isFirstRuneEquipped = true;
+            },
+            RuneType::Second => {
+                self.second = rune.id;
+                self.isSecondRuneEquipped = true;
+            },
+            RuneType::Third => {
+                self.third = rune.id;
+                self.isThirdRuneEquipped = true;
+            },
+            RuneType::Fourth => {
+                self.fourth = rune.id;
+                self.isFourthRuneEquipped = true;
+            },
+            RuneType::Fifth => {
+                self.fifth = rune.id;
+                self.isFifthRuneEquipped = true;
+            },
+            RuneType::Sixth => {
+                self.sixth = rune.id;
+                self.isSixthRuneEquipped = true;
+            },
         }
-        // match rune.runeType {
-        //     RuneType::First => self.first = Option::None,
-        //     RuneType::Second => self.second = Option::None,
-        //     RuneType::Third => self.third = Option::None,
-        //     RuneType::Fourth => self.fourth = Option::None,
-        //     RuneType::Fifth => self.fifth = Option::None,
-        //     RuneType::Sixth => self.sixth = Option::None,
-        // }
-        // match rune.runeType {
-        //     RuneType::First => PrintTrait::print('first'),
-        //     RuneType::Second => PrintTrait::print('second'),
-        //     RuneType::Third => PrintTrait::print('third'),
-        //     RuneType::Fourth => PrintTrait::print('fourth'),
-        //     RuneType::Fifth => PrintTrait::print('fifth'),
-        //     RuneType::Sixth => PrintTrait::print('sixth'),
-        // }
-        rune.heroEquipped = Option::Some(heroId);
+        rune.setEquippedBy(heroId);
     }
+    fn unequipRune(ref self: EquippedRunes, ref rune: Rune, heroId: u32) {
+        match rune.runeType {
+            RuneType::First => {
+                self.isFirstRuneEquipped = false;
+            },
+            RuneType::Second => {
+                self.isSecondRuneEquipped = false;
+            },
+            RuneType::Third => {
+                self.isThirdRuneEquipped = false;
+            },
+            RuneType::Fourth => {
+                self.isFourthRuneEquipped = false;
+            },
+            RuneType::Fifth => {
+                self.isFifthRuneEquipped = false;
+            },
+            RuneType::Sixth => {
+                self.isSixthRuneEquipped = false;
+            },
+        }
+        rune.unequip();
+    }
+
     fn getRunesIndexArray(self: EquippedRunes) -> Array<u32> {
         let mut runesIndexArray: Array<u32> = Default::default();
-        if(self.first != Option::None) {
-            runesIndexArray.append(self.first.unwrap());
+        if(self.isFirstRuneEquipped) {
+            runesIndexArray.append(self.first);
         }
-        if(self.second != Option::None) {
-            runesIndexArray.append(self.second.unwrap());
+        if(self.isSecondRuneEquipped) {
+            runesIndexArray.append(self.second);
         }
-        if(self.third != Option::None) {
-            runesIndexArray.append(self.third.unwrap());
+        if(self.isThirdRuneEquipped) {
+            runesIndexArray.append(self.third);
         }
-        if(self.fourth != Option::None) {
-            runesIndexArray.append(self.fourth.unwrap());
+        if(self.isFourthRuneEquipped) {
+            runesIndexArray.append(self.fourth);
         }
-        if(self.fifth != Option::None) {
-            runesIndexArray.append(self.fifth.unwrap());
+        if(self.isFifthRuneEquipped) {
+            runesIndexArray.append(self.fifth);
         }
-        if(self.sixth != Option::None) {
-            runesIndexArray.append(self.sixth.unwrap());
+        if(self.isSixthRuneEquipped) {
+            runesIndexArray.append(self.sixth);
         }
         return runesIndexArray;
     }
     fn print(self: EquippedRunes) {
-        self.printIfValue(self.first);
-        self.printIfValue(self.second);
-        self.printIfValue(self.third);
-        self.printIfValue(self.fourth);
-        self.printIfValue(self.fifth);
-        self.printIfValue(self.sixth);
-    }
-    fn printIfValue(self: EquippedRunes, optionRune: Option<u32>) {
-        match optionRune {
-            Option::Some(runeIndex) => runeIndex.print(),
-            Option::None => {},
-        }   
+        if(self.isFirstRuneEquipped) {
+            self.first.print();
+        }
+        if(self.isSecondRuneEquipped) {
+            self.second.print();
+        }
+        if(self.isThirdRuneEquipped) {
+            self.third.print();
+        }
+        if(self.isFourthRuneEquipped) {
+            self.fourth.print();
+        }
+        if(self.isFifthRuneEquipped) {
+            self.fifth.print();
+        }
+        if(self.isSixthRuneEquipped) {
+            self.sixth.print();
+        }
     }
 
 }

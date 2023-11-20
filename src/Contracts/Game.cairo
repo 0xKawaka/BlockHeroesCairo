@@ -5,6 +5,7 @@ trait IGame<TContractState> {
     fn startBattle(ref self: TContractState, heroesIds: Array<u32>, world: u16, level: u16);
     fn playTurn(ref self: TContractState, spellIndex: u8, targetIndex: u32);
     fn equipRune(ref self: TContractState, runeId: u32, heroId: u32);
+    fn unequipRune(ref self: TContractState, runeId: u32);
     fn upgradeRune(ref self: TContractState, runeId: u32);
     fn mintHero(ref self: TContractState);
     fn mintRune(ref self: TContractState);
@@ -57,6 +58,9 @@ mod Game {
         }
         fn equipRune(ref self: ContractState, runeId: u32, heroId: u32) {
             self.IAccountsDispatch.read().equipRune(get_caller_address(), runeId, heroId);
+        }
+        fn unequipRune(ref self: ContractState, runeId: u32) {
+            self.IAccountsDispatch.read().unequipRune(get_caller_address(), runeId);
         }
         fn upgradeRune(ref self: ContractState, runeId: u32) {
             self.IAccountsDispatch.read().upgradeRune(get_caller_address(), runeId);

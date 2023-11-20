@@ -42,11 +42,12 @@ struct Rune {
     rank: u32,
     rarity: RuneRarity,
     runeType: RuneType,
-    heroEquipped: Option<u32>,
-    rank4Bonus: Option<RuneBonus::RuneBonus>,
-    rank8Bonus: Option<RuneBonus::RuneBonus>,
-    rank12Bonus: Option<RuneBonus::RuneBonus>,
-    rank16Bonus: Option<RuneBonus::RuneBonus>,
+    isEquipped: bool,
+    heroEquipped: u32,
+    rank4Bonus: RuneBonus::RuneBonus,
+    rank8Bonus: RuneBonus::RuneBonus,
+    rank12Bonus: RuneBonus::RuneBonus,
+    rank16Bonus: RuneBonus::RuneBonus,
 }
 
 const RUNE_STAT_COUNT: u32 = 4;
@@ -67,11 +68,12 @@ fn new(id: u32) -> Rune {
         rank: 0,
         rarity: rarity,
         runeType: runeType,
-        heroEquipped: Option::None,
-        rank4Bonus: Option::None,
-        rank8Bonus: Option::None,
-        rank12Bonus: Option::None,
-        rank16Bonus: Option::None,
+        isEquipped: false,
+        heroEquipped: 0,
+        rank4Bonus: RuneBonus::new(RuneStatistic::Attack, false),
+        rank8Bonus: RuneBonus::new(RuneStatistic::Attack, false),
+        rank12Bonus: RuneBonus::new(RuneStatistic::Attack, false),
+        rank16Bonus: RuneBonus::new(RuneStatistic::Attack, false),
     
     }
 }
@@ -134,6 +136,10 @@ fn getRandomIsPercent(seed: u64) -> bool {
 
 trait RuneTrait {
     fn upgrade(ref self: Rune);
+    fn setEquippedBy(ref self: Rune, heroId: u32);
+    fn unequip(ref self: Rune);
+    fn isEquipped(self: Rune)-> bool;
+    fn getHeroEquipped(self: Rune)-> u32;
     fn print(self: Rune);
     fn statisticToString(self: Rune)-> felt252;
 }
@@ -144,14 +150,28 @@ impl RuneImpl of RuneTrait {
 
         let seed = get_block_timestamp();
         if self.rank == 4 {
-            self.rank4Bonus = Option::Some(RuneBonus::new(getRandomStat(seed), false));
+            self.rank4Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
         } else if self.rank == 8 {
-            self.rank8Bonus = Option::Some(RuneBonus::new(getRandomStat(seed), false));
+            self.rank8Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
         } else if self.rank == 12 {
-            self.rank12Bonus = Option::Some(RuneBonus::new(getRandomStat(seed), false));
+            self.rank12Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
         } else if self.rank == 16 {
-            self.rank16Bonus = Option::Some(RuneBonus::new(getRandomStat(seed), false));
+            self.rank16Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
         }
+    }
+    fn setEquippedBy(ref self: Rune, heroId: u32) {
+        assert(self.isEquipped() == false, 'Rune already equipped');
+        self.isEquipped = true;
+        self.heroEquipped = heroId;
+    }
+    fn unequip(ref self: Rune) {
+        self.isEquipped = false;
+    }
+    fn isEquipped(self: Rune)-> bool {
+        return self.isEquipped;
+    }
+    fn getHeroEquipped(self: Rune)-> u32 {
+        return self.heroEquipped;
     }
     fn print(self: Rune) {
         PrintTrait::print('Rune');

@@ -1,6 +1,7 @@
 mod EquippedRunes;
 mod Rune;
 
+use Rune::{RuneImpl};
 use EquippedRunes::{EquippedRunesImpl};
 use debug::PrintTrait;
 
@@ -19,6 +20,7 @@ fn new(id: u32, name: felt252, level: u16, rank: u16) -> Hero {
 
 trait HeroTrait {
     fn equipRune(ref self: Hero, ref rune: Rune::Rune);
+    fn unequipRune(ref self: Hero, ref rune: Rune::Rune);
     fn getRunes(self: Hero) -> EquippedRunes::EquippedRunes;
     fn getRunesIndexArray(self: Hero) -> Array<u32>;
     fn setName(ref self: Hero, name: felt252);
@@ -28,7 +30,10 @@ trait HeroTrait {
 
 impl HeroImpl of HeroTrait {
     fn equipRune(ref self: Hero, ref rune: Rune::Rune) {
-        self.runes.equip(ref rune, self.id);
+        self.runes.equipRune(ref rune, self.id);
+    }
+    fn unequipRune(ref self: Hero, ref rune: Rune::Rune) {
+        self.runes.unequipRune(ref rune, self.id);
     }
     fn getRunes(self: Hero) -> EquippedRunes::EquippedRunes {
         self.runes

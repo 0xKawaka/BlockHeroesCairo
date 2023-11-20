@@ -6,6 +6,7 @@ use game::Contracts::EventEmitter::IEventEmitterDispatcher;
 #[starknet::interface]
 trait IAccounts<TContractState> {
     fn equipRune(ref self: TContractState, accountAdrs: ContractAddress, runeId: u32, heroId: u32);
+    fn unequipRune(ref self: TContractState, accountAdrs: ContractAddress, runeId: u32);
     fn upgradeRune(ref self: TContractState, accountAdrs: ContractAddress, runeId: u32);
     fn mintHero(ref self: TContractState, accountAdrs: ContractAddress);
     fn mintHeroAdmin(ref self: TContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16);
@@ -23,7 +24,8 @@ trait IAccounts<TContractState> {
 
 #[starknet::contract]
 mod Accounts {
-    use core::array::ArrayTrait;
+    use game::Components::Hero::Rune::RuneTrait;
+use core::array::ArrayTrait;
 use core::option::OptionTrait;
 use core::box::BoxTrait;
 use game::Components::Hero::HeroTrait;
@@ -68,6 +70,7 @@ use game::Components::Hero::HeroTrait;
             rune.print();
             // heroesList.set(heroId, hero);
             runesList.set(runeId, rune);
+            heroesList.set(heroId, hero);
 
             // let newHeroesList = self.heroes.read(accountAdrs);
             // let newHero = heroesList[heroId];
@@ -76,6 +79,18 @@ use game::Components::Hero::HeroTrait;
             let newRuneList = self.runes.read(accountAdrs);
             let newRune = newRuneList[runeId];
             newRune.print();
+        }
+        fn unequipRune(ref self: ContractState, accountAdrs: ContractAddress, runeId: u32) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut runesList = self.runes.read(accountAdrs);
+            assert(runesList.len() > runeId, 'runeId out of range');
+            let mut rune = runesList[runeId];
+            assert(rune.isEquipped(), 'Rune not equipped');
+            let mut heroesList = self.heroes.read(accountAdrs);
+            let mut hero = heroesList[rune.getHeroEquipped()];
+            hero.unequipRune(ref rune);
+            heroesList.set(hero.id, hero);
+            runesList.set(runeId, rune);
         }
         fn upgradeRune(ref self: ContractState, accountAdrs: ContractAddress, runeId: u32) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
