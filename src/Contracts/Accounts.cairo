@@ -64,7 +64,7 @@ use game::Components::Hero::HeroTrait;
             assert(runesList.len() > runeId, 'runeId out of range');
             let mut hero = heroesList[heroId];
             let mut rune = runesList[runeId];
-            hero.equipRune(ref rune);
+            hero.equipRune(ref rune, ref runesList);
             // hero.print();
             // hero.getRunes().print();
             rune.print();

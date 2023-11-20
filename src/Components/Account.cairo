@@ -10,9 +10,10 @@ struct Account {
     energy: u32,
     shards: u32,
     owner: ContractAddress,
+    // lastEnergyActionTimestamp
 }
 
-const maxEnergy: u32 = 100;
+const maxEnergy: u32 = 10;
 fn new(username: felt252, owner: ContractAddress) -> Account {
     Account {
         username: username,
