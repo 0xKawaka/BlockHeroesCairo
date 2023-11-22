@@ -79,6 +79,23 @@ fn new(id: u32) -> Rune {
     }
 }
 
+fn newDeterministic(id: u32, statistic: RuneStatistic, isPercent: bool, rarity: RuneRarity, runeType: RuneType) -> Rune {
+    Rune {
+        id: id,
+        statistic: statistic,
+        isPercent: isPercent,
+        rank: 0,
+        rarity: rarity,
+        runeType: runeType,
+        isEquipped: false,
+        heroEquipped: 0,
+        rank4Bonus: RuneBonus::new(RuneStatistic::Attack, false),
+        rank8Bonus: RuneBonus::new(RuneStatistic::Attack, false),
+        rank12Bonus: RuneBonus::new(RuneStatistic::Attack, false),
+        rank16Bonus: RuneBonus::new(RuneStatistic::Attack, false),
+    }
+}
+
 fn getRandomStat(seed: u64) -> RuneStatistic {
     let rand = rand32(seed, RUNE_STAT_COUNT);
     if rand == 0 {

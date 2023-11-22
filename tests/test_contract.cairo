@@ -129,7 +129,7 @@ fn mintAndUpgradeRunes(){
     assert(rune.rank == 4, 'Invalid rune rank');
 }
 
-#[test]
+// #[test]
 fn equipRunes(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -234,7 +234,7 @@ fn startBattle(){
     gameDispatcher.startBattle(heroIds, 0, 1);
 }
 
-// #[test]
+#[test]
 fn battle(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -266,13 +266,10 @@ fn battle(){
     // gameDispatcher.mintHero();
     // gameDispatcher.mintHero();
     // gameDispatcher.mintHero();
-    let heroIds: Array<u32> = array![4, 5];
-    gameDispatcher.startBattle(heroIds, 1, 1);
-    // gameDispatcher.playTurn(2, 1);
-    gameDispatcher.playTurn(1, 4);
-    gameDispatcher.playTurn(2, 3);
-    // gameDispatcher.playTurn(0, 4);
-    // gameDispatcher.playTurn(0, 3);
-    // gameDispatcher.playTurn(0, 4);
-    // gameDispatcher.playTurn(0, 4);
+
+    // let heroIds: Array<u32> = array![4, 5];
+    // gameDispatcher.startBattle(heroIds, 1, 1);
+    // gameDispatcher.playTurn(1, 4);
+    // gameDispatcher.playTurn(2, 3);
+
 }

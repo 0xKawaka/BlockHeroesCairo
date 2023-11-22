@@ -121,11 +121,21 @@ use game::Components::Hero::HeroTrait;
             runesList.append(Rune::new(runesList.len()));
             self.IEventEmitterDispatch.read().runeMinted(accountAdrs, runesList[runesList.len() - 1]);
         }
+
+        // fn mint(ref self: ContractState, accountAdrs: ContractAddress, rune: Rune::Rune) {
+        //     assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+        //     let mut runesList = self.runes.read(accountAdrs);
+        //     runesList.append(rune);
+        //     self.IEventEmitterDispatch.read().runeMinted(accountAdrs, runesList[runesList.len() - 1]);
+        // }
+
         fn createAccount(ref self: ContractState, username: felt252, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner != accountAdrs, 'Account already created');
             let acc = Account::new(username, accountAdrs);
             self.accounts.write(accountAdrs, acc);
             self.IEventEmitterDispatch.read().newAccount(accountAdrs, username);
+            self.mintStarterHeroes(accountAdrs);
+            self.mintStarterRunes(accountAdrs);
         }
         fn setIEventEmitterDispatch(ref self: ContractState, eventEmitterAdrs: ContractAddress) {
             self.IEventEmitterDispatch.write(IEventEmitterDispatcher { contract_address: eventEmitterAdrs });
@@ -180,5 +190,42 @@ use game::Components::Hero::HeroTrait;
             return heroesList.array();
         }
     }
-
+    use game::Components::Hero::Rune::{RuneStatistic, RuneRarity, RuneType};
+    #[generate_trait]
+    impl InternalSkillFactoryImpl of InternalSkillFactoryTrait {
+        fn mintStarterHeroes(ref self: ContractState, accountAdrs: ContractAddress) {
+            let mut heroesList = self.heroes.read(accountAdrs);
+            heroesList.append(Hero::new(heroesList.len(), 'priest', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'priest', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'assassin', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'assassin', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'knight', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'knight', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'hunter', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'hunter', 1, 1));
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'priest');
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'priest');
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'assassin');
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'assassin');
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'knight');
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'knight');
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'hunter');
+            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'hunter');
+        }
+        fn mintStarterRunes(ref self: ContractState, accountAdrs: ContractAddress) {
+            let mut runesList = self.runes.read(accountAdrs);
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Attack, false, RuneRarity::Common, RuneType::First));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Attack, true, RuneRarity::Common, RuneType::Second));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Attack, false, RuneRarity::Common, RuneType::Third));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Defense, false, RuneRarity::Common, RuneType::Third));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Defense, true, RuneRarity::Common, RuneType::Fourth));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Defense, true, RuneRarity::Common, RuneType::Sixth));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Health, false, RuneRarity::Common, RuneType::Fifth));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Health, true, RuneRarity::Common, RuneType::Fifth));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Health, true, RuneRarity::Common, RuneType::Second));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, false, RuneRarity::Common, RuneType::Sixth));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, false, RuneRarity::Common, RuneType::First));
+            runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, true, RuneRarity::Common, RuneType::Fourth));
+        }
+    }
 }
