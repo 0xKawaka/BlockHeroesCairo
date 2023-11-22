@@ -67,18 +67,18 @@ use game::Components::Hero::HeroTrait;
             hero.equipRune(ref rune, ref runesList);
             // hero.print();
             // hero.getRunes().print();
-            rune.print();
+            // rune.print();
             // heroesList.set(heroId, hero);
             runesList.set(runeId, rune);
             heroesList.set(heroId, hero);
 
             // let newHeroesList = self.heroes.read(accountAdrs);
-            // let newHero = heroesList[heroId];
+            let newHero = heroesList[heroId];
             // newHero.print();
             // newHero.getRunes().print();
             let newRuneList = self.runes.read(accountAdrs);
             let newRune = newRuneList[runeId];
-            newRune.print();
+            // newRune.print();
         }
         fn unequipRune(ref self: ContractState, accountAdrs: ContractAddress, runeId: u32) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');

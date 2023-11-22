@@ -60,9 +60,9 @@ impl EquippedRunesImpl of EquippedRunesTrait {
     fn handleEquipRune(ref self: EquippedRunes, isAnotherRuneAlreadyEquipped: bool, runeAlreadyEquippedId: u32, ref rune: Rune, heroId: u32, ref runesList: List<Rune>) {
         if(isAnotherRuneAlreadyEquipped) {
             // runeAlreadyEquipped.unequip();
-            let mut rune = runesList[runeAlreadyEquippedId];
-            rune.unequip();
-            runesList.set(rune.id, rune);
+            let mut runeAlreadyEquipped = runesList[runeAlreadyEquippedId];
+            runeAlreadyEquipped.unequip();
+            runesList.set(runeAlreadyEquipped.id, runeAlreadyEquipped);
             self.equipRuneEmptySlot(ref rune, heroId);
         } else {
             self.equipRuneEmptySlot(ref rune, heroId);

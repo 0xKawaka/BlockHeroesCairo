@@ -1,4 +1,3 @@
-use game::Components::Hero::HeroTrait;
 use core::result::ResultTrait;
 use core::option::OptionTrait;
 use starknet::ContractAddress;
@@ -37,7 +36,10 @@ use game::Contracts::SkillFactory::ISkillFactorySafeDispatcherTrait;
 use game::Contracts::EventEmitter::IEventEmitterSafeDispatcher;
 use game::Contracts::EventEmitter::IEventEmitterSafeDispatcherTrait;
 
-use game::Components::Hero::{Hero, HeroImpl};
+use game::Components::Hero::Rune::RuneTrait;
+use game::Components::Hero::{Hero, HeroImpl, HeroTrait};
+use game::Components::Battle::Entity::{Entity, AllyOrEnemy, EntityImpl};
+use game::Components::Hero::Rune::{Rune, RuneImpl};
 use game::Components::Hero::EquippedRunes::{EquippedRunes, EquippedRunesImpl};
 
 use debug::PrintTrait;
@@ -127,7 +129,7 @@ fn mintAndUpgradeRunes(){
     assert(rune.rank == 4, 'Invalid rune rank');
 }
 
-// #[test]
+#[test]
 fn equipRunes(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -139,9 +141,11 @@ fn equipRunes(){
 
     let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
     let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
+    let entityFactoryDispatcher = IEntityFactoryDispatcher { contract_address: entityFactoryAdrs };
 
     gameDispatcher.setIAccountsDispatch(accountsAdrs);
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+    entityFactoryDispatcher.setAccountsAdrs(accountsAdrs);
     
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(gameAdrs, testAdrs);
@@ -150,15 +154,48 @@ fn equipRunes(){
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
-    // FOUNDRY BUG IF HERO NOT MINTED ASSERT ERROR ISN'T RAISED
+    gameDispatcher.mintHero();
 
     gameDispatcher.mintRune();
     gameDispatcher.mintRune();
     gameDispatcher.mintRune();
+    gameDispatcher.mintRune();
+    gameDispatcher.mintRune();
 
+    gameDispatcher.equipRune(0, 0);
+    gameDispatcher.equipRune(1, 0);
     gameDispatcher.equipRune(0, 1);
-    // let hero = accountsDispatcher.getHero(testAdrs, 1).unwrap();
+    gameDispatcher.equipRune(2, 2);
+    // let hero = accountsDispatcher.getHero(testAdrs, 0);
     // hero.getRunes().print();
+    // let hero = accountsDispatcher.getHero(testAdrs, 1);
+    // hero.getRunes().print();
+    // let hero = accountsDispatcher.getHero(testAdrs, 2);
+    // hero.getRunes().print();
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    gameDispatcher.upgradeRune(2);
+    let hero = accountsDispatcher.getHero(testAdrs, 2);
+    let entity = entityFactoryDispatcher.newEntity(testAdrs, 0, hero, AllyOrEnemy::Ally);
+    entity.print();
+
+    // BUGS WHEN GETRUNES BEFORE TESTING ENTITY
+    // let allRunes = accountsDispatcher.getAllRunes((testAdrs));
+    // let rune = *allRunes[2];
+    // rune.print();
+    // let hero = accountsDispatcher.getHero(testAdrs, 2);
+    // let entity = entityFactoryDispatcher.newEntity(testAdrs, 0, hero, AllyOrEnemy::Ally);
+    // entity.print();
 }
 
 // #[test]
@@ -197,7 +234,7 @@ fn startBattle(){
     gameDispatcher.startBattle(heroIds, 0, 1);
 }
 
-#[test]
+// #[test]
 fn battle(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');

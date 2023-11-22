@@ -1,5 +1,6 @@
 mod RuneBonus;
 
+use RuneBonus::RuneBonusImpl;
 use game::Components::BaseStatistics;
 use game::Libraries::Random::rand32;
 use starknet::get_block_timestamp;
@@ -141,7 +142,9 @@ trait RuneTrait {
     fn isEquipped(self: Rune)-> bool;
     fn getHeroEquipped(self: Rune)-> u32;
     fn print(self: Rune);
+    fn printBonuses(self: Rune);
     fn statisticToString(self: Rune)-> felt252;
+    fn typeToString(self: Rune)-> felt252;
 }
 
 impl RuneImpl of RuneTrait {
@@ -177,6 +180,23 @@ impl RuneImpl of RuneTrait {
         PrintTrait::print('Rune');
         self.id.print();
         self.statisticToString().print(); 
+        self.typeToString().print();
+        self.rank.print();
+        self.printBonuses();
+    }
+    fn printBonuses(self: Rune) {
+        if self.rank > 3 {
+            self.rank4Bonus.print();
+        }
+        if self.rank > 7 {
+            self.rank8Bonus.print();
+        }
+        if self.rank > 12 {
+            self.rank12Bonus.print();
+        }
+        if self.rank > 16 {
+            self.rank16Bonus.print();
+        }
     }
     fn statisticToString(self: Rune)-> felt252 {
         let mut statisticStr: felt252 = '';
@@ -187,5 +207,17 @@ impl RuneImpl of RuneTrait {
             RuneStatistic::Speed => statisticStr = 'Speed',
         }
         return statisticStr;
+    }
+    fn typeToString(self: Rune)-> felt252 {
+        let mut typeStr: felt252 = '';
+        match self.runeType {
+            RuneType::First => typeStr = 'First',
+            RuneType::Second => typeStr = 'Second',
+            RuneType::Third => typeStr = 'Third',
+            RuneType::Fourth => typeStr = 'Fourth',
+            RuneType::Fifth => typeStr = 'Fifth',
+            RuneType::Sixth => typeStr = 'Sixth',
+        }
+        return typeStr;
     }
 }
