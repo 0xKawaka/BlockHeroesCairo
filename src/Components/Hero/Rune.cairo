@@ -1,7 +1,9 @@
+use game::Components::Hero::Rune::RuneBonus::RuneBonusTrait;
 mod RuneBonus;
-
+use starknet::ContractAddress;
 use RuneBonus::RuneBonusImpl;
 use game::Components::BaseStatistics;
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
 use game::Libraries::Random::rand32;
 use starknet::get_block_timestamp;
 use debug::PrintTrait;
@@ -75,7 +77,6 @@ fn new(id: u32) -> Rune {
         rank8Bonus: RuneBonus::new(RuneStatistic::Attack, false),
         rank12Bonus: RuneBonus::new(RuneStatistic::Attack, false),
         rank16Bonus: RuneBonus::new(RuneStatistic::Attack, false),
-    
     }
 }
 
@@ -153,7 +154,7 @@ fn getRandomIsPercent(seed: u64) -> bool {
 }
 
 trait RuneTrait {
-    fn upgrade(ref self: Rune);
+    fn upgrade(ref self: Rune, owner: ContractAddress, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn setEquippedBy(ref self: Rune, heroId: u32);
     fn unequip(ref self: Rune);
     fn isEquipped(self: Rune)-> bool;
@@ -165,18 +166,22 @@ trait RuneTrait {
 }
 
 impl RuneImpl of RuneTrait {
-    fn upgrade(ref self: Rune) {
+    fn upgrade(ref self: Rune, owner: ContractAddress, IEventEmitterDispatch: IEventEmitterDispatcher) {
         self.rank += 1;
 
         let seed = get_block_timestamp();
         if self.rank == 4 {
             self.rank4Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
+            IEventEmitterDispatch.runeBonus(owner, self.id, self.rank, self.rank4Bonus.statisticToString(), self.rank4Bonus.isPercent);
         } else if self.rank == 8 {
             self.rank8Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
+            IEventEmitterDispatch.runeBonus(owner, self.id, self.rank, self.rank8Bonus.statisticToString(), self.rank8Bonus.isPercent);
         } else if self.rank == 12 {
             self.rank12Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
+            IEventEmitterDispatch.runeBonus(owner, self.id, self.rank, self.rank12Bonus.statisticToString(), self.rank12Bonus.isPercent);
         } else if self.rank == 16 {
             self.rank16Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
+            IEventEmitterDispatch.runeBonus(owner, self.id, self.rank, self.rank16Bonus.statisticToString(), self.rank16Bonus.isPercent);
         }
     }
     fn setEquippedBy(ref self: Rune, heroId: u32) {

@@ -23,6 +23,7 @@ trait IEventEmitter<TContractState> {
     fn newAccount(ref self: TContractState, owner: ContractAddress, username: felt252);
     fn heroMinted(ref self: TContractState, owner: ContractAddress, id: u32, name: felt252);
     fn runeMinted(ref self: TContractState, owner: ContractAddress, rune: Rune::Rune);
+    fn runeBonus(ref self: TContractState, owner: ContractAddress, id: u32, rank: u32, procStat: felt252, isPercent: bool);
 }
 #[starknet::contract]
 mod EventEmitter {
@@ -46,7 +47,9 @@ mod EventEmitter {
 
         NewAccount: NewAccount,
         HeroMinted: HeroMinted,
+
         RuneMinted: RuneMinted,
+        RuneBonus: RuneBonus,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -129,10 +132,16 @@ mod EventEmitter {
         owner: ContractAddress,
         rune: Rune::Rune,
     }
+    #[derive(Drop, starknet::Event)]
+    struct RuneBonus {
+        owner: ContractAddress,
+        id: u32,
+        rank: u32,
+        procStat: felt252,
+        isPercent: bool,
+    }
     #[external(v0)]
     impl BattlesImpl of super::IEventEmitter<ContractState> {
-
-
         fn newBattle(ref self: ContractState, owner: ContractAddress, healthsArray: Array<u64>) {
             self.emit(NewBattle {
                 owner: owner,
@@ -199,6 +208,16 @@ mod EventEmitter {
             self.emit(RuneMinted {
                 owner: owner,
                 rune: rune,
+            });
+        }
+
+        fn runeBonus(ref self: ContractState, owner: ContractAddress, id: u32, rank: u32, procStat: felt252, isPercent: bool) {
+            self.emit(RuneBonus {
+                owner: owner,
+                id: id,
+                rank: rank,
+                procStat: procStat,
+                isPercent: isPercent,
             });
         }
     }

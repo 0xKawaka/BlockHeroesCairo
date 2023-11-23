@@ -97,7 +97,7 @@ use game::Components::Hero::HeroTrait;
             let mut runesList = self.runes.read(accountAdrs);
             assert(runesList.len() > runeId, 'runeId out of range');
             let mut rune = runesList[runeId];
-            rune.upgrade();
+            rune.upgrade(accountAdrs, self.IEventEmitterDispatch.read());
             runesList.set(runeId, rune);
         }
         fn mintHero(ref self: ContractState, accountAdrs: ContractAddress) {
