@@ -102,6 +102,7 @@ impl EntityImpl of EntityTrait {
             self.die(ref battle, IEventEmitterDispatch);
             return;
         }
+        self.setMaxHealthIfHealthIsGreater();
         PrintTrait::print('health:');
         self.getHealth().print();
 
@@ -141,7 +142,7 @@ impl EntityImpl of EntityTrait {
         self.endTurn(ref battle, IEventEmitterDispatch);
     }
     fn endTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
-        self.setMaxHealthIfHealthIsGreater();
+        // self.setMaxHealthIfHealthIsGreater();
         self.processEndTurnProcs(ref battle);
         self.turnBar.resetTurn();
         battle.entities.set(self.getIndex(), self);
