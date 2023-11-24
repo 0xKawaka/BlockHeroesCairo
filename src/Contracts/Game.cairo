@@ -46,6 +46,7 @@ mod Game {
     #[external(v0)]
     impl GameImpl of super::IGame<ContractState> {
         fn startBattle(ref self: ContractState, heroesIds: Array<u32>, world: u16, level: u16) {
+            assert(heroesIds.len() < 5, '4 heroes max');
             let caller = get_caller_address();
             let allyHeroes = self.IAccountsDispatch.read().getHeroes(get_caller_address(), heroesIds);
             let allyEntities = self.IEntityFactoryDispatch.read().newEntities(get_caller_address(), 0, allyHeroes, AllyOrEnemy::Ally);

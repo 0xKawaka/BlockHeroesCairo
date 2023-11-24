@@ -1,3 +1,4 @@
+use game::Libraries::SignedIntegers::IntegerTrait::IntegerTrait;
 use core::box::BoxTrait;
 
 mod Statistics;
@@ -99,6 +100,9 @@ impl EntityImpl of EntityTrait {
             self.die(ref battle, IEventEmitterDispatch);
             return;
         }
+        PrintTrait::print('health:');
+        self.getHealth().print();
+
         self.cooldowns.reduceCooldowns();
         if(self.isStunned()){
             PrintTrait::print('stunned');
@@ -135,6 +139,9 @@ impl EntityImpl of EntityTrait {
         self.endTurn(ref battle, IEventEmitterDispatch);
     }
     fn endTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
+        if(!self.getHealth().sign && self.getHealth().mag > self.getMaxHealth()) {
+            self.statistics.health = i64Impl::new(self.getMaxHealth(), false);
+        }
         self.processEndTurnProcs(ref battle);
         self.turnBar.resetTurn();
         battle.entities.set(self.getIndex(), self);

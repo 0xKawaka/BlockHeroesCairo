@@ -198,20 +198,20 @@ use game::Components::Hero::HeroTrait;
             let mut heroesList = self.heroes.read(accountAdrs);
             heroesList.append(Hero::new(heroesList.len(), 'priest', 1, 1));
             heroesList.append(Hero::new(heroesList.len(), 'priest', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'priest', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'priest', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'assassin', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'assassin', 1, 1));
             heroesList.append(Hero::new(heroesList.len(), 'assassin', 1, 1));
             heroesList.append(Hero::new(heroesList.len(), 'assassin', 1, 1));
             heroesList.append(Hero::new(heroesList.len(), 'knight', 1, 1));
             heroesList.append(Hero::new(heroesList.len(), 'knight', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'knight', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'knight', 1, 1));
             heroesList.append(Hero::new(heroesList.len(), 'hunter', 1, 1));
             heroesList.append(Hero::new(heroesList.len(), 'hunter', 1, 1));
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'priest');
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'priest');
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'assassin');
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'assassin');
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'knight');
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'knight');
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'hunter');
-            self.IEventEmitterDispatch.read().heroMinted(accountAdrs, heroesList.len() - 1, 'hunter');
+            heroesList.append(Hero::new(heroesList.len(), 'hunter', 1, 1));
+            heroesList.append(Hero::new(heroesList.len(), 'hunter', 1, 1));
         }
         fn mintStarterRunes(ref self: ContractState, accountAdrs: ContractAddress) {
             let mut runesList = self.runes.read(accountAdrs);
@@ -227,8 +227,6 @@ use game::Components::Hero::HeroTrait;
             runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, false, RuneRarity::Common, RuneType::Sixth));
             runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, false, RuneRarity::Common, RuneType::First));
             runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, true, RuneRarity::Common, RuneType::Fourth));
-            self.equipRune(accountAdrs, 1, 1);
-            self.equipRune(accountAdrs, 2, 1);
         }
     }
 }
