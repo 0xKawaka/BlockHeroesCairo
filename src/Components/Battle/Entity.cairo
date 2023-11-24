@@ -67,6 +67,8 @@ trait EntityTrait {
     fn pickSkill(ref self: Entity) -> u8;
     fn takeDamage(ref self: Entity, damage: u64);
     fn takeHeal(ref self: Entity, heal: u64);
+    fn takeHealAllowOverheal(ref self: Entity, heal: u64);
+    fn setMaxHealthIfHealthIsGreater(ref self: Entity);
     fn incrementTurnbar(ref self: Entity);
     fn updateTurnBarSpeed(ref self: Entity);
     fn processEndTurnProcs(ref self: Entity, ref battle: Battle);
@@ -139,9 +141,7 @@ impl EntityImpl of EntityTrait {
         self.endTurn(ref battle, IEventEmitterDispatch);
     }
     fn endTurn(ref self: Entity, ref battle: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {
-        if(!self.getHealth().sign && self.getHealth().mag > self.getMaxHealth()) {
-            self.statistics.health = i64Impl::new(self.getMaxHealth(), false);
-        }
+        self.setMaxHealthIfHealthIsGreater();
         self.processEndTurnProcs(ref battle);
         self.turnBar.resetTurn();
         battle.entities.set(self.getIndex(), self);
@@ -222,14 +222,19 @@ impl EntityImpl of EntityTrait {
         return skillIndex;
     }
     fn takeDamage(ref self: Entity, damage: u64) {
-        // PrintTrait::print('takeDamage');
-        // damage.print();
         self.statistics.health -= i64Impl::new(damage, false);
     }
     fn takeHeal(ref self: Entity, heal: u64) {
-        // PrintTrait::print('takeHeal');
-        // heal.print();
         self.statistics.health += i64Impl::new(heal, false);
+        self.setMaxHealthIfHealthIsGreater();
+    }
+    fn takeHealAllowOverheal(ref self: Entity, heal: u64) {
+        self.statistics.health += i64Impl::new(heal, false);
+    }
+    fn setMaxHealthIfHealthIsGreater(ref self: Entity) {
+        if(!self.getHealth().sign && self.getHealth().mag > self.getMaxHealth()) {
+            self.statistics.health = i64Impl::new(self.getMaxHealth(), false);
+        }
     }
     fn incrementTurnbar(ref self: Entity) {
         self.turnBar.incrementTurnbar();

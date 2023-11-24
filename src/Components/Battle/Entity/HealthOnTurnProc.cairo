@@ -40,7 +40,7 @@ impl HealthOnTurnProcImpl of HealthOnTurnProcTrait {
         let damageOrHealValue = (self.value.into() * entity.getMaxHealth()) / 100;
         match self.damageOrHeal {
             DamageOrHealEnum::Damage => entity.takeDamage(damageOrHealValue),
-            DamageOrHealEnum::Heal => entity.takeHeal(damageOrHealValue),
+            DamageOrHealEnum::Heal => entity.takeHealAllowOverheal(damageOrHealValue),
         }
         return damageOrHealValue;
     }
