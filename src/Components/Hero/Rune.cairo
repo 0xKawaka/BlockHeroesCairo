@@ -223,10 +223,10 @@ impl RuneImpl of RuneTrait {
     fn statisticToString(self: Rune)-> felt252 {
         let mut statisticStr: felt252 = '';
         match self.statistic {
-            RuneStatistic::Health => statisticStr = 'Health',
-            RuneStatistic::Attack => statisticStr = 'Attack',
-            RuneStatistic::Defense => statisticStr = 'Defense',
-            RuneStatistic::Speed => statisticStr = 'Speed',
+            RuneStatistic::Health => statisticStr = 'health',
+            RuneStatistic::Attack => statisticStr = 'attack',
+            RuneStatistic::Defense => statisticStr = 'defense',
+            RuneStatistic::Speed => statisticStr = 'speed',
         }
         return statisticStr;
     }

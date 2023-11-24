@@ -24,7 +24,8 @@ trait IAccounts<TContractState> {
 
 #[starknet::contract]
 mod Accounts {
-    use game::Components::Hero::Rune::RuneTrait;
+    use game::Contracts::Accounts::IAccounts;
+use game::Components::Hero::Rune::RuneTrait;
 use core::array::ArrayTrait;
 use core::option::OptionTrait;
 use core::box::BoxTrait;
@@ -226,6 +227,8 @@ use game::Components::Hero::HeroTrait;
             runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, false, RuneRarity::Common, RuneType::Sixth));
             runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, false, RuneRarity::Common, RuneType::First));
             runesList.append(Rune::newDeterministic(runesList.len(), RuneStatistic::Speed, true, RuneRarity::Common, RuneType::Fourth));
+            self.equipRune(accountAdrs, 1, 1);
+            self.equipRune(accountAdrs, 2, 1);
         }
     }
 }

@@ -58,15 +58,16 @@ impl EquippedRunesImpl of EquippedRunesTrait {
         }
     }
     fn handleEquipRune(ref self: EquippedRunes, isAnotherRuneAlreadyEquipped: bool, runeAlreadyEquippedId: u32, ref rune: Rune, heroId: u32, ref runesList: List<Rune>) {
-        if(isAnotherRuneAlreadyEquipped) {
+        // if(isAnotherRuneAlreadyEquipped) {
+            // let mut runeAlreadyEquipped = runesList[runeAlreadyEquippedId];
             // runeAlreadyEquipped.unequip();
-            let mut runeAlreadyEquipped = runesList[runeAlreadyEquippedId];
-            runeAlreadyEquipped.unequip();
-            runesList.set(runeAlreadyEquipped.id, runeAlreadyEquipped);
-            self.equipRuneEmptySlot(ref rune, heroId);
-        } else {
-            self.equipRuneEmptySlot(ref rune, heroId);
-        }
+            // runesList.set(runeAlreadyEquipped.id, runeAlreadyEquipped);
+            // self.equipRuneEmptySlot(ref rune, heroId);
+        // } else {
+            // self.equipRuneEmptySlot(ref rune, heroId);
+        // }
+        assert(!isAnotherRuneAlreadyEquipped, 'Rune already equipped');
+        self.equipRuneEmptySlot(ref rune, heroId);
     }
     fn equipRuneEmptySlot(ref self: EquippedRunes, ref rune: Rune, heroId: u32) {
         match rune.runeType {
