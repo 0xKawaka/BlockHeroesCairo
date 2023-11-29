@@ -12,6 +12,7 @@ trait IAccounts<TContractState> {
     fn mintHeroAdmin(ref self: TContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16);
     fn mintRune(ref self: TContractState, accountAdrs: ContractAddress);
     fn createAccount(ref self: TContractState,  username: felt252, accountAdrs: ContractAddress);
+    fn decreaseEnergy(ref self: TContractState, accountAdrs: ContractAddress, energyCost: u16);
     fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
     fn getAccount(self: @TContractState, accountAdrs: ContractAddress) -> Account;
     fn getHero(self: @TContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero;
@@ -122,14 +123,6 @@ use game::Components::Hero::HeroTrait;
             runesList.append(Rune::new(runesList.len()));
             self.IEventEmitterDispatch.read().runeMinted(accountAdrs, runesList[runesList.len() - 1]);
         }
-
-        // fn mint(ref self: ContractState, accountAdrs: ContractAddress, rune: Rune::Rune) {
-        //     assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
-        //     let mut runesList = self.runes.read(accountAdrs);
-        //     runesList.append(rune);
-        //     self.IEventEmitterDispatch.read().runeMinted(accountAdrs, runesList[runesList.len() - 1]);
-        // }
-
         fn createAccount(ref self: ContractState, username: felt252, accountAdrs: ContractAddress) {
             assert(self.accounts.read(accountAdrs).owner != accountAdrs, 'Account already created');
             let acc = Account::new(username, accountAdrs);
@@ -138,6 +131,14 @@ use game::Components::Hero::HeroTrait;
             self.mintStarterHeroes(accountAdrs);
             self.mintStarterRunes(accountAdrs);
         }
+        fn decreaseEnergy(ref self: ContractState, accountAdrs: ContractAddress, energyCost: u16) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut acc = self.accounts.read(accountAdrs);
+            acc.updateEnergy();
+            acc.decreaseEnergy(energyCost);
+            self.accounts.write(accountAdrs, acc);
+        }
+
         fn setIEventEmitterDispatch(ref self: ContractState, eventEmitterAdrs: ContractAddress) {
             self.IEventEmitterDispatch.write(IEventEmitterDispatcher { contract_address: eventEmitterAdrs });
         }

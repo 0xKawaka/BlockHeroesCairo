@@ -3,6 +3,7 @@ use game::Components::Hero::Hero;
 #[starknet::interface]
 trait ILevels<TContractState> {
     fn getEnemies(self: @TContractState, world: u16, level: u16) -> Array<Hero>;
+    fn getEnergyCost(self: @TContractState, world: u16, level: u16) -> u16;
 }
 
 #[starknet::contract]
@@ -24,6 +25,9 @@ mod Levels {
 
     #[external(v0)]
     impl LevelsImpl of super::ILevels<ContractState> {
+        fn getEnergyCost(self: @ContractState, world: u16, level: u16) -> u16 {
+            return self.energyCost.read((world, level));
+        }
         fn getEnemies(self: @ContractState, world: u16, level: u16) -> Array<Hero::Hero> {
             let mut heroes = self.enemies.read((world, level));
             return heroes.array();
