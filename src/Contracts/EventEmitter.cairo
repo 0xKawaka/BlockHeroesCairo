@@ -20,6 +20,7 @@ trait IEventEmitter<TContractState> {
     fn startTurn(ref self: TContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>, buffs: Array<EntityBuffEvent>, status: Array<EntityBuffEvent>, isDead: bool);
     fn endTurn(ref self: TContractState, owner: ContractAddress, buffs: Array<BuffEvent>, status: Array<BuffEvent>, speeds: Array<IdAndValueEvent>);
     fn endBattle(ref self: TContractState, owner: ContractAddress, playerHasWon: bool);
+    fn levelUp(ref self: TContractState, owner: ContractAddress, entityId: u32, level: u16, experience: u32);
     fn newAccount(ref self: TContractState, owner: ContractAddress, username: felt252);
     fn heroMinted(ref self: TContractState, owner: ContractAddress, id: u32, name: felt252);
     fn runeMinted(ref self: TContractState, owner: ContractAddress, rune: Rune::Rune);
@@ -44,6 +45,8 @@ mod EventEmitter {
         StartTurn: StartTurn,
         EndTurn: EndTurn,
         EndBattle: EndBattle,
+
+        LevelUp: LevelUp,
 
         NewAccount: NewAccount,
         HeroMinted: HeroMinted,
@@ -117,6 +120,14 @@ mod EventEmitter {
         playerHasWon: bool,
     }
     #[derive(Drop, starknet::Event)]
+    struct LevelUp {
+        owner: ContractAddress,
+        entityId: u32,
+        level: u16,
+        experience: u32,
+    }
+
+    #[derive(Drop, starknet::Event)]
     struct NewAccount {
         owner: ContractAddress,
         username: felt252,
@@ -186,6 +197,15 @@ mod EventEmitter {
             self.emit(EndBattle {
                 owner: owner,
                 playerHasWon: playerHasWon,
+            });
+        }
+
+        fn levelUp(ref self: ContractState, owner: ContractAddress, entityId: u32, level: u16, experience: u32) {
+            self.emit(LevelUp {
+                owner: owner,
+                entityId: entityId,
+                level: level,
+                experience: experience,
             });
         }
 

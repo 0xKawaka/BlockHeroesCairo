@@ -12,11 +12,12 @@ trait IAccounts<TContractState> {
     fn mintHeroAdmin(ref self: TContractState, accountAdrs: ContractAddress, name: felt252, level: u16, rank: u16);
     fn mintRune(ref self: TContractState, accountAdrs: ContractAddress);
     fn createAccount(ref self: TContractState,  username: felt252, accountAdrs: ContractAddress);
+    fn addExperienceToHeroId(ref self: TContractState, accountAdrs: ContractAddress, heroId: u32, experience: u32, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn decreaseEnergy(ref self: TContractState, accountAdrs: ContractAddress, energyCost: u16);
     fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
     fn getAccount(self: @TContractState, accountAdrs: ContractAddress) -> Account;
     fn getHero(self: @TContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero;
-    fn getHeroes(self: @TContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero>;
+    fn getHeroes(self: @TContractState, accountAdrs: ContractAddress, heroesIds: Span<u32>) -> Array<Hero>;
     fn getAllHeroes(self: @TContractState, accountAdrs: ContractAddress) -> Array<Hero>;
     fn getRune(self: @TContractState, accountAdrs: ContractAddress, runeId: u32) -> Rune;
     fn getRunes(self: @TContractState, accountAdrs: ContractAddress, runesIds: Array<u32>) -> Array<Rune>;
@@ -131,6 +132,16 @@ use game::Components::Hero::HeroTrait;
             self.mintStarterHeroes(accountAdrs);
             self.mintStarterRunes(accountAdrs);
         }
+        fn addExperienceToHeroId(ref self: ContractState, accountAdrs: ContractAddress, heroId: u32, experience: u32, IEventEmitterDispatch: IEventEmitterDispatcher) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut heroesList = self.heroes.read(accountAdrs);
+            assert(heroesList.len() > heroId, 'heroId out of range');
+            let mut hero = heroesList[heroId];
+            hero.gainExperience(experience, accountAdrs, IEventEmitterDispatch);
+            heroesList.set(heroId, hero);
+            let mut heroesListBis = self.heroes.read(accountAdrs);
+            let heroBis = heroesListBis[heroId];
+        }
         fn decreaseEnergy(ref self: ContractState, accountAdrs: ContractAddress, energyCost: u16) {
             assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
             let mut acc = self.accounts.read(accountAdrs);
@@ -173,7 +184,7 @@ use game::Components::Hero::HeroTrait;
             assert(heroesList.len() > heroId, 'heroId out of range');
             return heroesList[heroId];
         }
-        fn getHeroes(self: @ContractState, accountAdrs: ContractAddress, heroesIds: Array<u32>) -> Array<Hero::Hero> {
+        fn getHeroes(self: @ContractState, accountAdrs: ContractAddress, heroesIds: Span<u32>) -> Array<Hero::Hero> {
             let mut heroes: Array<Hero::Hero> = Default::default();
             let heroesList = self.heroes.read(accountAdrs);
             let mut i: u32 = 0;

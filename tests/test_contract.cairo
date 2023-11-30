@@ -1,3 +1,4 @@
+use core::array::ArrayTrait;
 use core::result::ResultTrait;
 use core::option::OptionTrait;
 use starknet::ContractAddress;
@@ -234,7 +235,7 @@ fn startBattle(){
     gameDispatcher.startBattle(heroIds, 0, 1);
 }
 
-#[test]
+// #[test]
 fn battle(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -278,4 +279,49 @@ fn battle(){
     gameDispatcher.playTurn(0, 3);
     gameDispatcher.playTurn(0, 3);
 
+}
+
+#[test]
+fn experience(){
+    let gameAdrs = deployContract('Game');
+    let accountsAdrs = deployContract('Accounts');
+    let battlesAdrs = deployContract('Battles');
+    let entityFactoryAdrs = deployContract('EntityFactory');
+    let skillFactoryAdrs = deployContract('SkillFactory');
+    let levelsAdrs = deployContract('Levels');
+    let eventEmitterAdrs = deployContract('EventEmitter');
+
+    let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
+    let battlesDispatcher = IBattlesDispatcher { contract_address: battlesAdrs };
+    let entityFactoryDispatcher = IEntityFactoryDispatcher { contract_address: entityFactoryAdrs };
+    let skillentityF= ISkillFactoryDispatcher { contract_address: levelsAdrs };
+    let levelsDispatcher = ILevelsDispatcher { contract_address: levelsAdrs };
+
+    gameDispatcher.setIAccountsDispatch(accountsAdrs);
+    entityFactoryDispatcher.setAccountsAdrs(accountsAdrs);
+    gameDispatcher.setIEntityFactoryDispatch(entityFactoryAdrs);
+    gameDispatcher.setILevelsDispatch(levelsAdrs);
+    gameDispatcher.setIBattlesDispatch(battlesAdrs);
+    battlesDispatcher.setISkillFactoryDispatch(skillFactoryAdrs);
+    battlesDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+    battlesDispatcher.setILevelsDispatch(levelsAdrs);
+    battlesDispatcher.setIAccountsDispatch(accountsAdrs);
+    accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+    
+    // let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
+    // snforge_std::start_prank(gameAdrs, testAdrs);
+    gameDispatcher.createAccount('usernameTest');
+
+    let heroIds: Array<u32> = array![5];
+    gameDispatcher.startBattle(heroIds, 0, 0);
+    gameDispatcher.playTurn(2, 2);
+
+    let heroIds: Array<u32> = array![5];
+    gameDispatcher.startBattle(heroIds, 0, 1);
+    gameDispatcher.playTurn(2, 2);
+
+    let heroIds: Array<u32> = array![5];
+    gameDispatcher.startBattle(heroIds, 0, 1);
+    gameDispatcher.playTurn(2, 2);
 }

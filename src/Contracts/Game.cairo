@@ -50,11 +50,11 @@ mod Game {
             let caller = get_caller_address();
             let energyCost = self.ILevelsDispatch.read().getEnergyCost(world, level);
             self.IAccountsDispatch.read().decreaseEnergy(caller, energyCost);
-            let allyHeroes = self.IAccountsDispatch.read().getHeroes(get_caller_address(), heroesIds);
+            let allyHeroes = self.IAccountsDispatch.read().getHeroes(get_caller_address(), heroesIds.span());
             let allyEntities = self.IEntityFactoryDispatch.read().newEntities(get_caller_address(), 0, allyHeroes, AllyOrEnemy::Ally);
             let enemyHeroes = self.ILevelsDispatch.read().getEnemies(world, level);
             let enemyEntities = self.IEntityFactoryDispatch.read().newEntities(get_caller_address(), allyEntities.len(), enemyHeroes, AllyOrEnemy::Enemy);
-            self.IBattlesDispatch.read().newBattle(caller, allyEntities, enemyEntities);
+            self.IBattlesDispatch.read().newBattle(caller, allyEntities, enemyEntities, heroesIds, world, level);
         }
         fn playTurn(ref self: ContractState, spellIndex: u8, targetIndex: u32) {
             self.IBattlesDispatch.read().playTurn(get_caller_address(), spellIndex, targetIndex);

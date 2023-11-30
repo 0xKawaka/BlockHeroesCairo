@@ -1,18 +1,21 @@
+mod ExperienceHandler;
 use starknet::ContractAddress;
 use game::Components::Battle::Entity::Entity;
 
 #[starknet::interface]
 trait IBattles<TContractState> {
-    fn newBattle(ref self: TContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>);
+    fn newBattle(ref self: TContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>, heroesIds: Array<u32>, world: u16, level: u16);
     fn playTurn(ref self: TContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32);
     fn setISkillFactoryDispatch(ref self: TContractState, skillFactoryAdrs: ContractAddress);
     fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
+    fn setIAccountsDispatch(ref self: TContractState, newAccountsAdrs: ContractAddress);
+    fn setILevelsDispatch(ref self: TContractState, newLevelsAdrs: ContractAddress);
 }
 
 #[starknet::contract]
 mod Battles {
     use game::Components::Battle::BattleTrait;
-use game::Components::Battle::Entity::Skill::SkillTrait;
+    use game::Components::Battle::Entity::Skill::SkillTrait;
     use core::box::BoxTrait;
     use core::option::OptionTrait;
     use core::array::ArrayTrait;
@@ -27,9 +30,18 @@ use game::Components::Battle::Entity::Skill::SkillTrait;
     use game::Components::Battle::Entity::HealthOnTurnProc::{HealthOnTurnProc, HealthOnTurnProcImpl};
     use game::Contracts::SkillFactory::{ISkillFactoryDispatcher, ISkillFactoryDispatcherTrait};
     use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
+    use game::Contracts::Accounts::{IAccountsDispatcher, IAccountsDispatcherTrait};
+    use game::Contracts::Levels::{ILevelsDispatcher, ILevelsDispatcherTrait};
+    use game::Contracts::Battles::ExperienceHandler;
 
     #[storage]
     struct Storage {
+        // Static datas : not changing during the battle
+        heroesIndexes: LegacyMap<ContractAddress, List<u32>>,
+        world: LegacyMap<ContractAddress, u16>,
+        level: LegacyMap<ContractAddress, u16>,
+
+        // Dynamic datas : changing during the battle
         entities: LegacyMap<ContractAddress, List<Entity>>,
         aliveEntities: LegacyMap<ContractAddress, List<u32>>,
         deadEntities: LegacyMap<ContractAddress, List<u32>>,
@@ -42,25 +54,28 @@ use game::Components::Battle::Entity::Skill::SkillTrait;
 
         ISkillFactoryDispatch: ISkillFactoryDispatcher,
         IEventEmitterDispatch: IEventEmitterDispatcher,
+        IAccountsDispatch: IAccountsDispatcher,
+        ILevelsDispatch: ILevelsDispatcher,
     }
 
     #[external(v0)]
     impl BattlesImpl of super::IBattles<ContractState> {
-        fn newBattle(ref self: ContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>) {
+        fn newBattle(ref self: ContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>, heroesIds: Array<u32>,  world: u16, level: u16) {
             let alliesSpan = allyEntites.span();
             let enemiesSpan = allyEntites.span();
-            self.initBattleStorage(owner, allyEntites, enemyEntities);
+            self.initBattleStorage(owner, allyEntites, enemyEntities, heroesIds, world, level);
             let IEventEmitterDispatch = self.IEventEmitterDispatch.read();
-            // health, 
             let mut battle = self.getBattle(owner);
             let healthsArray = battle.getHealthsArray();
             IEventEmitterDispatch.newBattle(owner, healthsArray);
             battle.battleLoop(IEventEmitterDispatch);
+            self.ifBattleIsOverHandle(owner, battle.isBattleOver, battle.isVictory);
             self.storeBattleState(ref battle, owner);
         }
         fn playTurn(ref self: ContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32) {
             let mut battle = self.getBattle(owner);
             battle.playTurn(spellIndex, targetIndex, self.IEventEmitterDispatch.read());
+            self.ifBattleIsOverHandle(owner, battle.isBattleOver, battle.isVictory);
             self.storeBattleState(ref battle, owner);
         }
         fn setISkillFactoryDispatch(ref self: ContractState, skillFactoryAdrs: ContractAddress) {
@@ -69,14 +84,36 @@ use game::Components::Battle::Entity::Skill::SkillTrait;
         fn setIEventEmitterDispatch(ref self: ContractState, eventEmitterAdrs: ContractAddress) {
             self.IEventEmitterDispatch.write(IEventEmitterDispatcher { contract_address: eventEmitterAdrs });
         }
+        fn setIAccountsDispatch(ref self: ContractState, newAccountsAdrs: ContractAddress) {
+            self.IAccountsDispatch.write(IAccountsDispatcher { contract_address: newAccountsAdrs });
+        }
+        fn setILevelsDispatch(ref self: ContractState, newLevelsAdrs: ContractAddress) {
+            self.ILevelsDispatch.write(ILevelsDispatcher { contract_address: newLevelsAdrs });
+        }
     }
 
     #[generate_trait]
     impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
-        fn initBattleStorage(ref self: ContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>) {
+        fn ifBattleIsOverHandle(ref self: ContractState, owner: ContractAddress, isBattleOver: bool, isVictory: bool) {
+            if(!isBattleOver || !isVictory) {
+                return;
+            }
+            let heroesIndexes = self.heroesIndexes.read(owner);
+            let world = self.world.read(owner);
+            let level = self.level.read(owner);
+            let levels = self.ILevelsDispatch.read().getEnemiesLevels(world, level);
+            ExperienceHandler::computeAndDistributeExperience(owner, heroesIndexes.array(), levels, self.IAccountsDispatch.read(), self.IEventEmitterDispatch.read());
+            
+        }
+        fn initBattleStorage(ref self: ContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>, heroesIds: Array<u32>,  world: u16, level: u16) {
             self.isBattleOver.write(owner, false);
             self.isWaitingForPlayerAction.write(owner, false);
             self.cleanLists(owner, allyEntites.len() + enemyEntities.len());
+
+            let mut heroesIndexes = self.heroesIndexes.read(owner);
+            heroesIndexes.from_array(@heroesIds);
+            self.world.write(owner, world);
+            self.level.write(owner, level);
 
             let mut entities = self.entities.read(owner);
             let mut aliveEntities = self.aliveEntities.read(owner);
@@ -182,6 +219,8 @@ use game::Components::Battle::Entity::Skill::SkillTrait;
             return healthOnTurnProcs;
         }
         fn cleanLists(ref self: ContractState, owner: ContractAddress, entitiesCount: u32) {
+            let mut heroesIndexes = self.heroesIndexes.read(owner);
+            heroesIndexes.clean();
             let mut entities = self.entities.read(owner);
             entities.clean();
             let mut alivesEntities = self.aliveEntities.read(owner);

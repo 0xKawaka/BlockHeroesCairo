@@ -152,9 +152,7 @@ impl EntityImpl of EntityTrait {
         PrintTrait::print('death');
         PrintTrait::print(self.index);        
         battle.deadEntities.append(self.getIndex());
-        if(battle.checkAndProcessBattleOver(IEventEmitterDispatch)) {
-            return;
-        }
+
         let mut i: u32 = 0;
         loop {
             if(i >= battle.aliveEntities.len()) {

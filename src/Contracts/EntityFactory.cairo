@@ -149,10 +149,10 @@ mod EntityFactory {
         }
 
         fn initBaseStatisticsDict(ref self: ContractState) {
-            self.baseStatistics.write('assassin', BaseStatistics::new(1300, 200, 100, 185, 10, 100));
-            self.baseStatistics.write('knight', BaseStatistics::new(2000, 120, 180, 150, 10, 100));
-            self.baseStatistics.write('priest', BaseStatistics::new(1500, 150, 150, 160, 10, 100));
-            self.baseStatistics.write('hunter', BaseStatistics::new(1400, 170, 130, 170, 10, 200));
+            self.baseStatistics.write('assassin', BaseStatistics::new(10, 200, 100, 185, 10, 100));
+            self.baseStatistics.write('knight', BaseStatistics::new(10, 120, 180, 150, 10, 100));
+            self.baseStatistics.write('priest', BaseStatistics::new(10, 150, 150, 160, 10, 100));
+            self.baseStatistics.write('hunter', BaseStatistics::new(10, 170, 130, 170, 10, 200));
         }
         fn initRunesTable(ref self: ContractState) {
             self.runesStatsTable.write((RuneStatistic::Health, RuneRarity::Common, false), 300);

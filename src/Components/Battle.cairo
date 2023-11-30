@@ -28,6 +28,7 @@ struct Battle {
     healthOnTurnProcs: NullableVector<HealthOnTurnProc>,
     skillSets : Array<Array<Skill>>,
     isBattleOver: bool,
+    isVictory: bool,
     isWaitingForPlayerAction: bool,
     owner: ContractAddress,
 }
@@ -48,6 +49,7 @@ fn new(entities: Array<Entity::Entity>, aliveEntities: Array<u32>, deadEntities:
         healthOnTurnProcs: NullableVectorImpl::newFromArray(healthOnTurnProcs),
         skillSets : skillSets,
         isBattleOver: isBattleOver,
+        isVictory: false,
         isWaitingForPlayerAction: isWaitingForPlayerAction,
         owner: owner,
     };
@@ -117,6 +119,7 @@ trait BattleTrait {
 impl BattleImpl of BattleTrait {
     fn battleLoop(ref self: Battle, IEventEmitterDispatch: IEventEmitterDispatcher) {       
         loop {
+            self.checkAndProcessBattleOver(IEventEmitterDispatch);
             if (self.isBattleOver || self.isWaitingForPlayerAction) {
                 break;
             }
@@ -331,12 +334,14 @@ impl BattleImpl of BattleTrait {
             PrintTrait::print('All allies dead');
             IEventEmitterDispatch.endBattle(self.owner, false);
             self.isBattleOver = true;
+            self.isVictory = false;
             return true;
         }
         if (enemiesDeadCount == self.enemiesIndexes.len()) {
             PrintTrait::print('All enemies dead');
             IEventEmitterDispatch.endBattle(self.owner, true);
             self.isBattleOver = true;
+            self.isVictory = true;
             return true;
         }
         return false;
