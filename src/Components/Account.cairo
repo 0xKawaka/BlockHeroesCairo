@@ -35,19 +35,25 @@ trait AccountTrait {
 
 impl AccountImpl of AccountTrait {
     fn updateEnergy(ref self: Account) {
+        let now = get_block_timestamp();
+        
         if(self.energy == maxEnergy) {
+            self.lastEnergyActionTimestamp = now;
             return;
         }
-        let now = get_block_timestamp();
+
         let timeDiff = now - self.lastEnergyActionTimestamp;
         let energyToAdd = timeDiff / 120;
+        let timeLeft = timeDiff % 120;
 
-        if(energyToAdd > maxEnergy.into()) {
+        if(energyToAdd >= maxEnergy.into()) {
             self.energy = maxEnergy;
+            self.lastEnergyActionTimestamp = now;
             return;
         }
+
         self.energy = self.energy + energyToAdd.try_into().unwrap();
-        self.lastEnergyActionTimestamp = now;
+        self.lastEnergyActionTimestamp = now - timeLeft;
     }
     fn decreaseEnergy(ref self: Account, energyCost: u16) {
         assert(self.energy >= energyCost, 'Not enough energy');
