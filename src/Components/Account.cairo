@@ -12,7 +12,7 @@ struct Account {
     username: felt252,
     energy: u16,
     shards: u32,
-    lastEnergyActionTimestamp: u64,
+    lastEnergyUpdateTimestamp: u64,
     owner: ContractAddress,
 }
 
@@ -22,7 +22,7 @@ fn new(username: felt252, owner: ContractAddress) -> Account {
         username: username,
         energy: maxEnergy,
         shards: 0,
-        lastEnergyActionTimestamp: get_block_timestamp(),
+        lastEnergyUpdateTimestamp: get_block_timestamp(),
         owner: owner,
     }
 }
@@ -30,6 +30,7 @@ fn new(username: felt252, owner: ContractAddress) -> Account {
 trait AccountTrait {
     fn updateEnergy(ref self: Account);
     fn decreaseEnergy(ref self: Account, energyCost: u16);
+    fn getEnergyInfos(self: Account) -> (u16, u64);
     fn print(self: Account);
 }
 
@@ -38,26 +39,33 @@ impl AccountImpl of AccountTrait {
         let now = get_block_timestamp();
         
         if(self.energy == maxEnergy) {
-            self.lastEnergyActionTimestamp = now;
+            self.lastEnergyUpdateTimestamp = now;
             return;
         }
 
-        let timeDiff = now - self.lastEnergyActionTimestamp;
+        let timeDiff = now - self.lastEnergyUpdateTimestamp;
         let energyToAdd = timeDiff / 120;
-        let timeLeft = timeDiff % 120;
 
-        if(energyToAdd >= maxEnergy.into()) {
+        if(energyToAdd == 0) {
+            return;
+        }
+        self.energy = self.energy + energyToAdd.try_into().unwrap();
+
+        if(self.energy > maxEnergy) {
             self.energy = maxEnergy;
-            self.lastEnergyActionTimestamp = now;
+            self.lastEnergyUpdateTimestamp = now;
             return;
         }
 
-        self.energy = self.energy + energyToAdd.try_into().unwrap();
-        self.lastEnergyActionTimestamp = now - timeLeft;
+        let timeLeft = timeDiff % 120;
+        self.lastEnergyUpdateTimestamp = now - timeLeft;
     }
     fn decreaseEnergy(ref self: Account, energyCost: u16) {
         assert(self.energy >= energyCost, 'Not enough energy');
         self.energy = self.energy - energyCost;
+    }
+    fn getEnergyInfos(self: Account) -> (u16, u64) {
+        return (self.energy, self.lastEnergyUpdateTimestamp);
     }
     fn print(self: Account) {
         self.energy.print();

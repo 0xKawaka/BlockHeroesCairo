@@ -22,6 +22,7 @@ trait IAccounts<TContractState> {
     fn getRune(self: @TContractState, accountAdrs: ContractAddress, runeId: u32) -> Rune;
     fn getRunes(self: @TContractState, accountAdrs: ContractAddress, runesIds: Array<u32>) -> Array<Rune>;
     fn getAllRunes(self: @TContractState, accountAdrs: ContractAddress) -> Array<Rune>;
+    fn getEnergyInfos(self: @TContractState, accountAdrs: ContractAddress) -> (u16, u64);
 }
 
 #[starknet::contract]
@@ -201,6 +202,10 @@ use game::Components::Hero::HeroTrait;
         fn getAllHeroes(self: @ContractState, accountAdrs: ContractAddress) -> Array<Hero::Hero> {
             let heroesList = self.heroes.read(accountAdrs);
             return heroesList.array();
+        }
+        fn getEnergyInfos(self: @ContractState, accountAdrs: ContractAddress) -> (u16, u64) {
+            let acc = self.accounts.read(accountAdrs);
+            return acc.getEnergyInfos();
         }
     }
     use game::Components::Hero::Rune::{RuneStatistic, RuneRarity, RuneType};
