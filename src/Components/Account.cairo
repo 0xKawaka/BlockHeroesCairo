@@ -37,21 +37,30 @@ trait AccountTrait {
 impl AccountImpl of AccountTrait {
     fn updateEnergy(ref self: Account) {
         let now = get_block_timestamp();
+        PrintTrait::print('now');
+        PrintTrait::print(now);
         
         if(self.energy == maxEnergy) {
             self.lastEnergyUpdateTimestamp = now;
             return;
         }
 
+        PrintTrait::print('self.lastEnergyUpdateTimestamp');
+        PrintTrait::print(self.lastEnergyUpdateTimestamp);
+
         let timeDiff = now - self.lastEnergyUpdateTimestamp;
+        PrintTrait::print('timeDiff');
+        PrintTrait::print(timeDiff);
         let energyToAdd = timeDiff / 120;
+        PrintTrait::print('energyToAdd');
+        PrintTrait::print(energyToAdd);
 
         if(energyToAdd == 0) {
             return;
         }
         self.energy = self.energy + energyToAdd.try_into().unwrap();
 
-        if(self.energy > maxEnergy) {
+        if(self.energy >= maxEnergy) {
             self.energy = maxEnergy;
             self.lastEnergyUpdateTimestamp = now;
             return;

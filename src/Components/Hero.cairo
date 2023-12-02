@@ -51,9 +51,10 @@ impl HeroImpl of HeroTrait {
             self.level += 1;
             self.experience -= requiredExperience;
         };
-        if(previousLevel != self.level) {
-            IEventEmitterDispatch.levelUp(owner, self.id, self.level, self.experience);
-        }
+        IEventEmitterDispatch.experienceGain(owner, self.id, experience, self.level, self.experience);
+        // if(previousLevel != self.level) {
+        //     IEventEmitterDispatch.levelUp(owner, self.id, self.level, self.experience);
+        // }
     }
     fn equipRune(ref self: Hero, ref rune: Rune::Rune, ref runesList: List<Rune::Rune>) {
         self.runes.equipRune(ref rune, self.id, ref runesList);
