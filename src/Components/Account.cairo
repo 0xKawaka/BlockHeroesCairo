@@ -11,7 +11,7 @@ use {starknet::ContractAddress, starknet::get_block_timestamp};
 struct Account {
     username: felt252,
     energy: u16,
-    shards: u32,
+    crystals: u32,
     lastEnergyUpdateTimestamp: u64,
     owner: ContractAddress,
 }
@@ -21,7 +21,7 @@ fn new(username: felt252, owner: ContractAddress) -> Account {
     Account {
         username: username,
         energy: maxEnergy,
-        shards: 0,
+        crystals: 10000,
         lastEnergyUpdateTimestamp: get_block_timestamp(),
         owner: owner,
     }
@@ -30,6 +30,8 @@ fn new(username: felt252, owner: ContractAddress) -> Account {
 trait AccountTrait {
     fn updateEnergy(ref self: Account);
     fn decreaseEnergy(ref self: Account, energyCost: u16);
+    fn increaseCrystals(ref self: Account, crystalsToAdd: u32);
+    fn decreaseCrystals(ref self: Account, crystalsToSub: u32);
     fn getEnergyInfos(self: Account) -> (u16, u64);
     fn print(self: Account);
 }
@@ -37,8 +39,6 @@ trait AccountTrait {
 impl AccountImpl of AccountTrait {
     fn updateEnergy(ref self: Account) {
         let now = get_block_timestamp();
-        PrintTrait::print('now');
-        PrintTrait::print(now);
         
         if(self.energy == maxEnergy) {
             self.lastEnergyUpdateTimestamp = now;
@@ -49,11 +49,7 @@ impl AccountImpl of AccountTrait {
         PrintTrait::print(self.lastEnergyUpdateTimestamp);
 
         let timeDiff = now - self.lastEnergyUpdateTimestamp;
-        PrintTrait::print('timeDiff');
-        PrintTrait::print(timeDiff);
         let energyToAdd = timeDiff / 120;
-        PrintTrait::print('energyToAdd');
-        PrintTrait::print(energyToAdd);
 
         if(energyToAdd == 0) {
             return;
@@ -73,12 +69,19 @@ impl AccountImpl of AccountTrait {
         assert(self.energy >= energyCost, 'Not enough energy');
         self.energy = self.energy - energyCost;
     }
+    fn increaseCrystals(ref self: Account, crystalsToAdd: u32) {
+        self.crystals = self.crystals + crystalsToAdd;
+    }
+    fn decreaseCrystals(ref self: Account, crystalsToSub: u32) {
+        assert(self.crystals >= crystalsToSub, 'Not enough crystals');
+        self.crystals = self.crystals - crystalsToSub;
+    }
     fn getEnergyInfos(self: Account) -> (u16, u64) {
         return (self.energy, self.lastEnergyUpdateTimestamp);
     }
     fn print(self: Account) {
         self.energy.print();
-        self.shards.print();
+        self.crystals.print();
     }
 }
 

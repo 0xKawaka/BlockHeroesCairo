@@ -3,6 +3,7 @@ mod RuneBonus;
 use starknet::ContractAddress;
 use RuneBonus::RuneBonusImpl;
 use game::Components::BaseStatistics;
+use game::Components::Account::{Account, AccountImpl};
 use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
 use game::Libraries::Random::rand32;
 use starknet::get_block_timestamp;
@@ -154,35 +155,45 @@ fn getRandomIsPercent(seed: u64) -> bool {
 }
 
 trait RuneTrait {
-    fn upgrade(ref self: Rune, owner: ContractAddress, IEventEmitterDispatch: IEventEmitterDispatcher);
+    fn upgrade(ref self: Rune, ref account: Account, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn setEquippedBy(ref self: Rune, heroId: u32);
     fn unequip(ref self: Rune);
     fn isEquipped(self: Rune)-> bool;
     fn getHeroEquipped(self: Rune)-> u32;
+    fn computeCrystalCostUpgrade(self: Rune)-> u32;
     fn print(self: Rune);
     fn printBonuses(self: Rune);
     fn statisticToString(self: Rune)-> felt252;
     fn typeToString(self: Rune)-> felt252;
 }
 
+const maxRank: u32 = 16;
+
 impl RuneImpl of RuneTrait {
-    fn upgrade(ref self: Rune, owner: ContractAddress, IEventEmitterDispatch: IEventEmitterDispatcher) {
+    fn upgrade(ref self: Rune, ref account: Account, IEventEmitterDispatch: IEventEmitterDispatcher) {
+        assert(self.rank < maxRank, 'Rune already max rank');
+
+        let crystalCost = self.computeCrystalCostUpgrade();
+        account.decreaseCrystals(crystalCost);
+        
         self.rank += 1;
 
         let seed = get_block_timestamp();
         if self.rank == 4 {
             self.rank4Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
-            IEventEmitterDispatch.runeBonus(owner, self.id, self.rank, self.rank4Bonus.statisticToString(), self.rank4Bonus.isPercent);
+            IEventEmitterDispatch.runeBonus(account.owner, self.id, self.rank, self.rank4Bonus.statisticToString(), self.rank4Bonus.isPercent);
         } else if self.rank == 8 {
             self.rank8Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
-            IEventEmitterDispatch.runeBonus(owner, self.id, self.rank, self.rank8Bonus.statisticToString(), self.rank8Bonus.isPercent);
+            IEventEmitterDispatch.runeBonus(account.owner, self.id, self.rank, self.rank8Bonus.statisticToString(), self.rank8Bonus.isPercent);
         } else if self.rank == 12 {
             self.rank12Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
-            IEventEmitterDispatch.runeBonus(owner, self.id, self.rank, self.rank12Bonus.statisticToString(), self.rank12Bonus.isPercent);
+            IEventEmitterDispatch.runeBonus(account.owner, self.id, self.rank, self.rank12Bonus.statisticToString(), self.rank12Bonus.isPercent);
         } else if self.rank == 16 {
             self.rank16Bonus = RuneBonus::new(getRandomStat(seed), getRandomIsPercent(seed));
-            IEventEmitterDispatch.runeBonus(owner, self.id, self.rank, self.rank16Bonus.statisticToString(), self.rank16Bonus.isPercent);
+            IEventEmitterDispatch.runeBonus(account.owner, self.id, self.rank, self.rank16Bonus.statisticToString(), self.rank16Bonus.isPercent);
         }
+        IEventEmitterDispatch.runeUpgraded(account.owner, self.id, self.rank, crystalCost);
+
     }
     fn setEquippedBy(ref self: Rune, heroId: u32) {
         assert(self.isEquipped() == false, 'Rune already equipped');
@@ -197,6 +208,10 @@ impl RuneImpl of RuneTrait {
     }
     fn getHeroEquipped(self: Rune)-> u32 {
         return self.heroEquipped;
+    }
+    fn computeCrystalCostUpgrade(self: Rune)-> u32 {
+        let mut crystalCost: u32 = 200 + self.rank * 200;
+        return crystalCost;
     }
     fn print(self: Rune) {
         PrintTrait::print('Rune');

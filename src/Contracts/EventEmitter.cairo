@@ -20,11 +20,12 @@ trait IEventEmitter<TContractState> {
     fn startTurn(ref self: TContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>, buffs: Array<EntityBuffEvent>, status: Array<EntityBuffEvent>, isDead: bool);
     fn endTurn(ref self: TContractState, owner: ContractAddress, buffs: Array<BuffEvent>, status: Array<BuffEvent>, speeds: Array<IdAndValueEvent>);
     fn endBattle(ref self: TContractState, owner: ContractAddress, playerHasWon: bool);
-    // fn levelUp(ref self: TContractState, owner: ContractAddress, entityId: u32, level: u16, experience: u32);
+    fn loot(ref self: TContractState, owner: ContractAddress, crystals: u32);
     fn experienceGain(ref self: TContractState, owner: ContractAddress, entityId: u32, experienceGained: u32,  levelAfter: u16, experienceAfter: u32);
     fn newAccount(ref self: TContractState, owner: ContractAddress, username: felt252);
     fn heroMinted(ref self: TContractState, owner: ContractAddress, id: u32, name: felt252);
     fn runeMinted(ref self: TContractState, owner: ContractAddress, rune: Rune::Rune);
+    fn runeUpgraded(ref self: TContractState, owner: ContractAddress, id: u32, rank: u32, crystalCost: u32);
     fn runeBonus(ref self: TContractState, owner: ContractAddress, id: u32, rank: u32, procStat: felt252, isPercent: bool);
 }
 #[starknet::contract]
@@ -47,12 +48,14 @@ mod EventEmitter {
         EndTurn: EndTurn,
         EndBattle: EndBattle,
 
+        Loot: Loot,
         ExperienceGain: ExperienceGain,
 
         NewAccount: NewAccount,
         HeroMinted: HeroMinted,
 
         RuneMinted: RuneMinted,
+        RuneUpgraded: RuneUpgraded,
         RuneBonus: RuneBonus,
     }
 
@@ -120,6 +123,13 @@ mod EventEmitter {
         owner: ContractAddress,
         playerHasWon: bool,
     }
+
+    #[derive(Drop, starknet::Event)]
+    struct Loot {
+        owner: ContractAddress,
+        crystals: u32,
+    }
+
     #[derive(Drop, starknet::Event)]
     struct ExperienceGain {
         owner: ContractAddress,
@@ -144,6 +154,13 @@ mod EventEmitter {
     struct RuneMinted {
         owner: ContractAddress,
         rune: Rune::Rune,
+    }
+    #[derive(Drop, starknet::Event)]
+    struct RuneUpgraded {
+        owner: ContractAddress,
+        id: u32,
+        rank: u32,
+        crystalCost: u32,
     }
     #[derive(Drop, starknet::Event)]
     struct RuneBonus {
@@ -202,6 +219,13 @@ mod EventEmitter {
             });
         }
 
+        fn loot(ref self: ContractState, owner: ContractAddress, crystals: u32) {
+            self.emit(Loot {
+                owner: owner,
+                crystals: crystals,
+            });
+        }
+
         fn experienceGain(ref self: ContractState, owner: ContractAddress, entityId: u32, experienceGained: u32, levelAfter: u16, experienceAfter: u32 ) {
             self.emit(ExperienceGain {
                 owner: owner,
@@ -231,6 +255,15 @@ mod EventEmitter {
             self.emit(RuneMinted {
                 owner: owner,
                 rune: rune,
+            });
+        }
+
+        fn runeUpgraded(ref self: ContractState, owner: ContractAddress, id: u32, rank: u32, crystalCost: u32) {
+            self.emit(RuneUpgraded {
+                owner: owner,
+                id: id,
+                rank: rank,
+                crystalCost: crystalCost,
             });
         }
 

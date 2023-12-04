@@ -14,6 +14,8 @@ trait IAccounts<TContractState> {
     fn createAccount(ref self: TContractState,  username: felt252, accountAdrs: ContractAddress);
     fn addExperienceToHeroId(ref self: TContractState, accountAdrs: ContractAddress, heroId: u32, experience: u32, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn decreaseEnergy(ref self: TContractState, accountAdrs: ContractAddress, energyCost: u16);
+    fn increaseCrystals(ref self: TContractState, accountAdrs: ContractAddress, crystalsToAdd: u32);
+    fn decreaseCrystals(ref self: TContractState, accountAdrs: ContractAddress, crystalsToSub: u32);
     fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
     fn getAccount(self: @TContractState, accountAdrs: ContractAddress) -> Account;
     fn getHero(self: @TContractState, accountAdrs: ContractAddress, heroId: u32) -> Hero;
@@ -97,11 +99,13 @@ use game::Components::Hero::HeroTrait;
             runesList.set(runeId, rune);
         }
         fn upgradeRune(ref self: ContractState, accountAdrs: ContractAddress, runeId: u32) {
-            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut account = self.accounts.read(accountAdrs);
+            assert(account.owner == accountAdrs, 'Account not created');
             let mut runesList = self.runes.read(accountAdrs);
             assert(runesList.len() > runeId, 'runeId out of range');
             let mut rune = runesList[runeId];
-            rune.upgrade(accountAdrs, self.IEventEmitterDispatch.read());
+            rune.upgrade(ref account, self.IEventEmitterDispatch.read());
+            self.accounts.write(accountAdrs, account);
             runesList.set(runeId, rune);
         }
         fn mintHero(ref self: ContractState, accountAdrs: ContractAddress) {
@@ -148,6 +152,21 @@ use game::Components::Hero::HeroTrait;
             let mut acc = self.accounts.read(accountAdrs);
             acc.updateEnergy();
             acc.decreaseEnergy(energyCost);
+            self.accounts.write(accountAdrs, acc);
+        }
+        fn increaseCrystals(ref self: ContractState, accountAdrs: ContractAddress, crystalsToAdd: u32) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut acc = self.accounts.read(accountAdrs);
+            acc.increaseCrystals(crystalsToAdd);
+            self.accounts.write(accountAdrs, acc);
+            let acct = self.accounts.read(accountAdrs);
+            PrintTrait::print('crystals');
+            PrintTrait::print(acct.crystals);
+        }
+        fn decreaseCrystals(ref self: ContractState, accountAdrs: ContractAddress, crystalsToSub: u32) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut acc = self.accounts.read(accountAdrs);
+            acc.decreaseCrystals(crystalsToSub);
             self.accounts.write(accountAdrs, acc);
         }
 

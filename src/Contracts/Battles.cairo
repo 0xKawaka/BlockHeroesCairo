@@ -1,4 +1,5 @@
 mod ExperienceHandler;
+mod LootHandler;
 use starknet::ContractAddress;
 use game::Components::Battle::Entity::Entity;
 
@@ -33,6 +34,7 @@ mod Battles {
     use game::Contracts::Accounts::{IAccountsDispatcher, IAccountsDispatcherTrait};
     use game::Contracts::Levels::{ILevelsDispatcher, ILevelsDispatcherTrait};
     use game::Contracts::Battles::ExperienceHandler;
+    use game::Contracts::Battles::LootHandler;
 
     #[storage]
     struct Storage {
@@ -102,8 +104,8 @@ mod Battles {
             let world = self.world.read(owner);
             let level = self.level.read(owner);
             let levels = self.ILevelsDispatch.read().getEnemiesLevels(world, level);
-            ExperienceHandler::computeAndDistributeExperience(owner, heroesIndexes.array(), levels, self.IAccountsDispatch.read(), self.IEventEmitterDispatch.read());
-            
+            ExperienceHandler::computeAndDistributeExperience(owner, heroesIndexes.array(), @levels, self.IAccountsDispatch.read(), self.IEventEmitterDispatch.read());
+            LootHandler::computeAndDistributeLoot(owner, @levels, self.IAccountsDispatch.read(), self.IEventEmitterDispatch.read());
         }
         fn initBattleStorage(ref self: ContractState, owner: ContractAddress, allyEntites: Array<Entity>, enemyEntities: Array<Entity>, heroesIds: Array<u32>,  world: u16, level: u16) {
             self.isBattleOver.write(owner, false);

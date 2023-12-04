@@ -5,8 +5,8 @@ use starknet::ContractAddress;
 const levelZeroExperienceGiven: u32 = 100;
 const bonusExperiencePercentEnemyGivesPerLevel: u32 = 5;
 
-fn computeAndDistributeExperience(owner: ContractAddress, heroesIndexes: Array<u32>, enemmyLevels: Array<u16>, IAccountsDispatch: IAccountsDispatcher, IEventEmitterDispatch: IEventEmitterDispatcher) {
-    let totalExperience = computeExperienceAmount(enemmyLevels);
+fn computeAndDistributeExperience(owner: ContractAddress, heroesIndexes: Array<u32>, enemyLevels: @Array<u16>, IAccountsDispatch: IAccountsDispatcher, IEventEmitterDispatch: IEventEmitterDispatcher) {
+    let totalExperience = computeExperienceAmount(enemyLevels);
     let experiencePerHero = totalExperience / heroesIndexes.len();
     let mut i: u32 = 0;
     loop {
@@ -18,14 +18,14 @@ fn computeAndDistributeExperience(owner: ContractAddress, heroesIndexes: Array<u
     };
 }
 
-fn computeExperienceAmount(enemmyLevels: Array<u16>) -> u32 {
+fn computeExperienceAmount(enemyLevels: @Array<u16>) -> u32 {
     let mut totalExperiennce = 0;
     let mut i: u32 = 0;
     loop {
-        if i == enemmyLevels.len() {
+        if i == enemyLevels.len() {
             break;
         }
-        totalExperiennce += computeExperienceAmountForEnemy((*enemmyLevels[i]).into());
+        totalExperiennce += computeExperienceAmountForEnemy((*enemyLevels[i]).into());
         i += 1;
     };
     return totalExperiennce;
