@@ -6,6 +6,7 @@ use super::Hero::{Hero, HeroTrait, HeroImpl};
 use super::Battle;
 use {starknet::ContractAddress, starknet::get_block_timestamp};
 
+const timeTickEnergy: u64 = 1200;
 
 #[derive(starknet::Store, Copy, Drop, Serde)]
 struct Account {
@@ -49,7 +50,7 @@ impl AccountImpl of AccountTrait {
         PrintTrait::print(self.lastEnergyUpdateTimestamp);
 
         let timeDiff = now - self.lastEnergyUpdateTimestamp;
-        let energyToAdd = timeDiff / 120;
+        let energyToAdd = timeDiff / timeTickEnergy;
 
         if(energyToAdd == 0) {
             return;
@@ -62,7 +63,7 @@ impl AccountImpl of AccountTrait {
             return;
         }
 
-        let timeLeft = timeDiff % 120;
+        let timeLeft = timeDiff % timeTickEnergy;
         self.lastEnergyUpdateTimestamp = now - timeLeft;
     }
     fn decreaseEnergy(ref self: Account, energyCost: u16) {

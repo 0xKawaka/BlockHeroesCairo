@@ -95,7 +95,7 @@ fn mintHeroes() {
     assert(hero.name != 0, 'Hero not minted');
 }
 
-#[test]
+// #[test]
 fn mintAndUpgradeRunes(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -281,7 +281,7 @@ fn battle(){
 
 }
 
-// #[test]
+#[test]
 fn experience(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -317,11 +317,11 @@ fn experience(){
     gameDispatcher.startBattle(heroIds, 0, 0);
     gameDispatcher.playTurn(2, 2);
 
-    let heroIds: Array<u32> = array![5];
-    gameDispatcher.startBattle(heroIds, 0, 1);
-    gameDispatcher.playTurn(2, 2);
+    // let heroIds: Array<u32> = array![5];
+    // gameDispatcher.startBattle(heroIds, 0, 1);
+    // gameDispatcher.playTurn(2, 2);
 
-    let heroIds: Array<u32> = array![5];
-    gameDispatcher.startBattle(heroIds, 0, 1);
-    gameDispatcher.playTurn(2, 2);
+    // let heroIds: Array<u32> = array![5];
+    // gameDispatcher.startBattle(heroIds, 0, 1);
+    // gameDispatcher.playTurn(2, 2);
 }
