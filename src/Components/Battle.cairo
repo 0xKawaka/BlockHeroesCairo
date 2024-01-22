@@ -183,11 +183,13 @@ impl BattleImpl of BattleTrait {
         loop {
             if (self.checkTurnBarsForFullBars()) {
                 self.sortTurnTimeline();
-                // PrintTrait::print('Fullbar entity : ');
-                // PrintTrait::print(self.getEntityHighestTurn().getIndex());
-                // PrintTrait::print(*self.getEntityHighestTurn().getTurnBar().turnbar);
+                PrintTrait::print('Turn timeline : ');
+                PrintTrait::print(self.getEntityHighestTurn().getIndex());
+                PrintTrait::print(*self.getEntityHighestTurn().getTurnBar().turnbar);
+                PrintTrait::print(self.getEntityHighestTurn().getSpeed());
                 // PrintTrait::print(self.getEntityByIndex(self.turnTimeline.getValue(1)).getIndex());
                 // PrintTrait::print(*self.getEntityByIndex(self.turnTimeline.getValue(1)).getTurnBar().turnbar);
+                // PrintTrait::print(self.getEntityByIndex(self.turnTimeline.getValue(1)).getSpeed());
                 break;
             }
             self.incrementTurnBars();

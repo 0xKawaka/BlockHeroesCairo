@@ -41,6 +41,7 @@ fn new(buffType: BuffType, value: u64, duration: u8, target: bool, aoe: bool, se
 trait BuffTrait {
     fn apply(self: Buff, ref caster: Entity, ref target: Entity, ref battle: Battle);
     fn applyByType(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool, duration: u8);
+    fn applyToCaster(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool);
     fn applyByTypeAndSetChange(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool, duration: u8);
     fn getAoeEntities(self: Buff, ref caster: Entity, ref battle: Battle, isBonus: bool) -> Array<Entity>;
     fn isBonus(self: Buff) -> bool;
@@ -62,15 +63,9 @@ impl BuffImpl of BuffTrait {
                 let mut entity = *entities[i];
                 
                 if(caster.getIndex() == entity.getIndex()){
-                    if(isStat) {
-                        // +1 cause reduce stat buff at end of turn
-                        self.applyByType(ref caster, ref battle, isStat, isBonus, self.duration + 1);
-                    }
-                    else {
-                        self.applyByType(ref caster, ref battle, isStat, isBonus, self.duration);
-                    }
+                    self.applyToCaster(ref caster, ref battle, isStat, isBonus);
                 }
-                else if(target.index == entity.index){
+                else if(target.getIndex() == entity.getIndex()){
                     self.applyByType(ref target, ref battle, isStat, isBonus, self.duration);
                 }
                 else {
@@ -81,19 +76,29 @@ impl BuffImpl of BuffTrait {
         }
         else {
             if(self.self){
-                if(isStat) {
-                    self.applyByType(ref caster, ref battle, isStat, isBonus, self.duration + 1);
-                }
-                else {
-                    self.applyByTypeAndSetChange(ref caster, ref battle, isStat, isBonus, self.duration);
-                }
+                self.applyToCaster(ref caster, ref battle, isStat, isBonus);
             }
             if(self.target) {
                 if(self.self && target.index == caster.index){
                     return;
                 }
-                self.applyByType(ref target, ref battle, isStat, isBonus, self.duration);
+                if(target.index == caster.index) {
+                    self.applyToCaster(ref caster, ref battle, isStat, isBonus);
+                }
+                else {
+                    self.applyByType(ref target, ref battle, isStat, isBonus, self.duration);
+                }
             }
+        }
+    }
+
+    fn applyToCaster(self: Buff, ref entity: Entity, ref battle: Battle, isStat: bool, isBonus: bool) {
+        if(isStat) {
+            // +1 cause reduce stat buff at end of turn
+            self.applyByType(ref entity, ref battle, isStat, isBonus, self.duration + 1);
+        }
+        else {
+            self.applyByType(ref entity, ref battle, isStat, isBonus, self.duration);
         }
     }
 

@@ -1,6 +1,8 @@
 mod Game;
 mod Accounts;
 mod Battles;
+mod PvpBattles;
+mod Pvp;
 mod EntityFactory;
 mod SkillFactory;
 mod Levels;

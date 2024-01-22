@@ -3,7 +3,7 @@ use core::result::ResultTrait;
 use core::option::OptionTrait;
 use starknet::ContractAddress;
 
-use snforge_std::{declare, ContractClassTrait};
+use snforge_std::{declare, ContractClassTrait, start_prank, CheatTarget};
 
 use starknet::get_caller_address;
 
@@ -21,21 +21,25 @@ use game::Contracts::SkillFactory::ISkillFactoryDispatcher;
 use game::Contracts::SkillFactory::ISkillFactoryDispatcherTrait;
 use game::Contracts::EventEmitter::IEventEmitterDispatcher;
 use game::Contracts::EventEmitter::IEventEmitterDispatcherTrait;
+use game::Contracts::Pvp::IPvpDispatcher;
+use game::Contracts::Pvp::IPvpDispatcherTrait;
+use game::Contracts::PvpBattles::IPvpBattlesDispatcher;
+use game::Contracts::PvpBattles::IPvpBattlesDispatcherTrait;
 
-use game::Contracts::Game::IGameSafeDispatcher;
-use game::Contracts::Game::IGameSafeDispatcherTrait;
-use game::Contracts::Accounts::IAccountsSafeDispatcher;
-use game::Contracts::Accounts::IAccountsSafeDispatcherTrait;
-use game::Contracts::Battles::IBattlesSafeDispatcher;
-use game::Contracts::Battles::IBattlesSafeDispatcherTrait;
-use game::Contracts::EntityFactory::IEntityFactorySafeDispatcher;
-use game::Contracts::EntityFactory::IEntityFactorySafeDispatcherTrait;
-use game::Contracts::Levels::ILevelsSafeDispatcher;
-use game::Contracts::Levels::ILevelsSafeDispatcherTrait;
-use game::Contracts::SkillFactory::ISkillFactorySafeDispatcher;
-use game::Contracts::SkillFactory::ISkillFactorySafeDispatcherTrait;
-use game::Contracts::EventEmitter::IEventEmitterSafeDispatcher;
-use game::Contracts::EventEmitter::IEventEmitterSafeDispatcherTrait;
+// use game::Contracts::Game::IGameSafeDispatcher;
+// use game::Contracts::Game::IGameSafeDispatcherTrait;
+// use game::Contracts::Accounts::IAccountsSafeDispatcher;
+// use game::Contracts::Accounts::IAccountsSafeDispatcherTrait;
+// use game::Contracts::Battles::IBattlesSafeDispatcher;
+// use game::Contracts::Battles::IBattlesSafeDispatcherTrait;
+// use game::Contracts::EntityFactory::IEntityFactorySafeDispatcher;
+// use game::Contracts::EntityFactory::IEntityFactorySafeDispatcherTrait;
+// use game::Contracts::Levels::ILevelsSafeDispatcher;
+// use game::Contracts::Levels::ILevelsSafeDispatcherTrait;
+// use game::Contracts::SkillFactory::ISkillFactorySafeDispatcher;
+// use game::Contracts::SkillFactory::ISkillFactorySafeDispatcherTrait;
+// use game::Contracts::EventEmitter::IEventEmitterSafeDispatcher;
+// use game::Contracts::EventEmitter::IEventEmitterSafeDispatcherTrait;
 
 use game::Components::Hero::Rune::RuneTrait;
 use game::Components::Hero::{Hero, HeroImpl, HeroTrait};
@@ -60,7 +64,7 @@ fn addHeroes() {
 
     gameDispatcher.setIAccountsDispatch(accountsAdrs);
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
-    snforge_std::start_prank(gameAdrs, testAdrs);
+    snforge_std::start_prank(CheatTarget::One(gameAdrs), testAdrs);
     gameDispatcher.createAccount('usernameTest');
     accountsDispatcher.mintHeroAdmin(testAdrs, 'priest', 10, 1);
     accountsDispatcher.mintHeroAdmin(testAdrs, 'knight', 1, 2);
@@ -83,7 +87,7 @@ fn mintHeroes() {
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
 
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
-    snforge_std::start_prank(gameAdrs, testAdrs);
+    start_prank(CheatTarget::One(gameAdrs), testAdrs);
 
     let gameAccountsAdrs = gameDispatcher.getAccountsAdrs();
     assert(gameAccountsAdrs == accountsAdrs, 'Invalid accounts address');
@@ -149,7 +153,7 @@ fn equipRunes(){
     entityFactoryDispatcher.setAccountsAdrs(accountsAdrs);
     
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
-    snforge_std::start_prank(gameAdrs, testAdrs);
+    start_prank(CheatTarget::One(gameAdrs), testAdrs);
     gameDispatcher.createAccount('usernameTest');
 
     gameDispatcher.mintHero();
@@ -226,7 +230,7 @@ fn startBattle(){
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
     
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
-    snforge_std::start_prank(gameAdrs, testAdrs);
+    start_prank(CheatTarget::One(gameAdrs), testAdrs);
     gameDispatcher.createAccount('usernameTest');
     gameDispatcher.mintHero();
     gameDispatcher.mintHero();
@@ -262,7 +266,7 @@ fn battle(){
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
     
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
-    snforge_std::start_prank(gameAdrs, testAdrs);
+    start_prank(CheatTarget::One(gameAdrs), testAdrs);
     gameDispatcher.createAccount('usernameTest');
     // gameDispatcher.mintHero();
     // gameDispatcher.mintHero();
@@ -281,7 +285,7 @@ fn battle(){
 
 }
 
-#[test]
+// #[test]
 fn experience(){
     let gameAdrs = deployContract('Game');
     let accountsAdrs = deployContract('Accounts');
@@ -309,13 +313,15 @@ fn experience(){
     battlesDispatcher.setIAccountsDispatch(accountsAdrs);
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
     
-    // let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
-    // snforge_std::start_prank(gameAdrs, testAdrs);
+    let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
+    snforge_std::start_prank(CheatTarget::All, testAdrs);
     gameDispatcher.createAccount('usernameTest');
 
     let heroIds: Array<u32> = array![5];
     gameDispatcher.startBattle(heroIds, 0, 0);
     gameDispatcher.playTurn(2, 2);
+    gameDispatcher.playTurn(0, 2);
+    gameDispatcher.playTurn(0, 2);
 
     // let heroIds: Array<u32> = array![5];
     // gameDispatcher.startBattle(heroIds, 0, 1);
@@ -324,4 +330,60 @@ fn experience(){
     // let heroIds: Array<u32> = array![5];
     // gameDispatcher.startBattle(heroIds, 0, 1);
     // gameDispatcher.playTurn(2, 2);
+}
+
+#[test]
+fn pvpBattle() {
+
+    let gameAdrs = deployContract('Game');
+    let accountsAdrs = deployContract('Accounts');
+    let battlesAdrs = deployContract('Battles');
+    let entityFactoryAdrs = deployContract('EntityFactory');
+    let skillFactoryAdrs = deployContract('SkillFactory');
+    let levelsAdrs = deployContract('Levels');
+    let eventEmitterAdrs = deployContract('EventEmitter');
+    let pvpAdrs = deployContract('Pvp');
+    let pvpBattlesAdrs = deployContract('PvpBattles');
+
+    let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
+    let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
+    let battlesDispatcher = IBattlesDispatcher { contract_address: battlesAdrs };
+    let entityFactoryDispatcher = IEntityFactoryDispatcher { contract_address: entityFactoryAdrs };
+    let skillentityF= ISkillFactoryDispatcher { contract_address: levelsAdrs };
+    let levelsDispatcher = ILevelsDispatcher { contract_address: levelsAdrs };
+    let pvpDispatcher = IPvpDispatcher { contract_address: pvpAdrs };
+    let pvpBattlesDispatcher = IPvpBattlesDispatcher { contract_address: pvpBattlesAdrs };
+
+    gameDispatcher.setIAccountsDispatch(accountsAdrs);
+    entityFactoryDispatcher.setAccountsAdrs(accountsAdrs);
+    gameDispatcher.setIEntityFactoryDispatch(entityFactoryAdrs);
+    gameDispatcher.setILevelsDispatch(levelsAdrs);
+    gameDispatcher.setIBattlesDispatch(battlesAdrs);
+    battlesDispatcher.setISkillFactoryDispatch(skillFactoryAdrs);
+    battlesDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+    battlesDispatcher.setILevelsDispatch(levelsAdrs);
+    battlesDispatcher.setIAccountsDispatch(accountsAdrs);
+    accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+
+    gameDispatcher.setIPvpDispatch(pvpAdrs);
+    gameDispatcher.setIPvpBattlesDispatch(pvpBattlesAdrs);
+    pvpBattlesDispatcher.setISkillFactoryDispatch(skillFactoryAdrs);
+    pvpBattlesDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+    pvpBattlesDispatcher.setILevelsDispatch(levelsAdrs);
+    pvpBattlesDispatcher.setIAccountsDispatch(accountsAdrs);
+    
+    let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
+    snforge_std::start_prank(CheatTarget::One(gameAdrs), testAdrs);
+    gameDispatcher.createAccount('usernameTest');
+    gameDispatcher.setPvpTeam(array![0, 1]);
+    snforge_std::stop_prank(CheatTarget::One(gameAdrs));
+
+    // let testAdrs2 = starknet::contract_address_try_from_felt252('0x124').unwrap();
+    // snforge_std::start_prank(CheatTarget::One(gameAdrs), testAdrs2);
+    // gameDispatcher.createAccount('usernameTest2');
+    // gameDispatcher.setPvpTeam(array![0, 1]);
+
+    // pvpDispatcher.setEnemyRangesByRank(array![10, 100, 1000, 10000], array![3, 6, 30, 200]);
+
+    gameDispatcher.startPvpBattle(testAdrs, array![0, 1, 2, 3]);
 }

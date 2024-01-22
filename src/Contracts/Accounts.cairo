@@ -25,6 +25,8 @@ trait IAccounts<TContractState> {
     fn getRunes(self: @TContractState, accountAdrs: ContractAddress, runesIds: Array<u32>) -> Array<Rune>;
     fn getAllRunes(self: @TContractState, accountAdrs: ContractAddress) -> Array<Rune>;
     fn getEnergyInfos(self: @TContractState, accountAdrs: ContractAddress) -> (u16, u64);
+    fn hasAccount(self: @TContractState, accountAdrs: ContractAddress) -> bool;
+    fn isOwnerOfHeroes(self: @TContractState, accountAdrs: ContractAddress, heroesIndexes: Span<u32>) -> bool;
 }
 
 #[starknet::contract]
@@ -79,11 +81,11 @@ use game::Components::Hero::HeroTrait;
             heroesList.set(heroId, hero);
 
             // let newHeroesList = self.heroes.read(accountAdrs);
-            let newHero = heroesList[heroId];
+            // let newHero = heroesList[heroId];
             // newHero.print();
             // newHero.getRunes().print();
-            let newRuneList = self.runes.read(accountAdrs);
-            let newRune = newRuneList[runeId];
+            // let newRuneList = self.runes.read(accountAdrs);
+            // let newRune = newRuneList[runeId];
             // newRune.print();
         }
         fn unequipRune(ref self: ContractState, accountAdrs: ContractAddress, runeId: u32) {
@@ -225,6 +227,27 @@ use game::Components::Hero::HeroTrait;
         fn getEnergyInfos(self: @ContractState, accountAdrs: ContractAddress) -> (u16, u64) {
             let acc = self.accounts.read(accountAdrs);
             return acc.getEnergyInfos();
+        }
+        fn hasAccount(self: @ContractState, accountAdrs: ContractAddress) -> bool {
+            let acc = self.accounts.read(accountAdrs);
+            return acc.owner == accountAdrs;
+        }
+        fn isOwnerOfHeroes(self: @ContractState, accountAdrs: ContractAddress, heroesIndexes: Span<u32>) -> bool {
+            let heroesList = self.heroes.read(accountAdrs);
+            let mut i: u32 = 0;
+            let mut isOwnerOfHeroes = true;
+            loop {
+                if i == heroesIndexes.len() {
+                    break;
+                }
+                if(heroesList.len() > *heroesIndexes[i]) {
+                    isOwnerOfHeroes = false;
+                    break;
+                }
+
+                i += 1;
+            };
+            return isOwnerOfHeroes;
         }
     }
     use game::Components::Hero::Rune::{RuneStatistic, RuneRarity, RuneType};

@@ -66,6 +66,10 @@ mod Levels {
             heroes.append(Hero::new(0, 'hunter', 5, 1));
             heroes.append(Hero::new(0, 'assassin', 5, 1));
             self.energyCost.write((0, 1), 1);
+            // Level 2
+            let mut heroes = self.enemies.read((0, 2));
+            heroes.append(Hero::new(0, 'assassin', 1, 1));
+            self.energyCost.write((0, 2), 0);
             // ------------------ World 1 ------------------
             // Level 0
             let mut heroes = self.enemies.read((1, 0));

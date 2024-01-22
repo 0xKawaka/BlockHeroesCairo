@@ -74,18 +74,22 @@ impl HealImpl of HealTrait {
                 let heal = self.computeHeal(ref caster);
                 caster.takeHeal(heal);
                 healByIdArray.append(IdAndValueEvent { entityId: caster.index, value: heal });
-                // battle.entities.set(caster.index, caster);
             }
             if (self.target) {
                 // if already healed self and target is self, return
                 if(self.self && target.index == caster.index){
                     return healByIdArray;
                 }
-
-                let heal = self.computeHeal(ref target);
-                target.takeHeal(heal);
-                healByIdArray.append(IdAndValueEvent { entityId: target.index, value: heal });
-                // battle.entities.set(target.index, target);
+                if(target.index == caster.index) {
+                    let heal = self.computeHeal(ref caster);
+                    caster.takeHeal(heal);
+                    healByIdArray.append(IdAndValueEvent { entityId: caster.index, value: heal });
+                }
+                else {
+                    let heal = self.computeHeal(ref target);
+                    target.takeHeal(heal);
+                    healByIdArray.append(IdAndValueEvent { entityId: target.index, value: heal });
+                }
             }
         }
         return healByIdArray;

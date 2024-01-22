@@ -66,17 +66,22 @@ impl DamageImpl of DamageTrait {
                 let damage = self.computeDamage(ref caster, ref caster);
                 caster.takeDamage(damage);
                 damageByIdArray.append(IdAndValueEvent { entityId: caster.index, value: damage });
-                // battle.entities.set(caster.index, caster);
             }
             if (self.target) {
                 // if already damaged self and target is self, return
                 if(self.self && target.index == caster.index){
                     return damageByIdArray;
                 }
-                let damage = self.computeDamage(ref caster, ref target);
-                target.takeDamage(damage);
-                damageByIdArray.append(IdAndValueEvent { entityId: target.index, value: damage });
-                // battle.entities.set(target.index, target);
+                if(target.index == caster.index) {
+                    let damage = self.computeDamage(ref caster, ref caster);
+                    caster.takeDamage(damage);
+                    damageByIdArray.append(IdAndValueEvent { entityId: caster.index, value: damage });
+                }
+                else {
+                    let damage = self.computeDamage(ref caster, ref target);
+                    target.takeDamage(damage);
+                    damageByIdArray.append(IdAndValueEvent { entityId: target.index, value: damage });
+                }
             }
         }
         return damageByIdArray;
