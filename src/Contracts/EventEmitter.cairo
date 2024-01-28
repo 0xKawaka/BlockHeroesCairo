@@ -27,6 +27,9 @@ trait IEventEmitter<TContractState> {
     fn runeMinted(ref self: TContractState, owner: ContractAddress, rune: Rune::Rune);
     fn runeUpgraded(ref self: TContractState, owner: ContractAddress, id: u32, rank: u32, crystalCost: u32);
     fn runeBonus(ref self: TContractState, owner: ContractAddress, id: u32, rank: u32, procStat: felt252, isPercent: bool);
+    fn arenaDefense(ref self: TContractState, owner: ContractAddress, heroeIds: Span<u32>);
+    fn rankChange(ref self: TContractState, owner: ContractAddress, rank: u64);
+    fn initArena(ref self: TContractState, owner: ContractAddress, rank: u64, heroeIds: Span<u32>);
 }
 #[starknet::contract]
 mod EventEmitter {
@@ -57,6 +60,10 @@ mod EventEmitter {
         RuneMinted: RuneMinted,
         RuneUpgraded: RuneUpgraded,
         RuneBonus: RuneBonus,
+
+        ArenaDefense: ArenaDefense,
+        RankChange: RankChange,
+        InitArena: InitArena,
     }
 
     #[derive(Drop, starknet::Event)]
@@ -170,6 +177,23 @@ mod EventEmitter {
         procStat: felt252,
         isPercent: bool,
     }
+    #[derive(Drop, starknet::Event)]
+    struct ArenaDefense {
+        owner: ContractAddress,
+        heroeIds: Span<u32>,
+    }
+    #[derive(Drop, starknet::Event)]
+    struct RankChange {
+        owner: ContractAddress,
+        rank: u64,
+    }
+    #[derive(Drop, starknet::Event)]
+    struct InitArena {
+        owner: ContractAddress,
+        rank: u64,
+        heroeIds: Span<u32>,
+    }
+
     #[external(v0)]
     impl BattlesImpl of super::IEventEmitter<ContractState> {
         fn newBattle(ref self: ContractState, owner: ContractAddress, healthsArray: Array<u64>) {
@@ -178,7 +202,6 @@ mod EventEmitter {
                 healthsArray: healthsArray,
             });
         }
-
         fn skill(ref self: ContractState, owner: ContractAddress, casterId: u32, targetId: u32, skillIndex: u8, damages: Array<IdAndValueEvent>, heals: Array<IdAndValueEvent>, deaths: Array<u32>) {
             self.emit(Skill {
                 owner: owner,
@@ -190,7 +213,6 @@ mod EventEmitter {
                 deaths: deaths
             });
         }
-
         fn endTurn(ref self: ContractState, owner: ContractAddress, buffs: Array<BuffEvent>, status: Array<BuffEvent>, speeds: Array<IdAndValueEvent>) {
             self.emit(EndTurn {
                 owner: owner,
@@ -199,7 +221,6 @@ mod EventEmitter {
                 speeds: speeds,
             });
         }
-
         fn startTurn(ref self: ContractState, owner: ContractAddress, entityId: u32, damages: Array<u64>, heals: Array<u64>, buffs: Array<EntityBuffEvent>, status: Array<EntityBuffEvent>, isDead: bool) {
             self.emit(StartTurn {
                 owner: owner,
@@ -211,21 +232,18 @@ mod EventEmitter {
                 isDead: isDead,
             });
         }
-
         fn endBattle(ref self: ContractState, owner: ContractAddress, playerHasWon: bool) {
             self.emit(EndBattle {
                 owner: owner,
                 playerHasWon: playerHasWon,
             });
         }
-
         fn loot(ref self: ContractState, owner: ContractAddress, crystals: u32) {
             self.emit(Loot {
                 owner: owner,
                 crystals: crystals,
             });
         }
-
         fn experienceGain(ref self: ContractState, owner: ContractAddress, entityId: u32, experienceGained: u32, levelAfter: u16, experienceAfter: u32 ) {
             self.emit(ExperienceGain {
                 owner: owner,
@@ -235,14 +253,12 @@ mod EventEmitter {
                 experienceAfter: experienceAfter,
             });
         }
-
         fn newAccount(ref self: ContractState, owner: ContractAddress, username: felt252) {
             self.emit(NewAccount {
                 owner: owner,
                 username: username,
             });
         }
-
         fn heroMinted(ref self: ContractState, owner: ContractAddress, id: u32, name: felt252) {
             self.emit(HeroMinted {
                 owner: owner,
@@ -250,14 +266,12 @@ mod EventEmitter {
                 name: name,
             });
         }
-
         fn runeMinted(ref self: ContractState, owner: ContractAddress, rune: Rune::Rune) {
             self.emit(RuneMinted {
                 owner: owner,
                 rune: rune,
             });
         }
-
         fn runeUpgraded(ref self: ContractState, owner: ContractAddress, id: u32, rank: u32, crystalCost: u32) {
             self.emit(RuneUpgraded {
                 owner: owner,
@@ -266,7 +280,6 @@ mod EventEmitter {
                 crystalCost: crystalCost,
             });
         }
-
         fn runeBonus(ref self: ContractState, owner: ContractAddress, id: u32, rank: u32, procStat: felt252, isPercent: bool) {
             self.emit(RuneBonus {
                 owner: owner,
@@ -274,6 +287,25 @@ mod EventEmitter {
                 rank: rank,
                 procStat: procStat,
                 isPercent: isPercent,
+            });
+        }
+        fn arenaDefense(ref self: ContractState, owner: ContractAddress, heroeIds: Span<u32>) {
+            self.emit(ArenaDefense {
+                owner: owner,
+                heroeIds: heroeIds,
+            });
+        }
+        fn rankChange(ref self: ContractState, owner: ContractAddress, rank: u64) {
+            self.emit(RankChange {
+                owner: owner,
+                rank: rank,
+            });
+        }
+        fn initArena(ref self: ContractState, owner: ContractAddress, rank: u64, heroeIds: Span<u32>) {
+            self.emit(InitArena {
+                owner: owner,
+                rank: rank,
+                heroeIds: heroeIds,
             });
         }
     }

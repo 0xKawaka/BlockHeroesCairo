@@ -3,19 +3,21 @@ use starknet::ContractAddress;
 #[starknet::interface]
 trait IPvp<TContractState> {
     fn initPvp(ref self: TContractState, owner: ContractAddress, heroeIds: Array<u32>);
-    fn setTeam(ref self: TContractState, owner: ContractAddress, heroeIds: Array<u32>);
-    fn getTeam(self: @TContractState, owner: ContractAddress) -> Array<u32>;
+    fn setTeam(ref self: TContractState, owner: ContractAddress, heroeIds: Span<u32>);
     fn swapRanks(ref self: TContractState, winner: ContractAddress, looser: ContractAddress);
     fn setEnemyRangesByRank(ref self: TContractState, minRank: Array<u64>, range: Array<u64>);
     fn setGemsRewards(ref self: TContractState, minRank: Array<u64>, gems: Array<u32>);
+    fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
     fn getGemsReward(self: @TContractState, owner: ContractAddress) -> u32;
     fn isEnemyInRange(self: @TContractState, owner: ContractAddress, enemyOwner: ContractAddress) -> bool;
+    fn getTeam(self: @TContractState, owner: ContractAddress) -> Array<u32>;
     fn getRank(self: @TContractState, owner: ContractAddress) -> u64;
 }
 
 #[starknet::contract]
 mod Pvp {
-    use game::Contracts::Accounts::{IAccountsDispatcher, IAccountsDispatcherTrait};
+    use core::array::ArrayTrait;
+use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
     use game::Contracts::Pvp::IPvp;
     use game::Libraries::List::{List, ListTrait};
     use starknet::ContractAddress;
@@ -33,6 +35,8 @@ mod Pvp {
         gemsRewardsLength: u32,
 
         lastClaimedRewards: LegacyMap<ContractAddress, u64>,
+
+        IEventEmitterDispatch: IEventEmitterDispatcher,
     }
 
     #[constructor]
@@ -46,13 +50,15 @@ mod Pvp {
             let currentRankIndex = self.currentRankIndex.read();
             self.ranking.write(owner, currentRankIndex);
             self.currentRankIndex.write(currentRankIndex + 1);
-            self.setTeam(owner, heroeIds);
+            self.setTeam(owner, heroeIds.span());
+            self.IEventEmitterDispatch.read().initArena(owner, currentRankIndex, heroeIds.span());
         }
 
-        fn setTeam(ref self: ContractState, owner: ContractAddress, heroeIds: Array<u32>) {
+        fn setTeam(ref self: ContractState, owner: ContractAddress, heroeIds: Span<u32>) {
             let mut team = self.teams.read(owner);
             team.clean();
             let mut i: u32 = 0;
+
             loop {
                 if i >= heroeIds.len() {
                     break;
@@ -61,10 +67,7 @@ mod Pvp {
                 i += 1;
             };
             self.teams.write(owner, team);
-        }
-
-        fn getTeam(self: @ContractState, owner: ContractAddress) -> Array<u32> {
-            self.teams.read(owner).array()
+            self.IEventEmitterDispatch.read().arenaDefense(owner, heroeIds);
         }
 
         fn swapRanks(ref self: ContractState, winner: ContractAddress, looser: ContractAddress) {
@@ -72,6 +75,8 @@ mod Pvp {
             let looserRank = self.ranking.read(looser);
             self.ranking.write(winner, looserRank);
             self.ranking.write(looser, winnerRank);
+            self.IEventEmitterDispatch.read().rankChange(winner, winnerRank);
+            self.IEventEmitterDispatch.read().rankChange(looser, looserRank);
         }
 
         fn setEnemyRangesByRank(ref self: ContractState, minRank: Array<u64>, range: Array<u64>) {
@@ -96,6 +101,10 @@ mod Pvp {
                 i += 1;
             };
             self.gemsRewardsLength.write(i);
+        }
+
+        fn setIEventEmitterDispatch(ref self: ContractState, eventEmitterAdrs: ContractAddress) {
+            self.IEventEmitterDispatch.write(IEventEmitterDispatcher { contract_address: eventEmitterAdrs });
         }
 
         fn getGemsReward(self: @ContractState, owner: ContractAddress) -> u32 {
@@ -144,6 +153,9 @@ mod Pvp {
             self.ranking.read(owner)
         }
 
+        fn getTeam(self: @ContractState, owner: ContractAddress) -> Array<u32> {
+            self.teams.read(owner).array()
+        }
 
     }
 

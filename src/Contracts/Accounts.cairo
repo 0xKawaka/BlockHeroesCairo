@@ -14,6 +14,7 @@ trait IAccounts<TContractState> {
     fn createAccount(ref self: TContractState,  username: felt252, accountAdrs: ContractAddress);
     fn addExperienceToHeroId(ref self: TContractState, accountAdrs: ContractAddress, heroId: u32, experience: u32, IEventEmitterDispatch: IEventEmitterDispatcher);
     fn decreaseEnergy(ref self: TContractState, accountAdrs: ContractAddress, energyCost: u16);
+    fn decreasePvpEnergy(ref self: TContractState, accountAdrs: ContractAddress, energyCost: u16);
     fn increaseCrystals(ref self: TContractState, accountAdrs: ContractAddress, crystalsToAdd: u32);
     fn decreaseCrystals(ref self: TContractState, accountAdrs: ContractAddress, crystalsToSub: u32);
     fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
@@ -154,6 +155,13 @@ use game::Components::Hero::HeroTrait;
             let mut acc = self.accounts.read(accountAdrs);
             acc.updateEnergy();
             acc.decreaseEnergy(energyCost);
+            self.accounts.write(accountAdrs, acc);
+        }
+        fn decreasePvpEnergy(ref self: ContractState, accountAdrs: ContractAddress, energyCost: u16) {
+            assert(self.accounts.read(accountAdrs).owner == accountAdrs, 'Account not created');
+            let mut acc = self.accounts.read(accountAdrs);
+            acc.updatePvpEnergy();
+            acc.decreasePvpEnergy(energyCost);
             self.accounts.write(accountAdrs, acc);
         }
         fn increaseCrystals(ref self: ContractState, accountAdrs: ContractAddress, crystalsToAdd: u32) {

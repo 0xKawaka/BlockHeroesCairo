@@ -19,7 +19,7 @@ trait IGame<TContractState> {
     fn setILevelsDispatch(ref self: TContractState, newLevelsAdrs: ContractAddress);
     fn setIBattlesDispatch(ref self: TContractState, newBattleAdrs: ContractAddress);
     fn setIPvpDispatch(ref self: TContractState, newPvpAdrs: ContractAddress);
-    fn setIPvpBattlesDispatch(ref self: TContractState, newPvpBattleAdrs: ContractAddress);
+    fn setIArenaBattlesDispatch(ref self: TContractState, newPvpBattleAdrs: ContractAddress);
     fn getAccountsAdrs(self: @TContractState) -> ContractAddress;
     fn getEntityFactoryAdrs(self: @TContractState) -> ContractAddress;
     fn getLevelsAdrs(self: @TContractState) -> ContractAddress;
@@ -37,7 +37,7 @@ mod Game {
     use game::Contracts::Levels::{ILevelsDispatcher, ILevelsDispatcherTrait};
     use game::Contracts::Battles::{IBattlesDispatcher, IBattlesDispatcherTrait};
     use game::Contracts::Pvp::{IPvpDispatcher, IPvpDispatcherTrait};
-    use game::Contracts::PvpBattles::{IPvpBattlesDispatcher, IPvpBattlesDispatcherTrait};
+    use game::Contracts::ArenaBattles::{IArenaBattlesDispatcher, IArenaBattlesDispatcherTrait};
     use game::Components::Account::{Account, AccountImpl};
     use game::Libraries::NullableVector::{NullableVector, NullableVectorImpl, VecTrait};
     use game::Components::Hero::{Hero, HeroImpl, HeroTrait};
@@ -50,7 +50,7 @@ mod Game {
         ILevelsDispatch: ILevelsDispatcher,
         IBattlesDispatch: IBattlesDispatcher,
         IPvpDispatch: IPvpDispatcher,
-        IPvpBattlesDispatch: IPvpBattlesDispatcher,
+        IArenaBattlesDispatch: IArenaBattlesDispatcher,
     }
 
     #[external(v0)]
@@ -59,16 +59,16 @@ mod Game {
             assert(heroesIds.len() < 5 && heroesIds.len() > 0, '1 hero min, 4 heroes max');
             let caller = get_caller_address();
             self.IPvpDispatch.read().isEnemyInRange(caller, enemyOwner);
-            self.IAccountsDispatch.read().decreaseEnergy(caller, 1);
+            self.IAccountsDispatch.read().decreasePvpEnergy(caller, 1);
             let allyHeroes = self.IAccountsDispatch.read().getHeroes(get_caller_address(), heroesIds.span());
             let allyEntities = self.IEntityFactoryDispatch.read().newEntities(get_caller_address(), 0, allyHeroes, AllyOrEnemy::Ally);
             let enemyHeroesIndex = self.IPvpDispatch.read().getTeam(enemyOwner);
             let enemyHeroes = self.IAccountsDispatch.read().getHeroes(enemyOwner, enemyHeroesIndex.span());
             let enemyEntities = self.IEntityFactoryDispatch.read().newEntities(enemyOwner, allyEntities.len(), enemyHeroes, AllyOrEnemy::Enemy);
-            self.IPvpBattlesDispatch.read().newBattle(caller, enemyOwner, allyEntities, enemyEntities, heroesIds);
+            self.IArenaBattlesDispatch.read().newBattle(caller, enemyOwner, allyEntities, enemyEntities, heroesIds);
         }
         fn playPvpTurn(ref self: ContractState, spellIndex: u8, targetIndex: u32) {
-            self.IPvpBattlesDispatch.read().playTurn(get_caller_address(), spellIndex, targetIndex);
+            self.IArenaBattlesDispatch.read().playTurn(get_caller_address(), spellIndex, targetIndex);
         }
         fn startBattle(ref self: ContractState, heroesIds: Array<u32>, world: u16, level: u16) {
             assert(heroesIds.len() < 5 && heroesIds.len() > 0, '1 hero min, 4 heroes max');
@@ -94,7 +94,7 @@ mod Game {
             assert(heroesIds.len() < 5 && heroesIds.len() > 0, '1 hero min, 4 heroes max');
             self.IAccountsDispatch.read().hasAccount(get_caller_address());
             self.IAccountsDispatch.read().isOwnerOfHeroes(get_caller_address(), heroesIds.span());
-            self.IPvpDispatch.read().setTeam(get_caller_address(), heroesIds);
+            self.IPvpDispatch.read().setTeam(get_caller_address(), heroesIds.span());
         }
         fn equipRune(ref self: ContractState, runeId: u32, heroId: u32) {
             self.IAccountsDispatch.read().equipRune(get_caller_address(), runeId, heroId);
@@ -129,8 +129,8 @@ mod Game {
         fn setIPvpDispatch(ref self: ContractState, newPvpAdrs: ContractAddress) {
             self.IPvpDispatch.write(IPvpDispatcher { contract_address: newPvpAdrs });
         }
-        fn setIPvpBattlesDispatch(ref self: ContractState, newPvpBattleAdrs: ContractAddress) {
-            self.IPvpBattlesDispatch.write(IPvpBattlesDispatcher { contract_address: newPvpBattleAdrs });
+        fn setIArenaBattlesDispatch(ref self: ContractState, newPvpBattleAdrs: ContractAddress) {
+            self.IArenaBattlesDispatch.write(IArenaBattlesDispatcher { contract_address: newPvpBattleAdrs });
         }
         fn getAccountsAdrs(self: @ContractState) -> ContractAddress {
             return self.IAccountsDispatch.read().contract_address;

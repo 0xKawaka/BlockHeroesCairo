@@ -3,17 +3,18 @@ use starknet::ContractAddress;
 use game::Components::Battle::Entity::Entity;
 
 #[starknet::interface]
-trait IPvpBattles<TContractState> {
+trait IArenaBattles<TContractState> {
     fn newBattle(ref self: TContractState, owner: ContractAddress, enemyOwner: ContractAddress, allyEntities: Array<Entity>, enemyEntities: Array<Entity>, heroesIds: Array<u32>);
     fn playTurn(ref self: TContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32);
     fn setISkillFactoryDispatch(ref self: TContractState, skillFactoryAdrs: ContractAddress);
     fn setIEventEmitterDispatch(ref self: TContractState, eventEmitterAdrs: ContractAddress);
     fn setIAccountsDispatch(ref self: TContractState, newAccountsAdrs: ContractAddress);
     fn setILevelsDispatch(ref self: TContractState, newLevelsAdrs: ContractAddress);
+    fn setIPvpDispatch(ref self: TContractState, newPvpAdrs: ContractAddress);
 }
 
 #[starknet::contract]
-mod PvpBattles {
+mod ArenaBattles {
     use game::Components::Battle::BattleTrait;
     use game::Components::Battle::Entity::Skill::SkillTrait;
     use core::box::BoxTrait;
@@ -32,7 +33,8 @@ mod PvpBattles {
     use game::Contracts::EventEmitter::{IEventEmitterDispatcher, IEventEmitterDispatcherTrait};
     use game::Contracts::Accounts::{IAccountsDispatcher, IAccountsDispatcherTrait};
     use game::Contracts::Levels::{ILevelsDispatcher, ILevelsDispatcherTrait};
-    use game::Contracts::PvpBattles::PvpLootHandler;
+    use game::Contracts::Pvp::{IPvpDispatcher, IPvpDispatcherTrait};
+    use game::Contracts::ArenaBattles::PvpLootHandler;
 
     #[storage]
     struct Storage {
@@ -55,10 +57,11 @@ mod PvpBattles {
         IEventEmitterDispatch: IEventEmitterDispatcher,
         IAccountsDispatch: IAccountsDispatcher,
         ILevelsDispatch: ILevelsDispatcher,
+        IPvpDispatch: IPvpDispatcher,
     }
 
     #[external(v0)]
-    impl BattlesImpl of super::IPvpBattles<ContractState> {
+    impl BattlesImpl of super::IArenaBattles<ContractState> {
         fn newBattle(ref self: ContractState, owner: ContractAddress, enemyOwner: ContractAddress, allyEntities: Array<Entity>, enemyEntities: Array<Entity>, heroesIds: Array<u32>) {
             let alliesSpan = allyEntities.span();
             let enemiesSpan = allyEntities.span();
@@ -68,13 +71,13 @@ mod PvpBattles {
             let healthsArray = battle.getHealthsArray();
             IEventEmitterDispatch.newBattle(owner, healthsArray);
             battle.battleLoop(IEventEmitterDispatch);
-            // self.ifBattleIsOverHandle(owner, battle.isBattleOver, battle.isVictory);
+            self.ifBattleIsOverHandle(owner, battle.isBattleOver, battle.isVictory);
             self.storeBattleState(ref battle, owner);
         }
         fn playTurn(ref self: ContractState, owner: ContractAddress, spellIndex: u8, targetIndex: u32) {
             let mut battle = self.getBattle(owner);
             battle.playTurn(spellIndex, targetIndex, self.IEventEmitterDispatch.read());
-            // self.ifBattleIsOverHandle(owner, battle.isBattleOver, battle.isVictory);
+            self.ifBattleIsOverHandle(owner, battle.isBattleOver, battle.isVictory);
             self.storeBattleState(ref battle, owner);
         }
         fn setISkillFactoryDispatch(ref self: ContractState, skillFactoryAdrs: ContractAddress) {
@@ -89,13 +92,19 @@ mod PvpBattles {
         fn setILevelsDispatch(ref self: ContractState, newLevelsAdrs: ContractAddress) {
             self.ILevelsDispatch.write(ILevelsDispatcher { contract_address: newLevelsAdrs });
         }
+        fn setIPvpDispatch(ref self: ContractState, newPvpAdrs: ContractAddress) {
+            self.IPvpDispatch.write(IPvpDispatcher { contract_address: newPvpAdrs });
+        }
     }
 
     #[generate_trait]
     impl InternalEntityFactoryImpl of InternalEntityFactoryTrait {
         fn ifBattleIsOverHandle(ref self: ContractState, owner: ContractAddress, isBattleOver: bool, isVictory: bool) {
-            if(!isBattleOver || !isVictory) {
+            if(!isBattleOver) {
                 return;
+            }
+            if(isVictory) {
+                self.IPvpDispatch.read().swapRanks(owner, self.enemyOwner.read(owner));
             }
         }
         fn initBattleStorage(ref self: ContractState, owner: ContractAddress, enemyOwner: ContractAddress, allyEntities: Array<Entity>, enemyEntities: Array<Entity>, heroesIds: Array<u32>) {

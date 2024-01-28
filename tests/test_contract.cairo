@@ -23,8 +23,8 @@ use game::Contracts::EventEmitter::IEventEmitterDispatcher;
 use game::Contracts::EventEmitter::IEventEmitterDispatcherTrait;
 use game::Contracts::Pvp::IPvpDispatcher;
 use game::Contracts::Pvp::IPvpDispatcherTrait;
-use game::Contracts::PvpBattles::IPvpBattlesDispatcher;
-use game::Contracts::PvpBattles::IPvpBattlesDispatcherTrait;
+use game::Contracts::ArenaBattles::IArenaBattlesDispatcher;
+use game::Contracts::ArenaBattles::IArenaBattlesDispatcherTrait;
 
 // use game::Contracts::Game::IGameSafeDispatcher;
 // use game::Contracts::Game::IGameSafeDispatcherTrait;
@@ -343,7 +343,7 @@ fn pvpBattle() {
     let levelsAdrs = deployContract('Levels');
     let eventEmitterAdrs = deployContract('EventEmitter');
     let pvpAdrs = deployContract('Pvp');
-    let pvpBattlesAdrs = deployContract('PvpBattles');
+    let arenaBattlesAdrs = deployContract('ArenaBattles');
 
     let gameDispatcher = IGameDispatcher { contract_address: gameAdrs };
     let accountsDispatcher = IAccountsDispatcher { contract_address: accountsAdrs };
@@ -352,7 +352,7 @@ fn pvpBattle() {
     let skillentityF= ISkillFactoryDispatcher { contract_address: levelsAdrs };
     let levelsDispatcher = ILevelsDispatcher { contract_address: levelsAdrs };
     let pvpDispatcher = IPvpDispatcher { contract_address: pvpAdrs };
-    let pvpBattlesDispatcher = IPvpBattlesDispatcher { contract_address: pvpBattlesAdrs };
+    let arenaBattlesDispatcher = IArenaBattlesDispatcher { contract_address: arenaBattlesAdrs };
 
     gameDispatcher.setIAccountsDispatch(accountsAdrs);
     entityFactoryDispatcher.setAccountsAdrs(accountsAdrs);
@@ -366,11 +366,11 @@ fn pvpBattle() {
     accountsDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
 
     gameDispatcher.setIPvpDispatch(pvpAdrs);
-    gameDispatcher.setIPvpBattlesDispatch(pvpBattlesAdrs);
-    pvpBattlesDispatcher.setISkillFactoryDispatch(skillFactoryAdrs);
-    pvpBattlesDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
-    pvpBattlesDispatcher.setILevelsDispatch(levelsAdrs);
-    pvpBattlesDispatcher.setIAccountsDispatch(accountsAdrs);
+    gameDispatcher.setIArenaBattlesDispatch(arenaBattlesAdrs);
+    arenaBattlesDispatcher.setISkillFactoryDispatch(skillFactoryAdrs);
+    arenaBattlesDispatcher.setIEventEmitterDispatch(eventEmitterAdrs);
+    arenaBattlesDispatcher.setILevelsDispatch(levelsAdrs);
+    arenaBattlesDispatcher.setIAccountsDispatch(accountsAdrs);
     
     let testAdrs = starknet::contract_address_try_from_felt252('0x123').unwrap();
     snforge_std::start_prank(CheatTarget::One(gameAdrs), testAdrs);
